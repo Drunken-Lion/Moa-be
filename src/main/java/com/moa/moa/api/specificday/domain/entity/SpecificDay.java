@@ -1,5 +1,6 @@
 package com.moa.moa.api.specificday.domain.entity;
 
+import com.moa.moa.api.place.domain.entity.Place;
 import com.moa.moa.api.shop.domain.entity.Shop;
 
 import java.time.LocalDate;

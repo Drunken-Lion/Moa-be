@@ -1,5 +1,7 @@
 package com.moa.moa.api.liftticket.domain.entity;
 
+import com.moa.moa.api.place.domain.entity.Place;
+
 import java.time.LocalTime;
 
 public class LiftTicket {
