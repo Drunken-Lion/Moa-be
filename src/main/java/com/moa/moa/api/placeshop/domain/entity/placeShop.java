@@ -1,6 +1,8 @@
 package com.moa.moa.api.placeshop.domain.entity;
 
+import com.moa.moa.api.place.domain.entity.Place;
+
 public class placeShop {
-    private Long placeId;
-    private Long shopId;
+    private Place place;
+    private Shop shop;
 }

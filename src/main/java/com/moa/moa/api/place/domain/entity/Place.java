@@ -1,12 +1,12 @@
 package com.moa.moa.api.place.domain.entity;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class Place {
-    private Long categoryId;
-    private Long addressId;
+    private Category category;
+    private Address address;
     private String name;
-    private Date open;
-    private Date close;
+    private LocalDate open;
+    private LocalDate close;
     private String recLevel;
 }

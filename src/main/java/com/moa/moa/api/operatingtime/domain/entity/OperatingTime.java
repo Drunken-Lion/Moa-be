@@ -1,12 +1,14 @@
 package com.moa.moa.api.operatingtime.domain.entity;
 
-import java.sql.Time;
+import com.moa.moa.api.place.domain.entity.Place;
+
+import java.time.LocalTime;
 
 public class OperatingTime {
-    private Long placeId;
-    private Long shopId;
+    private Place place;
+    private Shop shop;
     private String status;
     private String day;
-    private Time open;
-    private Time close;
+    private LocalTime open;
+    private LocalTime close;
 }
