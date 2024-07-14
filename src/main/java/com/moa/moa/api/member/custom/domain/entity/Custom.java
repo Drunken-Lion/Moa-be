@@ -26,7 +26,7 @@ public class Custom extends BaseEntity {
     @Column(name = "gender", columnDefinition = "VARCHAR(20)")
     private String gender;
 
-    @Comment("성별")
+    @Comment("스키어 별칭")
     @Column(name = "nickname", columnDefinition = "VARCHAR(50)")
     private String nickname;
 
