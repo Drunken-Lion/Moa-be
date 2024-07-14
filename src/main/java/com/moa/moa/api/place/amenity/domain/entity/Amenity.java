@@ -1,5 +1,24 @@
 package com.moa.moa.api.place.amenity.domain.entity;
 
-public class Amenity {
+import com.moa.moa.global.common.entity.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Comment;
+
+@Entity
+@Getter
+@SuperBuilder(toBuilder = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "amenity")
+public class Amenity extends BaseEntity {
+    @Comment("편의 시설 이름")
+    @Column(name = "name", columnDefinition = "VARCHAR(50)")
     private String name;
 }
