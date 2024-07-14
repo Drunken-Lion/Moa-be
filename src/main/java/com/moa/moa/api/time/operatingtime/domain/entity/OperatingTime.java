@@ -40,9 +40,9 @@ public class OperatingTime extends BaseEntity {
 
     @Comment("시작 시간")
     @Column(name = "open", columnDefinition = "TIME")
-    private LocalTime open;
+    private LocalTime openTime;
 
     @Comment("종료 시간")
     @Column(name = "close", columnDefinition = "TIME")
-    private LocalTime close;
+    private LocalTime closeTime;
 }

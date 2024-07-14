@@ -36,11 +36,11 @@ public class Place extends BaseEntity {
 
     @Comment("개장일")
     @JoinColumn(name = "open", columnDefinition = "DATE")
-    private LocalDate open;
+    private LocalDate openDate;
 
     @Comment("폐장일")
     @JoinColumn(name = "close", columnDefinition = "DATE")
-    private LocalDate close;
+    private LocalDate closeDate;
 
     @Comment("추천 스키어")
     @Column(name = "rec_level", columnDefinition = "VARCHAR(20)")
