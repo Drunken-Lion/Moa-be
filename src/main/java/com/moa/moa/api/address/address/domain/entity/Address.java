@@ -23,7 +23,7 @@ public class Address extends BaseEntity {
     @Column(name = "address", columnDefinition = "VARCHAR(200)")
     private String address;
 
-    @Comment("주소")
+    @Comment("상세 주소")
     @Column(name = "address_detail", columnDefinition = "VARCHAR(200)")
     private String addressDetail;
 
