@@ -23,18 +23,18 @@ public class Question extends BaseEntity {
     private Member member;
 
     @Comment("문의 타입")
-    @Column(name = "type", unique = true, columnDefinition = "VARCHAR(50)")
+    @Column(name = "type", columnDefinition = "VARCHAR(50)")
     private String type;
 
     @Comment("문의 제목")
-    @Column(name = "title", unique = true, columnDefinition = "VARCHAR(200)")
+    @Column(name = "title", columnDefinition = "VARCHAR(200)")
     private String title;
 
     @Comment("문의 내용")
-    @Column(name = "content", unique = true, columnDefinition = "MEDIUMTEXT")
+    @Column(name = "content", columnDefinition = "MEDIUMTEXT")
     private String content;
 
     @Comment("문의 상태")
-    @Column(name = "status", unique = true, columnDefinition = "VARCHAR(20)")
+    @Column(name = "status", columnDefinition = "VARCHAR(20)")
     private String status;
 }
