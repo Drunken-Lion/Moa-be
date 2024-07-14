@@ -2,6 +2,7 @@ package com.moa.moa.api.place.place.domain.entity;
 
 import com.moa.moa.api.address.address.domain.entity.Address;
 import com.moa.moa.api.category.category.domain.entity.Category;
+import com.moa.moa.api.time.businesstime.domain.entity.BusinessTime;
 import com.moa.moa.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -29,6 +30,11 @@ public class Place extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id", columnDefinition = "BIGINT", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Address address;
+
+    @Comment("비지니스 타임")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "business_time_id", columnDefinition = "BIGINT", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private BusinessTime businessTime;
 
     @Comment("스키장 이름")
     @Column(name = "name", columnDefinition = "VARCHAR(50)")

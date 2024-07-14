@@ -2,6 +2,7 @@ package com.moa.moa.api.time.operatingtime.domain.entity;
 
 import com.moa.moa.api.place.place.domain.entity.Place;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
+import com.moa.moa.api.time.businesstime.domain.entity.BusinessTime;
 import com.moa.moa.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -20,6 +21,11 @@ import java.time.LocalTime;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "operating_time")
 public class OperatingTime extends BaseEntity {
+    @Comment("비지니스 타임")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "business_time_id", columnDefinition = "BIGINT", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private BusinessTime businessTime;
+
     @Comment("장소")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id", columnDefinition = "BIGINT", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
