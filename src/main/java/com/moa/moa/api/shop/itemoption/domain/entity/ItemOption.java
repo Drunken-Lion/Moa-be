@@ -32,15 +32,15 @@ public class ItemOption extends BaseEntity {
     @Column(name = "use", columnDefinition = "BOOLEAN")
     private Boolean use;
 
-    @Comment("추가 시간")
-    @Column(name = "extra_time", columnDefinition = "VARCHAR(50)")
-    private String extraTime;
+    @Comment("대여 시작 시간")
+    @Column(name = "start_time", columnDefinition = "BIGINT")
+    private Long startTime;
 
-    @Comment("추가 시간에 대한 추가 금액")
-    @Column(name = "extra_time_price", columnDefinition = "DECIMAL(64, 3)")
-    private BigDecimal extraTimePrice;
+    @Comment("대여 끝 시간")
+    @Column(name = "end_time", columnDefinition = "BIGINT")
+    private Long endTime;
 
-    @Comment("의류, 장비 가격 (추가금액)")
+    @Comment("추가 금액")
     @Column(name = "add_price", columnDefinition = "DECIMAL(64, 3)")
     private BigDecimal addPrice;
 }
