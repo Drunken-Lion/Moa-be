@@ -28,7 +28,7 @@ public class Item extends BaseEntity {
     @Comment("리프트권")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lift_ticket_id", columnDefinition = "BIGINT", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private LiftTicket liftTicketId;
+    private LiftTicket liftTicket;
 
     @Comment("리프트권 타입")
     @Column(name = "type", columnDefinition = "VARCHAR(255)")
