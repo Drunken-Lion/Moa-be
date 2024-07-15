@@ -3,15 +3,19 @@ package com.moa.moa.api.shop.shop.domain.entity;
 import com.moa.moa.api.address.address.domain.entity.Address;
 import com.moa.moa.api.category.category.domain.entity.Category;
 import com.moa.moa.api.member.member.domain.entity.Member;
+import com.moa.moa.api.shop.item.domain.entity.Item;
+import com.moa.moa.api.shop.naverreview.domain.entity.NaverReview;
+import com.moa.moa.api.shop.placeshop.domain.entity.PlaceShop;
+import com.moa.moa.api.shop.review.domain.entity.Review;
 import com.moa.moa.api.time.businesstime.domain.entity.BusinessTime;
 import com.moa.moa.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -51,4 +55,24 @@ public class Shop extends BaseEntity {
     @Comment("스마트스토어 링크")
     @Column(name = "url", columnDefinition = "VARCHAR(2048)")
     private String url;
+
+    @Comment("샵과 관련된 장소들")
+    @OneToMany(mappedBy = "shop")
+    @Builder.Default
+    private List<PlaceShop> placeShops = new ArrayList<>();
+
+    @Comment("샵의 네이버 리뷰")
+    @OneToMany(mappedBy = "shop")
+    @Builder.Default
+    private List<NaverReview> naverReviews = new ArrayList<>();
+
+    @Comment("샵의 리뷰")
+    @OneToMany(mappedBy = "shop")
+    @Builder.Default
+    private List<Review> reviews = new ArrayList<>();
+
+    @Comment("샵의 패키지 상품들")
+    @OneToMany(mappedBy = "shop")
+    @Builder.Default
+    private List<Item> items = new ArrayList<>();
 }
