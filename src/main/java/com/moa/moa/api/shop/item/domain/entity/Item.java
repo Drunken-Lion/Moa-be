@@ -1,17 +1,17 @@
 package com.moa.moa.api.shop.item.domain.entity;
 
 import com.moa.moa.api.place.liftticket.domain.entity.LiftTicket;
+import com.moa.moa.api.shop.itemoption.domain.entity.ItemOption;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
 import com.moa.moa.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -45,4 +45,9 @@ public class Item extends BaseEntity {
     @Comment("사용 여부")
     @Column(name = "use", columnDefinition = "BOOLEAN")
     private Boolean use;
+
+    @Comment("패키지 상품 옵션들")
+    @OneToMany(mappedBy = "item")
+    @Builder.Default
+    private List<ItemOption> itemOptions = new ArrayList<>();
 }
