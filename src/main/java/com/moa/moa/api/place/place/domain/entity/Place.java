@@ -2,17 +2,19 @@ package com.moa.moa.api.place.place.domain.entity;
 
 import com.moa.moa.api.address.address.domain.entity.Address;
 import com.moa.moa.api.category.category.domain.entity.Category;
+import com.moa.moa.api.place.liftticket.domain.entity.LiftTicket;
+import com.moa.moa.api.place.placeamenity.domain.entity.PlaceAmenity;
+import com.moa.moa.api.place.slope.domain.entity.Slope;
 import com.moa.moa.api.time.businesstime.domain.entity.BusinessTime;
 import com.moa.moa.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -51,4 +53,19 @@ public class Place extends BaseEntity {
     @Comment("추천 스키어")
     @Column(name = "rec_level", columnDefinition = "VARCHAR(20)")
     private String recLevel;
+
+    @Comment("리프트권 종류")
+    @OneToMany(mappedBy = "place")
+    @Builder.Default
+    private List<LiftTicket> liftTickets = new ArrayList<>();
+
+    @Comment("슬로프 종류")
+    @OneToMany(mappedBy = "place")
+    @Builder.Default
+    private List<Slope> slopes = new ArrayList<>();
+
+    @Comment("편의 시설 종류")
+    @OneToMany(mappedBy = "place")
+    @Builder.Default
+    private List<PlaceAmenity> amenities = new ArrayList<>();
 }
