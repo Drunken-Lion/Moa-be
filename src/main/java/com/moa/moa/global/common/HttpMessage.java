@@ -48,7 +48,8 @@ public class HttpMessage {
 
         // 404
         NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 리소스입니다."),
-
+        NOT_FOUND_DESC(HttpStatus.NOT_FOUND, "존재하지 않는 타입입니다."),
+        NOT_FOUND_CODE(HttpStatus.NOT_FOUND, "존재하지 않는 타입 코드입니다."),
         // 405
         METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "허용되지 않은 HTTP METHOD 입니다."),
 
