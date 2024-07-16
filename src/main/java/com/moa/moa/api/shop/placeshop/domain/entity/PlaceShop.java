@@ -17,7 +17,7 @@ import org.hibernate.annotations.Comment;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "place_shop")
-public class placeShop extends BaseEntity {
+public class PlaceShop extends BaseEntity {
     @Comment("장소")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id", columnDefinition = "BIGINT", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))

@@ -1,4 +1,4 @@
-package com.moa.moa.api.shop.wish.domain.entity;
+package com.moa.moa.api.member.wish.domain.entity;
 
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
