@@ -1,17 +1,22 @@
 package com.moa.moa.api.shop.item.domain.entity;
 
 import com.moa.moa.api.place.liftticket.domain.entity.LiftTicket;
+import com.moa.moa.api.shop.item.util.convert.LiftTicketTypeConverter;
+import com.moa.moa.api.shop.item.util.enumerated.LiftTicketType;
 import com.moa.moa.api.shop.itemoption.domain.entity.ItemOption;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
 import com.moa.moa.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.Comment;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Comment;
 
 @Entity
 @Getter
@@ -31,8 +36,9 @@ public class Item extends BaseEntity {
     private LiftTicket liftTicket;
 
     @Comment("리프트권 타입")
-    @Column(name = "type", columnDefinition = "VARCHAR(255)")
-    private String type;
+    @Column(name = "type", columnDefinition = "BIGINT")
+    @Convert(converter = LiftTicketTypeConverter.class)
+    private LiftTicketType type;
 
     @Comment("리프트권 이름")
     @Column(name = "name", columnDefinition = "VARCHAR(255)")

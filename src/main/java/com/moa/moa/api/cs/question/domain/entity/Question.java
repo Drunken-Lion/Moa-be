@@ -1,6 +1,10 @@
 package com.moa.moa.api.cs.question.domain.entity;
 
 import com.moa.moa.api.cs.answer.domain.entity.Answer;
+import com.moa.moa.api.cs.question.util.convert.QuestionStatusConverter;
+import com.moa.moa.api.cs.question.util.convert.QuestionTypeConverter;
+import com.moa.moa.api.cs.question.util.enumerated.QuestionStatus;
+import com.moa.moa.api.cs.question.util.enumerated.QuestionType;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -24,8 +28,9 @@ public class Question extends BaseEntity {
     private Member member;
 
     @Comment("문의 타입")
-    @Column(name = "type", columnDefinition = "VARCHAR(50)")
-    private String type;
+    @Column(name = "type", columnDefinition = "BIGINT")
+    @Convert(converter = QuestionTypeConverter.class)
+    private QuestionType type;
 
     @Comment("문의 제목")
     @Column(name = "title", columnDefinition = "VARCHAR(200)")
@@ -36,8 +41,9 @@ public class Question extends BaseEntity {
     private String content;
 
     @Comment("문의 상태")
-    @Column(name = "status", columnDefinition = "VARCHAR(20)")
-    private String status;
+    @Column(name = "status", columnDefinition = "BIGINT")
+    @Convert(converter = QuestionStatusConverter.class)
+    private QuestionStatus status;
 
     @Comment("문의에 대한 답변")
     @OneToMany(mappedBy = "question")

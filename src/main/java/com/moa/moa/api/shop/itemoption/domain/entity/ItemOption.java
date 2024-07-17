@@ -1,6 +1,8 @@
 package com.moa.moa.api.shop.itemoption.domain.entity;
 
 import com.moa.moa.api.shop.item.domain.entity.Item;
+import com.moa.moa.api.shop.itemoption.util.convert.ItemOptionNameConverter;
+import com.moa.moa.api.shop.itemoption.util.enumerated.ItemOptionName;
 import com.moa.moa.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -25,8 +27,9 @@ public class ItemOption extends BaseEntity {
     private Item item;
 
     @Comment("상품 옵션 이름")
-    @Column(name = "name", columnDefinition = "VARCHAR(255)")
-    private String name;
+    @Column(name = "name", columnDefinition = "BIGINT")
+    @Convert(converter = ItemOptionNameConverter.class)
+    private ItemOptionName name;
 
     @Comment("사용 여부")
     @Column(name = "use", columnDefinition = "BOOLEAN")
