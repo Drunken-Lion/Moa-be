@@ -1,6 +1,8 @@
 package com.moa.moa.api.place.slope.domain.entity;
 
 import com.moa.moa.api.place.place.domain.entity.Place;
+import com.moa.moa.api.place.slope.util.convert.SlopeLevelConverter;
+import com.moa.moa.api.place.slope.util.enumerated.SlopeLevel;
 import com.moa.moa.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -27,6 +29,7 @@ public class Slope extends BaseEntity {
     private String name;
 
     @Comment("슬로프 난이도")
-    @Column(name = "level", columnDefinition = "VARCHAR(20)")
-    private String level;
+    @Column(name = "level", columnDefinition = "BIGINT")
+    @Convert(converter = SlopeLevelConverter.class)
+    private SlopeLevel level;
 }

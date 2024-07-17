@@ -6,8 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Builder
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class BusinessException extends RuntimeException {
     private HttpStatus status;
     private String message;

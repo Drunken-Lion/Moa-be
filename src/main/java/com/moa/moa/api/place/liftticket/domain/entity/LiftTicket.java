@@ -1,16 +1,19 @@
 package com.moa.moa.api.place.liftticket.domain.entity;
 
+import com.moa.moa.api.place.liftticket.domain.util.convert.LiftTicketStatusConverter;
+import com.moa.moa.api.place.liftticket.domain.util.convert.LiftTicketTypeConverter;
+import com.moa.moa.api.place.liftticket.domain.util.enumerated.LiftTicketStatus;
+import com.moa.moa.api.place.liftticket.domain.util.enumerated.LiftTicketType;
 import com.moa.moa.api.place.place.domain.entity.Place;
 import com.moa.moa.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
+import java.time.LocalTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
-
-import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -25,16 +28,18 @@ public class LiftTicket extends BaseEntity {
     private Place place;
 
     @Comment("리프트권 상태")
-    @Column(name = "status", columnDefinition = "VARCHAR(20)")
-    private String status;
+    @Column(name = "status", columnDefinition = "BIGINT")
+    @Convert(converter = LiftTicketStatusConverter.class)
+    private LiftTicketStatus status;
 
     @Comment("리프트권 이름")
     @Column(name = "name", columnDefinition = "VARCHAR(50)")
     private String name;
 
     @Comment("이용권 종류")
-    @Column(name = "ticket_type", columnDefinition = "VARCHAR(50)")
-    private String ticketType;
+    @Column(name = "ticket_type", columnDefinition = "BIGINT")
+    @Convert(converter = LiftTicketTypeConverter.class)
+    private LiftTicketType ticketType;
 
     @Comment("시간 종류")
     @Column(name = "hours", columnDefinition = "BIGINT")

@@ -1,7 +1,10 @@
 package com.moa.moa.api.category.category.domain.entity;
 
+import com.moa.moa.api.category.category.util.convert.CategoryTypeConverter;
+import com.moa.moa.api.category.category.util.enumerated.CategoryType;
 import com.moa.moa.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -19,6 +22,7 @@ import org.hibernate.annotations.Comment;
 @Table(name = "category")
 public class Category extends BaseEntity {
     @Comment("타입")
-    @Column(name = "name", columnDefinition = "VARCHAR(50)")
-    private String name;
+    @Column(name = "category_type", columnDefinition = "BIGINT")
+    @Convert(converter = CategoryTypeConverter.class)
+    private CategoryType categoryType;
 }

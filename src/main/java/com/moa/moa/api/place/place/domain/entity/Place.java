@@ -3,6 +3,8 @@ package com.moa.moa.api.place.place.domain.entity;
 import com.moa.moa.api.address.address.domain.entity.Address;
 import com.moa.moa.api.category.category.domain.entity.Category;
 import com.moa.moa.api.place.liftticket.domain.entity.LiftTicket;
+import com.moa.moa.api.place.place.util.convert.PlaceLevelConverter;
+import com.moa.moa.api.place.place.util.enumerated.PlaceLevel;
 import com.moa.moa.api.place.placeamenity.domain.entity.PlaceAmenity;
 import com.moa.moa.api.place.slope.domain.entity.Slope;
 import com.moa.moa.api.time.businesstime.domain.entity.BusinessTime;
@@ -51,8 +53,9 @@ public class Place extends BaseEntity {
     private LocalDate closeDate;
 
     @Comment("추천 스키어")
-    @Column(name = "rec_level", columnDefinition = "VARCHAR(20)")
-    private String recLevel;
+    @Column(name = "rec_level", columnDefinition = "BIGINT")
+    @Convert(converter = PlaceLevelConverter.class)
+    private PlaceLevel recLevel;
 
     @Comment("리프트권 종류")
     @OneToMany(mappedBy = "place")
