@@ -14,7 +14,7 @@ abstract class MoaConverterUtils {
     /**
      * code -> desc
      */
-    protected <T extends Enum<T> & CommonEnum> T ofCOde(Class<T> enumClass, Integer code) {
+    protected <T extends Enum<T> & CommonEnum> T ofCode(Class<T> enumClass, Integer code) {
         if (code == null) {
             return null;
         }

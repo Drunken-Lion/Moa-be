@@ -31,6 +31,6 @@ public class MoaAttributeConverter<E extends Enum<E> & CommonEnum> extends MoaCo
 
     @Override
     public E convertToEntityAttribute(Integer dbData) {
-        return super.ofCOde(enumClass, dbData);
+        return super.ofCode(enumClass, dbData);
     }
 }
