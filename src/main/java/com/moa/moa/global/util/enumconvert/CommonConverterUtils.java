@@ -10,12 +10,14 @@ import java.util.EnumSet;
  * @since moa-20
  * @version 0.0.1
  */
-abstract class MoaConverterUtils {
+abstract class CommonConverterUtils {
     /**
      * code -> desc
      */
     protected <T extends Enum<T> & CommonEnum> T ofCode(Class<T> enumClass, Integer code) {
         if (code == null) {
+            // TODO
+            //  - Exception 수정 필요
             return null;
         }
 

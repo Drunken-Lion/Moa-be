@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @Converter
 @RequiredArgsConstructor
-public class MoaAttributeConverter<E extends Enum<E> & CommonEnum> extends MoaConverterUtils implements AttributeConverter<E, Integer> {
+public class CommonAttributeConverter<E extends Enum<E> & CommonEnum> extends CommonConverterUtils implements AttributeConverter<E, Integer> {
     private final Class<E> enumClass;
 
     @Override
