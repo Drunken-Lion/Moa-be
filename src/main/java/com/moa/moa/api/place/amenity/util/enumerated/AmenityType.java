@@ -42,7 +42,7 @@ public enum AmenityType implements CommonEnum {
     ;
 
     private final String desc;
-    private final Integer code;
+    private final int code;
 
     AmenityType(String desc, int code) {
         this.desc = desc;
