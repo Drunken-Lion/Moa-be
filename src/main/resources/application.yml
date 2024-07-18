@@ -7,6 +7,11 @@ spring:
       local:
         - file
         - secret
+
+springdoc:
+  swagger-ui:
+    path: /docs
+
 logging:
   level:
     root: info
