@@ -1,6 +1,7 @@
 package com.moa.moa.api.shop.shop.presentation;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ public class ShopController {
     }
 
     @Operation(summary = "최근 본 렌탈샵 조회")
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("recent")
     public ResponseEntity<?> findAllShopRecentlyViewed() {
 
