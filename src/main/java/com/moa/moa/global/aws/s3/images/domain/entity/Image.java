@@ -1,4 +1,4 @@
-package com.moa.moa.global.aws.s3.images.entity;
+package com.moa.moa.global.aws.s3.images.domain.entity;
 
 import com.moa.moa.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
