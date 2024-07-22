@@ -9,8 +9,17 @@ spring:
         - secret
 
 springdoc:
+  use-fqn: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
   swagger-ui:
-    path: /docs
+    operations-sorter: alpha
+    tags-sorter: alpha
+    path: /api-docs
+    disable-swagger-default-url: true
+    doc-expansion: none
+  paths-to-match:
+    - /**
 
 logging:
   level:
