@@ -12,15 +12,8 @@ public record FindReviewExternalDto() {
             String content,
             String writer,
             LocalDateTime createdAt,
-
-            ShopResponse shop,
             List<ImageResponse> images
     ) {}
-
-    @Builder
-    public record ShopResponse(
-            Long id,
-            String name) {}
 
     @Builder
     public record ImageResponse(

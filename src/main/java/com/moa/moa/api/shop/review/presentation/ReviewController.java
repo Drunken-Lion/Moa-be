@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.nio.file.attribute.UserPrincipal;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -41,9 +42,9 @@ public class ReviewController {
     @Operation(summary = "내가 쓴 리뷰 전체 조회")
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping
-    public ResponseEntity<PageExternalDto.Response<FindAllReviewExternalDto.Response>> findAllReview(@RequestParam(name = "page", defaultValue = "0") int page,
-                                                                                            @RequestParam(name = "size", defaultValue = "10") int size,
-                                                                                            @AuthenticationPrincipal UserPrincipal user) {
+    public ResponseEntity<PageExternalDto.Response<List<FindAllReviewExternalDto.Response>>> findAllReview(@RequestParam(name = "page", defaultValue = "0") int page,
+                                                                                                           @RequestParam(name = "size", defaultValue = "10") int size,
+                                                                                                           @AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok().body(null);
     }
 
