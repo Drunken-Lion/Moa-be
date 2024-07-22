@@ -40,4 +40,18 @@ public class ShopController {
 
         return ResponseEntity.ok().body(null);
     }
+
+    @Operation(summary = "렌탈샵 리뷰 조회")
+    @GetMapping("{id}/reviews")
+    public ResponseEntity<?> findAllReviewsForShop(@PathVariable("id") Long id) {
+
+        return ResponseEntity.ok().body(null);
+    }
+
+    @Operation(summary = "렌탈샵 포토리뷰 썸네일 조회")
+    @GetMapping("{id}/reviews/photo")
+    public ResponseEntity<?> findAllReviewsForShopPhoto(@PathVariable("id") Long id) {
+
+        return ResponseEntity.ok().body(null);
+    }
 }
