@@ -32,8 +32,8 @@ public class ItemOption extends BaseEntity {
     private ItemOptionName name;
 
     @Comment("사용 여부")
-    @Column(name = "use", columnDefinition = "BOOLEAN")
-    private Boolean use;
+    @Column(name = "used", columnDefinition = "TINYINT")
+    private Boolean used;
 
     @Comment("대여 시작 시간")
     @Column(name = "start_time", columnDefinition = "BIGINT")
