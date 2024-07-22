@@ -1,8 +1,11 @@
 package com.moa.moa.api.member.custom.presentation;
 
+import com.moa.moa.api.member.custom.presentation.dto.AddCustomExternalDto;
+import com.moa.moa.api.member.custom.presentation.dto.ModCustomExternalDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class CustomController {
     @Operation(summary = "내 스키어 추가")
     @PostMapping
-    public ResponseEntity<?> addCustom() {
+    public ResponseEntity<AddCustomExternalDto.Response> addCustom(@Valid @RequestBody final AddCustomExternalDto.Request request) {
 
         return ResponseEntity.created(null).body(null);
     }
@@ -29,7 +32,8 @@ public class CustomController {
 
     @Operation(summary = "내 스키어 수정")
     @PutMapping("{id}")
-    public ResponseEntity<?> modCustom(@PathVariable("id") Long id) {
+    public ResponseEntity<ModCustomExternalDto.Response> modCustom(@PathVariable("id") Long id,
+                                                                   @Valid @RequestBody final ModCustomExternalDto.Request request) {
 
         return ResponseEntity.ok().body(null);
     }
