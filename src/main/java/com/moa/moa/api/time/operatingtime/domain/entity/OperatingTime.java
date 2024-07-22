@@ -3,7 +3,9 @@ package com.moa.moa.api.time.operatingtime.domain.entity;
 import com.moa.moa.api.place.place.domain.entity.Place;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
 import com.moa.moa.api.time.businesstime.domain.entity.BusinessTime;
+import com.moa.moa.api.time.operatingtime.util.convert.DayTypeConverter;
 import com.moa.moa.api.time.operatingtime.util.convert.OperatingTypeConverter;
+import com.moa.moa.api.time.operatingtime.util.enumerated.DayType;
 import com.moa.moa.api.time.operatingtime.util.enumerated.OperatingType;
 import com.moa.moa.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
@@ -51,8 +53,9 @@ public class OperatingTime extends BaseEntity {
     private OperatingType status;
 
     @Comment("요일")
-    @Column(name = "day", columnDefinition = "VARCHAR(20)")
-    private String day;
+    @Column(name = "day", columnDefinition = "BIGINT")
+    @Convert(converter = DayTypeConverter.class)
+    private DayType day;
 
     @Comment("시작 시간")
     @Column(name = "open", columnDefinition = "TIME")
