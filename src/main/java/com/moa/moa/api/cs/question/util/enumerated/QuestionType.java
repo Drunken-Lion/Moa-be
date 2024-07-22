@@ -17,7 +17,7 @@ public enum QuestionType implements CommonEnum {
     ;
 
     private final String desc;
-    private final Integer code;
+    private final int code;
 
     QuestionType(String desc, int code) {
         this.desc = desc;

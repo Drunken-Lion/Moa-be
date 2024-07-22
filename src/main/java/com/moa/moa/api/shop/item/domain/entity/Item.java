@@ -49,8 +49,8 @@ public class Item extends BaseEntity {
     private BigDecimal price;
 
     @Comment("사용 여부")
-    @Column(name = "use", columnDefinition = "BOOLEAN")
-    private Boolean use;
+    @Column(name = "used", columnDefinition = "TINYINT")
+    private Boolean used;
 
     @Comment("패키지 상품 옵션들")
     @OneToMany(mappedBy = "item")
