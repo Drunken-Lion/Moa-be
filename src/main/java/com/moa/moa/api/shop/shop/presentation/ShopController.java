@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "v1-shop", description = "렌탈샵 API")
+@Tag(name = "Shop-API", description = "렌탈샵 API")
 @RequestMapping("/v1/shops")
 public class ShopController {
     @Operation(summary = "범위 내 렌탈샵 조회")
