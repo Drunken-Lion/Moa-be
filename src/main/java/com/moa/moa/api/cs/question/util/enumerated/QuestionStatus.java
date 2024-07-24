@@ -17,7 +17,7 @@ public enum QuestionStatus implements CommonEnum {
     ;
 
     private final String desc;
-    private final Integer code;
+    private final int code;
 
     QuestionStatus(String desc, int code) {
         this.desc = desc;
