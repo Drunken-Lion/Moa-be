@@ -27,9 +27,7 @@ abstract class CommonConverterUtils {
         return EnumSet.allOf(enumClass).stream()
                 .filter(e -> e.getCode() == code)
                 .findAny()
-                .orElseThrow(() -> BusinessException.builder()
-                        .response(FailHttpMessage.NOT_FOUND_CODE)
-                        .build());
+                .orElseThrow(() -> new BusinessException(FailHttpMessage.NOT_FOUND_CODE));
     }
 
     /**

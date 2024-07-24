@@ -24,7 +24,7 @@ public class CommonAttributeConverter<E extends Enum<E> & CommonEnum> extends Co
         // TODO
         //  - Exception 수정 필요
         if (attribute == null) {
-            throw BusinessException.builder().response(FailHttpMessage.NOT_NULL).build();
+            throw new BusinessException(FailHttpMessage.NOT_NULL);
         }
         return super.toCode(attribute);
     }

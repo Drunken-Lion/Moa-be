@@ -11,7 +11,6 @@ public class BusinessException extends RuntimeException {
     private HttpStatus status;
     private String message;
 
-    @Builder
     public BusinessException(FailHttpMessage response) {
         super(response.getMessage());
         this.status = response.getStatus();
