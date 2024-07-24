@@ -1,6 +1,6 @@
 package com.moa.moa.global.exception;
 
-import com.moa.moa.global.common.HttpMessage;
+import com.moa.moa.global.common.message.FailHttpMessage;
 import lombok.*;
 import org.springframework.http.HttpStatus;
 
@@ -12,7 +12,7 @@ public class BusinessException extends RuntimeException {
     private String message;
 
     @Builder
-    public BusinessException(HttpMessage.Fail response) {
+    public BusinessException(FailHttpMessage response) {
         super(response.getMessage());
         this.status = response.getStatus();
         this.message = response.getMessage();
