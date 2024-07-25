@@ -2,8 +2,10 @@ package com.moa.moa.api.place.place.util.enumerated;
 
 import com.moa.moa.global.util.enumconvert.CommonEnum;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum PlaceLevel implements CommonEnum {
     /**
      * @see "초급자"
@@ -28,9 +30,4 @@ public enum PlaceLevel implements CommonEnum {
 
     private final String desc;
     private final int code;
-
-    PlaceLevel(String desc, int code) {
-        this.desc = desc;
-        this.code = code;
-    }
 }

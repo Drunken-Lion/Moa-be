@@ -2,8 +2,10 @@ package com.moa.moa.api.cs.question.util.enumerated;
 
 import com.moa.moa.global.util.enumconvert.CommonEnum;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum QuestionStatus implements CommonEnum {
     /**
      * @see "문의중"
@@ -18,9 +20,4 @@ public enum QuestionStatus implements CommonEnum {
 
     private final String desc;
     private final int code;
-
-    QuestionStatus(String desc, int code) {
-        this.desc = desc;
-        this.code = code;
-    }
 }

@@ -2,8 +2,10 @@ package com.moa.moa.api.member.member.util.enumerated;
 
 import com.moa.moa.global.util.enumconvert.CommonEnum;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum MemberRole implements CommonEnum {
     /**
      * @see "일반 사용자 권한"
@@ -24,9 +26,4 @@ public enum MemberRole implements CommonEnum {
 
     private final String desc;
     private final int code;
-
-    MemberRole(String desc, int code) {
-        this.desc = desc;
-        this.code = code;
-    }
 }

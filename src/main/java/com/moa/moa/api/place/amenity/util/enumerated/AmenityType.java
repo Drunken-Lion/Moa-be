@@ -2,8 +2,10 @@ package com.moa.moa.api.place.amenity.util.enumerated;
 
 import com.moa.moa.global.util.enumconvert.CommonEnum;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum AmenityType implements CommonEnum {
     /**
      * @see "호텔"
@@ -43,9 +45,4 @@ public enum AmenityType implements CommonEnum {
 
     private final String desc;
     private final int code;
-
-    AmenityType(String desc, int code) {
-        this.desc = desc;
-        this.code = code;
-    }
 }

@@ -2,8 +2,10 @@ package com.moa.moa.api.category.category.util.enumerated;
 
 import com.moa.moa.global.util.enumconvert.CommonEnum;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum CategoryType implements CommonEnum {
     /**
     * @see "스키장"
@@ -13,9 +15,4 @@ public enum CategoryType implements CommonEnum {
 
     private final String desc;
     private final int code;
-
-    CategoryType(String desc, int code) {
-        this.desc = desc;
-        this.code = code;
-    }
 }

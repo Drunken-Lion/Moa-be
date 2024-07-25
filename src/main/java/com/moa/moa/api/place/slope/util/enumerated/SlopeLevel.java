@@ -2,8 +2,10 @@ package com.moa.moa.api.place.slope.util.enumerated;
 
 import com.moa.moa.global.util.enumconvert.CommonEnum;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum SlopeLevel implements CommonEnum {
     /**
      * @see "초급"
@@ -38,9 +40,4 @@ public enum SlopeLevel implements CommonEnum {
 
     private final String desc;
     private final int code;
-
-    SlopeLevel(String desc, int code) {
-        this.desc = desc;
-        this.code = code;
-    }
 }
