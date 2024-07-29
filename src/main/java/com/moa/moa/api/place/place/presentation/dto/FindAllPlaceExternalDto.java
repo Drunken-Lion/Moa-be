@@ -2,6 +2,7 @@ package com.moa.moa.api.place.place.presentation.dto;
 
 import com.moa.moa.api.place.place.util.enumerated.PlaceLevel;
 import com.moa.moa.api.place.slope.util.enumerated.SlopeLevel;
+import com.moa.moa.api.time.operatingtime.util.enumerated.DayType;
 import com.moa.moa.api.time.operatingtime.util.enumerated.OperatingType;
 import com.moa.moa.api.time.specificday.util.enumerated.SpecificDayType;
 import lombok.Builder;
@@ -52,7 +53,7 @@ public record FindAllPlaceExternalDto() {
     public record OperatingTimeResponse(
             Long id,
             OperatingType status,
-            String day, // TODO : Type 변경 필요
+            DayType day,
             LocalDate open,
             LocalDate close
     ) {
