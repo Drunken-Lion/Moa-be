@@ -2,8 +2,10 @@ package com.moa.moa.api.shop.itemoption.util.enumerated;
 
 import com.moa.moa.global.util.enumconvert.CommonEnum;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum ItemOptionName implements CommonEnum {
     /**
     * @see "장비 : 숏스키"
@@ -28,9 +30,4 @@ public enum ItemOptionName implements CommonEnum {
 
     private final String desc;
     private final int code;
-
-    ItemOptionName(String desc, int code) {
-        this.desc = desc;
-        this.code = code;
-    }
 }

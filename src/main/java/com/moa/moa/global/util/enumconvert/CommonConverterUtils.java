@@ -1,7 +1,8 @@
 package com.moa.moa.global.util.enumconvert;
 
-import com.moa.moa.global.common.HttpMessage;
+import com.moa.moa.global.common.message.FailHttpMessage;
 import com.moa.moa.global.exception.BusinessException;
+
 import java.util.EnumSet;
 
 /**
@@ -26,9 +27,7 @@ abstract class CommonConverterUtils {
         return EnumSet.allOf(enumClass).stream()
                 .filter(e -> e.getCode() == code)
                 .findAny()
-                .orElseThrow(() -> BusinessException.builder()
-                        .response(HttpMessage.Fail.NOT_FOUND_CODE)
-                        .build());
+                .orElseThrow(() -> new BusinessException(FailHttpMessage.NOT_FOUND_CODE));
     }
 
     /**

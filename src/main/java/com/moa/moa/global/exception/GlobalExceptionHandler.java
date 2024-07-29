@@ -1,6 +1,6 @@
 package com.moa.moa.global.exception;
 
-import com.moa.moa.global.common.HttpMessage;
+import com.moa.moa.global.common.message.FailHttpMessage;
 import com.moa.moa.global.common.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ValidationException;
@@ -50,7 +50,7 @@ public class GlobalExceptionHandler {
         message.deleteCharAt(message.length() - 1); // 마지막 ',' 제거
 
         return ResponseEntity
-                .status(HttpMessage.Fail.INVALID_INPUT_VALUE.getStatus())
+                .status(FailHttpMessage.INVALID_INPUT_VALUE.getStatus())
                 .body(ErrorResponse.of(
                         message.toString(),
                         request
@@ -68,14 +68,14 @@ public class GlobalExceptionHandler {
             AccessDeniedException.class
     })
     public ResponseEntity<ErrorResponse> handleHttpException(Exception e, HttpServletRequest request) {
-        HttpMessage.Fail response;
+        FailHttpMessage response;
 
         String exceptionName = e.getClass().getSimpleName();
         switch (exceptionName) {
-            case "HttpRequestMethodNotSupportedException" -> response = HttpMessage.Fail.METHOD_NOT_ALLOWED;
-            case "AccessDeniedException" -> response = HttpMessage.Fail.DEACTIVATE_USER;
-            case "MissingServletRequestParameterException" -> response = HttpMessage.Fail.MISSING_PARAMETER;
-            default -> response = HttpMessage.Fail.BAD_REQUEST;
+            case "HttpRequestMethodNotSupportedException" -> response = FailHttpMessage.METHOD_NOT_ALLOWED;
+            case "AccessDeniedException" -> response = FailHttpMessage.DEACTIVATE_USER;
+            case "MissingServletRequestParameterException" -> response = FailHttpMessage.MISSING_PARAMETER;
+            default -> response = FailHttpMessage.BAD_REQUEST;
         }
 
         return ResponseEntity
@@ -100,16 +100,16 @@ public class GlobalExceptionHandler {
             UsernameNotFoundException.class
     })
     public ResponseEntity<ErrorResponse> handleSecurityException(Exception e, HttpServletRequest request) {
-        HttpMessage.Fail response;
+        FailHttpMessage response;
 
         String exceptionName = e.getClass().getSimpleName();
         switch (exceptionName) {
             case "AuthenticationCredentialsNotFoundException", "BadCredentialsException" ->
-                    response = HttpMessage.Fail.INVALID_TOKEN;
-            case "AccountExpiredException", "CredentialsExpiredException" -> response = HttpMessage.Fail.EXPIRED_TOKEN;
+                    response = FailHttpMessage.INVALID_TOKEN;
+            case "AccountExpiredException", "CredentialsExpiredException" -> response = FailHttpMessage.EXPIRED_TOKEN;
             case "AccountStatusException", "OAuth2AuthenticationException", "UsernameNotFoundException" ->
-                    response = HttpMessage.Fail.INVALID_ACCOUNT;
-            default -> response = HttpMessage.Fail.UNAUTHORIZED;
+                    response = FailHttpMessage.INVALID_ACCOUNT;
+            default -> response = FailHttpMessage.UNAUTHORIZED;
         }
 
         return ResponseEntity
@@ -126,9 +126,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handlerAllException(Exception e, HttpServletRequest request) {
         return ResponseEntity
-                .status(HttpMessage.Fail.INTERNAL_SERVER_ERROR.getStatus())
+                .status(FailHttpMessage.INTERNAL_SERVER_ERROR.getStatus())
                 .body(ErrorResponse.of(
-                        HttpMessage.Fail.INTERNAL_SERVER_ERROR.getMessage(),
+                        FailHttpMessage.INTERNAL_SERVER_ERROR.getMessage(),
                         request,
                         e
                 ));
