@@ -1,19 +1,20 @@
 package com.moa.moa.api.place.liftticket.domain.entity;
 
-import com.moa.moa.api.place.liftticket.domain.util.convert.LiftTicketStatusConverter;
-import com.moa.moa.api.place.liftticket.domain.util.convert.LiftTicketTypeConverter;
-import com.moa.moa.api.place.liftticket.domain.util.enumerated.LiftTicketStatus;
-import com.moa.moa.api.place.liftticket.domain.util.enumerated.LiftTicketType;
+import com.moa.moa.api.place.liftticket.util.convert.LiftTicketStatusConverter;
+import com.moa.moa.api.place.liftticket.util.convert.LiftTicketTypeConverter;
+import com.moa.moa.api.place.liftticket.util.enumerated.LiftTicketStatus;
+import com.moa.moa.api.place.liftticket.util.enumerated.LiftTicketType;
 import com.moa.moa.api.place.place.domain.entity.Place;
 import com.moa.moa.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
-import java.time.LocalTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
+
+import java.time.LocalTime;
 
 @Entity
 @Getter

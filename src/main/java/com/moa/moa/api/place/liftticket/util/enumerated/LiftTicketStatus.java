@@ -1,4 +1,4 @@
-package com.moa.moa.api.place.liftticket.domain.util.enumerated;
+package com.moa.moa.api.place.liftticket.util.enumerated;
 
 import com.moa.moa.global.util.enumconvert.CommonEnum;
 import lombok.Getter;
