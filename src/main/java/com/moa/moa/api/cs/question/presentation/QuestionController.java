@@ -24,7 +24,7 @@ import java.util.List;
 public class QuestionController {
     @Operation(summary = "문의 목록 조회")
     @GetMapping
-    public ResponseEntity<PageExternalDto.Response<List<FindAllReviewExternalDto>>> findAllQuestion() {
+    public ResponseEntity<PageExternalDto.Response<List<FindAllReviewExternalDto.Response>>> findAllQuestion(@AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok().body(null);
     }
 
@@ -38,7 +38,8 @@ public class QuestionController {
 
     @Operation(summary = "문의 상세 조회")
     @GetMapping("{id}")
-    public ResponseEntity<FindQuestionExternalDto.Response> findQuestion(@PathVariable("id") Long id) {
+    public ResponseEntity<FindQuestionExternalDto.Response> findQuestion(@PathVariable("id") Long id,
+                                                                         @AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok().body(null);
     }
 
