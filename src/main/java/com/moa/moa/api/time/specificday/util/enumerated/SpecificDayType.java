@@ -2,8 +2,10 @@ package com.moa.moa.api.time.specificday.util.enumerated;
 
 import com.moa.moa.global.util.enumconvert.CommonEnum;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum SpecificDayType implements CommonEnum {
     /**
     * @see "주중영업"
@@ -28,9 +30,4 @@ public enum SpecificDayType implements CommonEnum {
 
     private final String desc;
     private final int code;
-
-    SpecificDayType(String desc, int code) {
-        this.desc = desc;
-        this.code = code;
-    }
 }

@@ -2,8 +2,10 @@ package com.moa.moa.api.member.custom.util.enumerated;
 
 import com.moa.moa.global.util.enumconvert.CommonEnum;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum EquipmentType implements CommonEnum {
     /**
     * @see "스키"
@@ -28,9 +30,4 @@ public enum EquipmentType implements CommonEnum {
 
     private final String desc;
     private final int code;
-
-    EquipmentType(String desc, int code) {
-        this.desc = desc;
-        this.code = code;
-    }
 }
