@@ -2,8 +2,10 @@ package com.moa.moa.api.cs.question.util.enumerated;
 
 import com.moa.moa.global.util.enumconvert.CommonEnum;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum QuestionType implements CommonEnum {
     /**
      * @see "일반 사용자 문의"
@@ -18,9 +20,4 @@ public enum QuestionType implements CommonEnum {
 
     private final String desc;
     private final int code;
-
-    QuestionType(String desc, int code) {
-        this.desc = desc;
-        this.code = code;
-    }
 }

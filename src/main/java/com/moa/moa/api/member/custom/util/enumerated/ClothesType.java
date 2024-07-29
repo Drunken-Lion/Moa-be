@@ -2,8 +2,10 @@ package com.moa.moa.api.member.custom.util.enumerated;
 
 import com.moa.moa.global.util.enumconvert.CommonEnum;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum ClothesType implements CommonEnum {
     /**
     * @see "일반 의류"
@@ -23,9 +25,4 @@ public enum ClothesType implements CommonEnum {
 
     private final String desc;
     private final int code;
-
-    ClothesType(String desc, int code) {
-        this.desc = desc;
-        this.code = code;
-    }
 }

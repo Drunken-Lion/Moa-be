@@ -2,8 +2,10 @@ package com.moa.moa.api.member.custom.util.enumerated;
 
 import com.moa.moa.global.util.enumconvert.CommonEnum;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum Gender implements CommonEnum {
     /**
      * @see "남자"
@@ -18,9 +20,4 @@ public enum Gender implements CommonEnum {
 
     private final String desc;
     private final int code;
-
-    Gender(String desc, int code) {
-        this.desc = desc;
-        this.code = code;
-    }
 }
