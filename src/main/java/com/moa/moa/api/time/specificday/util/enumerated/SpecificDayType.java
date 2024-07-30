@@ -8,18 +8,18 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum SpecificDayType implements CommonEnum {
     /**
-    * @see "주중영업"
-    */
+     * @see "주중영업"
+     */
     OPEN_WEEK_DAYS("주중영업", 1),
 
     /**
-    * @see "주말영업"
-    */
+     * @see "주말영업"
+     */
     WEEKEND_OPEN("주말영업", 2),
 
     /**
-    * @see "휴무"
-    */
+     * @see "휴무"
+     */
     CLOSED("휴무", 3),
 
     /**
