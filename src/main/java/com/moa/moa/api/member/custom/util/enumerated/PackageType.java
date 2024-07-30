@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum PackageType implements CommonEnum {
+
     /**
     * @see "리프트+장비+의류"
     */

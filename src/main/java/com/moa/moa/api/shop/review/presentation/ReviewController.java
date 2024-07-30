@@ -45,7 +45,7 @@ public class ReviewController {
         return ResponseEntity.created(null).body(null);
     }
 
-    @Operation(summary = "내가 쓴 리뷰 전체 조회", responses = {@ApiResponse(responseCode = GET)})
+    @Operation(summary = "내 리뷰 전체 조회", responses = {@ApiResponse(responseCode = GET)})
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping
     public ResponseEntity<PageExternalDto.Response<List<FindAllReviewExternalDto.Response>>> findAllReview(@RequestParam(name = "page", defaultValue = "0") int page,
@@ -54,17 +54,17 @@ public class ReviewController {
         return ResponseEntity.ok().body(null);
     }
 
-    @Operation(summary = "리뷰 상세 조회", responses = {@ApiResponse(responseCode = GET)})
+    @Operation(summary = "내 리뷰 상세 조회", responses = {@ApiResponse(responseCode = GET)})
     @GetMapping("/{id}")
     public ResponseEntity<FindReviewExternalDto.Response> findReview(@PathVariable Long id) {
         return ResponseEntity.ok().body(null);
     }
 
-    @Operation(summary = "리뷰 수정", responses = {@ApiResponse(responseCode = PUT)})
+    @Operation(summary = "내 리뷰 수정", responses = {@ApiResponse(responseCode = PUT)})
     @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/{id}")
     public ResponseEntity<ModReviewExternalDto.Response> modReview(@PathVariable Long id,
-                                                                    @RequestBody ModReviewExternalDto.Request request,
+                                                                    @Valid @RequestBody ModReviewExternalDto.Request request,
                                                                     @AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok().body(null);
     }

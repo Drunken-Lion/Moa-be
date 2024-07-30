@@ -39,7 +39,7 @@ public class WishController {
         return ResponseEntity.created(null).body(null);
     }
 
-    @Operation(summary = "렌탈샵 찜 목록 조회", responses = {@ApiResponse(responseCode = GET)})
+    @Operation(summary = "나의 찜 목록 조회", responses = {@ApiResponse(responseCode = GET)})
     @GetMapping
     public ResponseEntity<PageExternalDto.Response<List<FindAllWishExternalDto.Response>>> findAllWish(@RequestParam(name = "page", defaultValue = "0") int page,
                                                                                                       @RequestParam(name = "size", defaultValue = "10") int size,
@@ -47,7 +47,7 @@ public class WishController {
         return ResponseEntity.ok().body(null);
     }
 
-    @Operation(summary = "렌탈샵 찜 삭제", responses = {@ApiResponse(responseCode = DELETE)})
+    @Operation(summary = "내 찜 항목 삭제", responses = {@ApiResponse(responseCode = DELETE)})
     @DeleteMapping("{id}")
     public ResponseEntity<Void> delWish(@PathVariable("id") Long id,
                                         @AuthenticationPrincipal UserPrincipal user) {

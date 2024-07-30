@@ -34,13 +34,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/v1/questions")
 @Tag(name = "Question-API", description = "문의 API")
 public class QuestionController {
-    @Operation(summary = "문의 목록 조회", responses = {@ApiResponse(responseCode = GET)})
+    @Operation(summary = "나의 문의 내역 전체 조회", responses = {@ApiResponse(responseCode = GET)})
     @GetMapping
     public ResponseEntity<PageExternalDto.Response<List<FindAllReviewExternalDto.Response>>> findAllQuestion(@AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok().body(null);
     }
 
-    @Operation(summary = "문의 등록", responses = {@ApiResponse(responseCode = POST)})
+    @Operation(summary = "문의 작성", responses = {@ApiResponse(responseCode = POST)})
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     public ResponseEntity<AddQuestionExternalDto.Response> addQuestion(@AuthenticationPrincipal UserPrincipal user,
@@ -48,14 +48,16 @@ public class QuestionController {
         return ResponseEntity.ok().body(null);
     }
 
-    @Operation(summary = "문의 상세 조회", responses = {@ApiResponse(responseCode = GET)})
+    // FIXME
+    //  : REST API로 전체 목록에서 전달받은 값을 통해 화면 구성이 가능한데, 이 기능이 필요할까요?
+    @Operation(summary = "문의 내역 상세 조회", responses = {@ApiResponse(responseCode = GET)})
     @GetMapping("{id}")
     public ResponseEntity<FindQuestionExternalDto.Response> findQuestion(@PathVariable("id") Long id,
                                                                          @AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok().body(null);
     }
 
-    @Operation(summary = "문의 수정", responses = {@ApiResponse(responseCode = PUT)})
+    @Operation(summary = "내 문의 내역 수정", responses = {@ApiResponse(responseCode = PUT)})
     @SecurityRequirement(name = "bearerAuth")
     @PutMapping("{id}")
     public ResponseEntity<ModQuestionExternalDto.Response> modQuestion(@PathVariable("id") Long id,
@@ -64,7 +66,7 @@ public class QuestionController {
         return ResponseEntity.ok().body(null);
     }
 
-    @Operation(summary = "문의 삭제", responses = {@ApiResponse(responseCode = DELETE)})
+    @Operation(summary = "내 문의 내역 삭제", responses = {@ApiResponse(responseCode = DELETE)})
     @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("{id}")
     public ResponseEntity<Void> delQuestion(@PathVariable("id") Long id,

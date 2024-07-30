@@ -1,5 +1,9 @@
 package com.moa.moa.api.shop.shop.presentation.dto;
 
+import com.moa.moa.api.member.custom.util.enumerated.ClothesType;
+import com.moa.moa.api.member.custom.util.enumerated.EquipmentType;
+import com.moa.moa.api.member.custom.util.enumerated.Gender;
+import com.moa.moa.api.member.custom.util.enumerated.PackageType;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
@@ -11,39 +15,37 @@ import java.util.List;
 public record FindAllShopLowPriceExternalDto() {
     @Builder
     public record Request(
-            FindAllShopLowPriceExternalDto.PlaceRequest place,
-            List<FindAllShopLowPriceExternalDto.CustomRequest> custom
+            PlaceRequest place,
+            List<CustomRequest> custom
     ) {}
 
-    @Builder
     public record PlaceRequest(
             @NotNull
             Long id,
             @NotNull
-            LocalDate date,
+            LocalDate visitDate,
             @NotNull
             Boolean pickUp
     ) {}
 
-    @Builder
     public record CustomRequest(
             @NotNull
-            String gender,
+            Gender gender,
             @NotNull
             String nickname,
             @NotNull
-            String packageType,
+            PackageType packageType,
             @NotNull
-            String clothesType,
+            ClothesType clothesType,
             @NotNull
-            String equipmentType
+            EquipmentType equipmentType
     ) {}
 
     @Builder
     public record Response(
-            LocalDate rsvDate,
-            FindAllShopLowPriceExternalDto.PlaceResponse place,
-            List<FindAllShopLowPriceExternalDto.ShopResponse> shop
+            LocalDate visitDate,
+            PlaceResponse place,
+            List<ShopResponse> shop
     ) {}
 
     @Builder
@@ -66,12 +68,12 @@ public record FindAllShopLowPriceExternalDto() {
             Boolean pickUp,
             String storeUrl,
             BigDecimal totalPrice,
-            FindAllShopLowPriceExternalDto.ImageResponse image,
-            List<FindAllShopLowPriceExternalDto.CustomResponse> custom,
-            FindAllShopLowPriceExternalDto.AddressResponse address,
-            FindAllShopLowPriceExternalDto.MoaReviewResponse moaReview,
-            FindAllShopLowPriceExternalDto.NaverReviewResponse naverReview,
-            FindAllShopLowPriceExternalDto.WishResponse wish
+            ImageResponse image,
+            List<CustomResponse> custom,
+            AddressResponse address,
+            MoaReviewResponse moaReview,
+            NaverReviewResponse naverReview,
+            WishResponse wish
     ) {}
 
     @Builder
@@ -84,11 +86,11 @@ public record FindAllShopLowPriceExternalDto() {
 
     @Builder
     public record CustomResponse(
-            String gender,
+            Gender gender,
             String nickname,
-            String packageType,
-            String clothesType,
-            String equipmentType,
+            PackageType packageType,
+            ClothesType clothesType,
+            EquipmentType equipmentType,
             BigDecimal price
     ) {}
 

@@ -15,17 +15,17 @@ public enum PlaceLevel implements CommonEnum {
     /**
      * @see "중급자"
      */
-    LEVEL_2("중급자",2),
+    LEVEL_2("중급자", 2),
 
     /**
      * @see "상급자"
      */
-    LEVEL_3("상급자",3),
+    LEVEL_3("상급자", 3),
 
     /**
      * @see "최상급자"
      */
-    LEVEL_4("최상급자",4),
+    LEVEL_4("최상급자", 4),
     ;
 
     private final String desc;

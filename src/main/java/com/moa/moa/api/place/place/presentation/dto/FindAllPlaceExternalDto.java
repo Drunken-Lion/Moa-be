@@ -5,11 +5,10 @@ import com.moa.moa.api.place.slope.util.enumerated.SlopeLevel;
 import com.moa.moa.api.time.operatingtime.util.enumerated.DayType;
 import com.moa.moa.api.time.operatingtime.util.enumerated.OperatingType;
 import com.moa.moa.api.time.specificday.util.enumerated.SpecificDayType;
-import lombok.Builder;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.Builder;
 
 public record FindAllPlaceExternalDto() {
     @Builder

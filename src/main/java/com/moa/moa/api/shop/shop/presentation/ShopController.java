@@ -60,7 +60,6 @@ public class ShopController {
     @PutMapping("search")
     public ResponseEntity<PageExternalDto.Response<FindAllShopLowPriceExternalDto.Response>> findAllShopSearchForTheLowestPrice(@RequestParam(name = "page", defaultValue = "0") int page,
                                                                                                                                 @RequestParam(name = "size", defaultValue = "10") int size,
-                                                                                                                                @RequestParam(name = "hasNext") Boolean hasNext,
                                                                                                                                 @Valid @RequestBody final FindAllShopLowPriceExternalDto.Request request) {
 
         return ResponseEntity.ok().body(null);
@@ -71,19 +70,17 @@ public class ShopController {
     public ResponseEntity<PageExternalDto.Response<FindAllShopReviewExternalDto.Response>> findAllReviewsForShop(@PathVariable("id") Long id,
                                                                                                                  @RequestParam(name = "page", defaultValue = "0") int page,
                                                                                                                  @RequestParam(name = "size", defaultValue = "10") int size,
-                                                                                                                 @RequestParam(name = "hasNext") Boolean hasNext,
                                                                                                                  @RequestParam(name = "isPhoto") Boolean isPhoto,
                                                                                                                  @RequestParam(name = "filter", required = false) String filter) {
 
         return ResponseEntity.ok().body(null);
     }
 
-    @Operation(summary = "렌탈샵 포토리뷰 썸네일 조회", responses = {@ApiResponse(responseCode = GET)})
+    @Operation(summary = "최신리뷰의 대표이미지 리스트 조회", responses = {@ApiResponse(responseCode = GET)})
     @GetMapping("{id}/reviews/photo")
     public ResponseEntity<PageExternalDto.Response<List<FindAllShopPhotoReviewExternalDto.Response>>> findAllReviewsForShopPhoto(@PathVariable("id") Long id,
                                                                                                                                  @RequestParam(name = "page", defaultValue = "0") int page,
-                                                                                                                                 @RequestParam(name = "size", defaultValue = "10") int size,
-                                                                                                                                 @RequestParam(name = "hasNext") Boolean hasNext) {
+                                                                                                                                 @RequestParam(name = "size", defaultValue = "10") int size) {
 
         return ResponseEntity.ok().body(null);
     }
