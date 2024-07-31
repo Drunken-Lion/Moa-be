@@ -1,6 +1,6 @@
-package com.moa.moa.api.place.liftticket.domain.util.convert;
+package com.moa.moa.api.place.liftticket.util.convert;
 
-import com.moa.moa.api.place.liftticket.domain.util.enumerated.LiftTicketType;
+import com.moa.moa.api.place.liftticket.util.enumerated.LiftTicketType;
 import com.moa.moa.global.util.enumconvert.CommonAttributeConverter;
 
 public class LiftTicketTypeConverter extends CommonAttributeConverter<LiftTicketType> {

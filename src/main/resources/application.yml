@@ -7,6 +7,22 @@ spring:
       local:
         - file
         - secret
+
+springdoc:
+  use-fqn: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    operations-sorter: alpha
+    tags-sorter: alpha
+    path: /api-docs
+    disable-swagger-default-url: true
+    doc-expansion: none
+  paths-to-match:
+    - /**
+
 logging:
   level:
     root: info
