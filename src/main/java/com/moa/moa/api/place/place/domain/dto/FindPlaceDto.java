@@ -1,16 +1,17 @@
-package com.moa.moa.api.place.place.presentation.dto;
+package com.moa.moa.api.place.place.domain.dto;
 
 import com.moa.moa.api.place.place.util.enumerated.PlaceLevel;
 import com.moa.moa.api.place.slope.util.enumerated.SlopeLevel;
 import com.moa.moa.api.time.operatingtime.util.enumerated.DayType;
 import com.moa.moa.api.time.operatingtime.util.enumerated.OperatingType;
 import com.moa.moa.api.time.specificday.util.enumerated.SpecificDayType;
+import lombok.Builder;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import lombok.Builder;
 
-public record FindAllPlaceExternalDto() {
+public record FindPlaceDto() {
     @Builder
     public record Response(
             Long id,
@@ -20,12 +21,12 @@ public record FindAllPlaceExternalDto() {
             PlaceLevel recLevel,
             LocalDateTime createdAt,
 
-            FindAllPlaceExternalDto.ImageResponse image,
-            FindAllPlaceExternalDto.AddressResponse address,
-            List<FindAllPlaceExternalDto.OperatingTimeResponse> operatingTimes,
-            List<FindAllPlaceExternalDto.SpecificDayResponse> specificDays,
-            List<FindAllPlaceExternalDto.AmenityResponse> amenities,
-            List<FindAllPlaceExternalDto.SlopeResponse> slopes
+            FindPlaceDto.ImageResponse image,
+            FindPlaceDto.AddressResponse address,
+            List<FindPlaceDto.OperatingTimeResponse> operatingTimes,
+            List<FindPlaceDto.SpecificDayResponse> specificDays,
+            List<FindPlaceDto.AmenityResponse> amenities,
+            List<FindPlaceDto.SlopeResponse> slopes
     ) {
     }
 

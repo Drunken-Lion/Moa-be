@@ -1,4 +1,4 @@
-package com.moa.moa.api.place.place.presentation.dto;
+package com.moa.moa.api.place.place.domain.dto;
 
 import com.moa.moa.api.place.place.util.enumerated.PlaceLevel;
 import com.moa.moa.api.place.slope.util.enumerated.SlopeLevel;
@@ -9,9 +9,10 @@ import lombok.Builder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
-public record FindPlaceExternalDto() {
+public record FindAllPlaceDto() {
     @Builder
     public record Response(
             Long id,
@@ -21,20 +22,19 @@ public record FindPlaceExternalDto() {
             PlaceLevel recLevel,
             LocalDateTime createdAt,
 
-            FindPlaceExternalDto.ImageResponse image,
-            FindPlaceExternalDto.AddressResponse address,
-            List<FindPlaceExternalDto.OperatingTimeResponse> operatingTimes,
-            List<FindPlaceExternalDto.SpecificDayResponse> specificDays,
-            List<FindPlaceExternalDto.AmenityResponse> amenities,
-            List<FindPlaceExternalDto.SlopeResponse> slopes
+            FindAllPlaceDto.ImageResponse images,
+            FindAllPlaceDto.AddressResponse address,
+            List<OperatingTimeResponse> operatingTimes,
+            List<FindAllPlaceDto.SpecificDayResponse> specificDays,
+            List<FindAllPlaceDto.AmenityResponse> amenities,
+            List<FindAllPlaceDto.SlopeResponse> slopes
     ) {
     }
 
     @Builder
     public record ImageResponse(
             Long id,
-            String originImageUrl,
-            String lowImageUrl,
+            String keyName,
             LocalDateTime createdAt) {
     }
 
@@ -54,8 +54,8 @@ public record FindPlaceExternalDto() {
             Long id,
             OperatingType status,
             DayType day,
-            LocalDate open,
-            LocalDate close
+            LocalTime open,
+            LocalTime close
     ) {
     }
 
@@ -65,8 +65,8 @@ public record FindPlaceExternalDto() {
             SpecificDayType status,
             String reason,
             LocalDate date,
-            LocalDateTime open,
-            LocalDateTime close
+            LocalTime open,
+            LocalTime close
     ) {
     }
 
