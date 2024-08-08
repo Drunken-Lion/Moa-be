@@ -7,6 +7,7 @@ import com.moa.moa.api.place.place.domain.entity.Place;
 import com.moa.moa.api.place.slope.domain.entity.Slope;
 import com.moa.moa.api.time.operatingtime.domain.entity.OperatingTime;
 import com.moa.moa.api.time.specificday.domain.entity.SpecificDay;
+import com.moa.moa.global.aws.s3.images.domain.entity.Image;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
@@ -21,18 +22,18 @@ import java.util.stream.Collectors;
 )
 public interface PlaceMapstructMapper {
     default FindAllPlaceDto.Response of(Place place,
+                                        Image image,
                                         Address address,
                                         List<OperatingTime> operatingTimes,
                                         List<SpecificDay> specificDays,
                                         List<Amenity> amenities,
                                         List<Slope> slopes) {
         // TODO: image 기능 완성 시 구현 추가
-//        FindAllPlaceDto.ImageResponse imageResponse = FindAllPlaceDto.ImageResponse.builder()
-//                .id(image.getId())
-//                .originImageUrl(image.getOriginImageUrl())
-//                .lowImageUrl(image.getLowImageUrl())
-//                .createdAt(image.getCreatedAt())
-//                .build();
+        FindAllPlaceDto.ImageResponse imageResponse = FindAllPlaceDto.ImageResponse.builder()
+                .id(null)
+                .keyName(null)
+                .createdAt(null)
+                .build();
 
         FindAllPlaceDto.AddressResponse addressResponse = FindAllPlaceDto.AddressResponse.builder()
                 .id(address.getId())
@@ -86,6 +87,7 @@ public interface PlaceMapstructMapper {
                 .close(place.getCloseDate())
                 .recLevel(place.getRecLevel())
                 .createdAt(place.getCreatedAt())
+                .images(imageResponse)
                 .address(addressResponse)
                 .operatingTimes(operatingTimeResponses)
                 .specificDays(specificDayResponses)

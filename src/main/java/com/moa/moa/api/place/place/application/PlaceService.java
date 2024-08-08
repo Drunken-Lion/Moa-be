@@ -33,6 +33,7 @@ public class PlaceService {
 
             findAllPlaceList.add(placeMapstructMapper.of(
                     place,
+                    null,
                     place.getAddress(),
                     (place.getBusinessTime() != null) ? place.getBusinessTime().getOperatingTimes() : new ArrayList<>(),
                     (place.getBusinessTime() != null) ? place.getBusinessTime().getSpecificDays() : new ArrayList<>(),
