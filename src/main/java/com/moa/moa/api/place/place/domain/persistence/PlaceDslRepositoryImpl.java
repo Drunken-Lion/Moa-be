@@ -29,8 +29,8 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
         return queryFactory.selectFrom(place)
                 .join(place.address, address1)
                 .where(inPolygon
-                        .and(place.deletedAt.isNotNull())
-                        .and(address1.deletedAt.isNotNull()))
+                        .and(place.deletedAt.isNull())
+                        .and(address1.deletedAt.isNull()))
                 .fetch();
     }
 }
