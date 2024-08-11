@@ -1,0 +1,23 @@
+package com.moa.moa.api.cs.question.domain;
+
+import com.moa.moa.api.cs.question.domain.entity.Question;
+import com.moa.moa.api.cs.question.domain.persistence.QuestionRepository;
+import com.moa.moa.api.member.member.domain.entity.Member;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class QuestionProcessor {
+    private final QuestionRepository questionRepository;
+
+    public Slice<Question> findAllMyQuestion(Member member, Pageable pageable) {
+        return questionRepository.findAllMyQuestion(member, pageable);
+    }
+
+    public Integer countMyQuestion(Member member) {
+        return questionRepository.countByMember(member);
+    }
+}
