@@ -23,7 +23,8 @@ public class QuestionDslRepositoryImpl implements QuestionDslRepository {
         BooleanBuilder cond = new BooleanBuilder();
 
         cond.and(question.member.eq(authMember))
-                .and(ltCursorId(pageable.getPageNumber()));
+                .and(ltCursorId(pageable.getPageNumber()))
+                .and(question.deletedAt.isNull());
 
         List<Question> questions = queryFactory
                 .selectFrom(question)
