@@ -26,9 +26,6 @@ public class QuestionService {
         Slice<Question> questions = questionProcessor.findAllMyQuestion(member, pageable);
         Slice<FindAllQuestionDto.Response> findAllQuestionDtos = questions.map(questionMapstructMapper::of);
 
-        log.info("슬라이스");
-        log.info(questions);
-
         return questionMapstructMapper.of(findAllQuestionDtos, pageable, questionProcessor.countMyQuestion(member));
     }
 }
