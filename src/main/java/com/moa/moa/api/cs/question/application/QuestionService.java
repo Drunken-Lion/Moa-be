@@ -7,14 +7,12 @@ import com.moa.moa.api.cs.question.domain.entity.Question;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.global.common.response.PageExternalDto;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Log4j2
 @Service
 @RequiredArgsConstructor
 public class QuestionService {
