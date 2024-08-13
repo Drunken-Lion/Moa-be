@@ -1,0 +1,55 @@
+services:
+  nginx:
+    container_name: nginx
+    image: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /usr/local/docker/data/nginx/build:/home
+      - /usr/local/docker/data/nginx/logs:/logs
+      - /usr/local/docker/data/nginx/conf:/etc/nginx/conf.d
+      - /home/ec2-user/data/certbot/conf:/etc/letsencrypt
+      - /home/ec2-user/data/certbot/www:/var/www/certbot
+    depends_on:
+      - spring-server
+      - db
+
+  certbot:
+    container_name: certbot
+    image: "certbot/certbot"
+    volumes:
+      - /home/ec2-user/data/certbot/conf:/etc/letsencrypt
+      - /hmoe/ec2-user/data/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+  spring-server:
+    container_name: spring-server
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - /usr/local/docker/data/app/logs:/home/spring/logs
+
+  db:
+    container_name: mysql
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+
+volumes:
+  mysql-data:
