@@ -12,11 +12,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-#      - name: create application.yml
-#        run: |
-#          touch ./application.yml
-#          echo '${{ secrets.TEST_APPLICATION_YML }}' >> ./application.yml
-#
+      - name: create application.yml
+        run: |
+          touch ./application.yml
+          echo '${{ secrets.TEST_APPLICATION_YML }}' >> ./application.yml
+
+      - name: create application-secret.yml
+        run: |
+          touch ./application-secret.yml
+          echo '${{ secrets.TEST_APPLICATION_SECRET_YML }}' >> ./application-secret.yml
+
 #      - name: create application-cloud.yml
 #        run: |
 #          touch ./application-dev.yml
@@ -27,24 +32,12 @@ jobs:
 #          touch ./application-test.yml
 #          echo '${{ secrets.TEST_APPLICATION_TEST_YML }}' >> ./application-test.yml
 #
-#      - name: create application-secret.yml
-#        run: |
-#          touch ./application-secret.yml
-#          echo '${{ secrets.TEST_APPLICATION_SECRET_YML }}' >> ./application-secret.yml
 
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: 'corretto'
           java-version: '21'
-
-#      - name: Download and install Amazon Corretto 21
-#        run: |
-#          wget https://corretto.aws/downloads/latest/amazon-corretto-21-x64-linux-jdk.tar.gz
-#          tar -xvzf amazon-corretto-21-x64-linux-jdk.tar.gz
-#          sudo mv amazon-corretto-21* /usr/local/
-#          sudo update-alternatives --install /usr/bin/java java /usr/local/amazon-corretto-21*/bin/java 1
-#          sudo update-alternatives --set java /usr/local/amazon-corretto-21*/bin/java
 
       - name: Use Gradle 8.8
         uses: gradle/actions/setup-gradle@v3
@@ -53,21 +46,21 @@ jobs:
           distribution: 'gradle-8.8'
           arguments: -i test
 
-#      - name: Check test results
-#        uses: actions/github-script@v1
-#        with:
-#          script: |
-#            if (github.event && github.event.pull_request) {
-#              if (github.event.pull_request.head.sha !== github.sha) {
-#                throw new Error('The pull request head SHA does not match the workflow run SHA.')
-#              }
-#
-#              const testResults = await getTestResults()
-#              if (!testResults.success) {
-#                throw new Error('The tests failed.')
-#              }
-#
-#              console.log('The tests passed.')
-#            } else {
-#              // Handle non-Pull Request event
-#            }
+      - name: Check test results
+        uses: actions/github-script@v1
+        with:
+          script: |
+            if (github.event && github.event.pull_request) {
+              if (github.event.pull_request.head.sha !== github.sha) {
+                throw new Error('The pull request head SHA does not match the workflow run SHA.')
+              }
+
+              const testResults = await getTestResults()
+              if (!testResults.success) {
+                throw new Error('The tests failed.')
+              }
+
+              console.log('The tests passed.')
+            } else {
+              // Handle non-Pull Request event
+            }
