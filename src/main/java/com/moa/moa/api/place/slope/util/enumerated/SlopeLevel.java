@@ -20,7 +20,7 @@ public enum SlopeLevel implements CommonEnum {
     /**
      * @see "중상급"
      */
-    LEVEL_3("중급",3),
+    LEVEL_3("중상급",3),
 
     /**
      * @see "상급"
