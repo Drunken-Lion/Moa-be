@@ -32,11 +32,19 @@ jobs:
 #          touch ./application-secret.yml
 #          echo '${{ secrets.TEST_APPLICATION_SECRET_YML }}' >> ./application-secret.yml
 
-      - name: Set up Java
-        uses: actions/setup-java@v2
-        with:
-          distribution: 'amazon-corretto'
-          java-version: '21'
+#      - name: Set up Java
+#        uses: actions/setup-java@v2
+#        with:
+#          distribution: 'amazon-corretto'
+#          java-version: '21'
+
+      - name: Download and install Amazon Corretto 21
+        run: |
+          wget https://corretto.aws/downloads/latest/amazon-corretto-21-x64-linux-jdk.tar.gz
+          tar -xvzf amazon-corretto-21-x64-linux-jdk.tar.gz
+          sudo mv amazon-corretto-21* /usr/local/
+          sudo ln -s /usr/local/amazon-corretto-21*/bin/java /usr/bin/java
+
 
       - name: Use Gradle 8.8
         uses: gradle/actions/setup-gradle@v3
