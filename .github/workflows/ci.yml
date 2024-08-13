@@ -44,7 +44,11 @@ jobs:
           tar -xvzf amazon-corretto-21-x64-linux-jdk.tar.gz
           sudo mv amazon-corretto-21* /usr/local/
           sudo update-alternatives --install /usr/bin/java java /usr/local/amazon-corretto-21*/bin/java 1
+          sudo update-alternatives --install /usr/bin/javac javac /usr/local/amazon-corretto-21*/bin/javac 1
           sudo update-alternatives --set java /usr/local/amazon-corretto-21*/bin/java
+          sudo update-alternatives --set javac /usr/local/amazon-corretto-21*/bin/javac
+          echo "JAVA_HOME=/usr/local/amazon-corretto-21" >> $GITHUB_ENV
+          echo "/usr/local/amazon-corretto-21/bin" >> $GITHUB_PATH
 
       - name: Use Gradle 8.8
         uses: gradle/actions/setup-gradle@v3
