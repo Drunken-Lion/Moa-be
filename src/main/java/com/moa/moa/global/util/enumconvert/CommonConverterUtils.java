@@ -17,8 +17,6 @@ abstract class CommonConverterUtils {
      */
     protected <T extends Enum<T> & CommonEnum> T ofCode(Class<T> enumClass, Integer code) {
         if (code == null) {
-            // TODO
-            //  - Exception 수정 필요
             return null;
         }
 
@@ -34,6 +32,10 @@ abstract class CommonConverterUtils {
      * desc -> code
      */
     protected <T extends Enum<T> & CommonEnum> Integer toCode(T desc) {
+        if (desc == null) {
+            return null;
+        }
+        
         return desc.getCode();
     }
 }
