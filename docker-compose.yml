@@ -20,7 +20,7 @@ services:
     image: "certbot/certbot"
     volumes:
       - /home/ec2-user/data/certbot/conf:/etc/letsencrypt
-      - /hmoe/ec2-user/data/certbot/www:/var/www/certbot
+      - /home/ec2-user/data/certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
   spring-server:
@@ -34,7 +34,8 @@ services:
       - "8080:8080"
     volumes:
       - /usr/local/docker/data/app/logs:/home/spring/logs
-
+    depends_on:
+      - db
   db:
     container_name: mysql
     image: mysql:8.0
