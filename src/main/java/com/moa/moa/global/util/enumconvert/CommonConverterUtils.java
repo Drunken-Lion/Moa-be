@@ -35,7 +35,7 @@ abstract class CommonConverterUtils {
         if (desc == null) {
             return null;
         }
-        
+
         return desc.getCode();
     }
 }
