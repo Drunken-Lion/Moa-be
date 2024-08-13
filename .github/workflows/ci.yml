@@ -1,0 +1,65 @@
+name: ci
+
+on:
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+#      - name: create application.yml
+#        run: |
+#          touch ./application.yml
+#          echo '${{ secrets.TEST_APPLICATION_YML }}' >> ./application.yml
+#
+#      - name: create application-cloud.yml
+#        run: |
+#          touch ./application-dev.yml
+#          echo '${{ secrets.TEST_APPLICATION_CLOUD_YML }}' >> ./application-cloud.yml
+#
+#      - name: create application-test.yml
+#        run: |
+#          touch ./application-test.yml
+#          echo '${{ secrets.TEST_APPLICATION_TEST_YML }}' >> ./application-test.yml
+#
+#      - name: create application-secret.yml
+#        run: |
+#          touch ./application-secret.yml
+#          echo '${{ secrets.TEST_APPLICATION_SECRET_YML }}' >> ./application-secret.yml
+
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'amazon-corretto'
+          java-version: '21'
+
+      - name: Use Gradle 8.8
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-wrapper-file: 'gradlew'
+          distribution: 'gradle-8.8'
+          arguments: -i test
+
+#      - name: Check test results
+#        uses: actions/github-script@v1
+#        with:
+#          script: |
+#            if (github.event && github.event.pull_request) {
+#              if (github.event.pull_request.head.sha !== github.sha) {
+#                throw new Error('The pull request head SHA does not match the workflow run SHA.')
+#              }
+#
+#              const testResults = await getTestResults()
+#              if (!testResults.success) {
+#                throw new Error('The tests failed.')
+#              }
+#
+#              console.log('The tests passed.')
+#            } else {
+#              // Handle non-Pull Request event
+#            }
