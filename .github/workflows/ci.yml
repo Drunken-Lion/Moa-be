@@ -43,8 +43,8 @@ jobs:
           wget https://corretto.aws/downloads/latest/amazon-corretto-21-x64-linux-jdk.tar.gz
           tar -xvzf amazon-corretto-21-x64-linux-jdk.tar.gz
           sudo mv amazon-corretto-21* /usr/local/
-          sudo ln -s /usr/local/amazon-corretto-21*/bin/java /usr/bin/java
-
+          sudo update-alternatives --install /usr/bin/java java /usr/local/amazon-corretto-21*/bin/java 1
+          sudo update-alternatives --set java /usr/local/amazon-corretto-21*/bin/java
 
       - name: Use Gradle 8.8
         uses: gradle/actions/setup-gradle@v3
