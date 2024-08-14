@@ -4,6 +4,7 @@ import com.moa.moa.api.address.address.domain.entity.Address;
 import com.moa.moa.api.category.category.domain.entity.Category;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.shop.item.domain.entity.Item;
+import com.moa.moa.api.shop.itemoption.domain.entity.ItemOption;
 import com.moa.moa.api.shop.naverreview.domain.entity.NaverReview;
 import com.moa.moa.api.shop.placeshop.domain.entity.PlaceShop;
 import com.moa.moa.api.shop.review.domain.entity.Review;
@@ -75,4 +76,9 @@ public class Shop extends BaseEntity {
     @OneToMany(mappedBy = "shop")
     @Builder.Default
     private List<Item> items = new ArrayList<>();
+
+    @Comment("패키지 상품 옵션들")
+    @OneToMany(mappedBy = "shop")
+    @Builder.Default
+    private List<ItemOption> itemOptions = new ArrayList<>();
 }

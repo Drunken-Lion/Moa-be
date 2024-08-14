@@ -38,9 +38,9 @@ public enum DayType implements CommonEnum {
     SAT("토", 6),
 
     /**
-     * @see "알"
+     * @see "일"
      */
-    SUN("알", 7),
+    SUN("일", 7),
 
     ;
 

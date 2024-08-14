@@ -1,18 +1,22 @@
 package com.moa.moa.api.shop.item.domain.entity;
 
+import com.moa.moa.api.member.custom.util.convert.PackageTypeConverter;
+import com.moa.moa.api.member.custom.util.enumerated.PackageType;
 import com.moa.moa.api.place.liftticket.domain.entity.LiftTicket;
-import com.moa.moa.api.shop.item.util.convert.LiftTicketTypeConverter;
-import com.moa.moa.api.shop.item.util.enumerated.LiftTicketType;
-import com.moa.moa.api.shop.itemoption.domain.entity.ItemOption;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
 import com.moa.moa.global.common.entity.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.ConstraintMode;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -35,10 +39,10 @@ public class Item extends BaseEntity {
     @JoinColumn(name = "lift_ticket_id", columnDefinition = "BIGINT", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private LiftTicket liftTicket;
 
-    @Comment("리프트권 타입")
+    @Comment("패키지 타입")
     @Column(name = "type", columnDefinition = "BIGINT")
-    @Convert(converter = LiftTicketTypeConverter.class)
-    private LiftTicketType type;
+    @Convert(converter = PackageTypeConverter.class)
+    private PackageType type;
 
     @Comment("리프트권 이름")
     @Column(name = "name", columnDefinition = "VARCHAR(255)")
@@ -51,9 +55,4 @@ public class Item extends BaseEntity {
     @Comment("사용 여부")
     @Column(name = "used", columnDefinition = "TINYINT")
     private Boolean used;
-
-    @Comment("패키지 상품 옵션들")
-    @OneToMany(mappedBy = "item")
-    @Builder.Default
-    private List<ItemOption> itemOptions = new ArrayList<>();
 }
