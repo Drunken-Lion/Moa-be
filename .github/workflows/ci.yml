@@ -24,7 +24,7 @@ jobs:
 
 #      - name: create application-cloud.yml
 #        run: |
-#          touch ./application-dev.yml
+#          touch ./application-cloud.yml
 #          echo '${{ secrets.TEST_APPLICATION_CLOUD_YML }}' >> ./application-cloud.yml
 #
 #      - name: create application-test.yml
