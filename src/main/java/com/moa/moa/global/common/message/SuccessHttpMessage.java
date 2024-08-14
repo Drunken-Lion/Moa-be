@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum SuccessHttpMessage {
+public enum SuccessHttpMessage implements HttpMessage {
     // 200
     OK(HttpStatus.OK, "성공"),
     CREATED(HttpStatus.CREATED, "리소스가 생성되었습니다."),
@@ -27,7 +27,7 @@ public enum SuccessHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Auth {
+    public enum Auth implements HttpMessage {
         // 200
         OK(HttpStatus.OK, "성공"),
         CREATED(HttpStatus.CREATED, "리소스가 생성되었습니다."),
@@ -49,7 +49,7 @@ public enum SuccessHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Custom {
+    public enum Custom implements HttpMessage {
         // 200
         OK(HttpStatus.OK, "성공"),
         CREATED(HttpStatus.CREATED, "리소스가 생성되었습니다."),
@@ -71,7 +71,7 @@ public enum SuccessHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Member {
+    public enum Member implements HttpMessage {
         // 200
         OK(HttpStatus.OK, "성공"),
         CREATED(HttpStatus.CREATED, "리소스가 생성되었습니다."),
@@ -93,7 +93,7 @@ public enum SuccessHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Item {
+    public enum Item implements HttpMessage {
         // 200
         OK(HttpStatus.OK, "성공"),
         CREATED(HttpStatus.CREATED, "리소스가 생성되었습니다."),
@@ -115,7 +115,7 @@ public enum SuccessHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Place {
+    public enum Place implements HttpMessage {
         // 200
         OK(HttpStatus.OK, "성공"),
         CREATED(HttpStatus.CREATED, "리소스가 생성되었습니다."),
@@ -137,7 +137,7 @@ public enum SuccessHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Question {
+    public enum Question implements HttpMessage {
         // 200
         OK(HttpStatus.OK, "성공"),
         CREATED(HttpStatus.CREATED, "리소스가 생성되었습니다."),
@@ -159,7 +159,7 @@ public enum SuccessHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Review {
+    public enum Review implements HttpMessage {
         // 200
         OK(HttpStatus.OK, "성공"),
         CREATED(HttpStatus.CREATED, "리소스가 생성되었습니다."),
@@ -181,7 +181,7 @@ public enum SuccessHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Shop {
+    public enum Shop implements HttpMessage {
         // 200
         OK(HttpStatus.OK, "성공"),
         CREATED(HttpStatus.CREATED, "리소스가 생성되었습니다."),
@@ -203,7 +203,7 @@ public enum SuccessHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Wish {
+    public enum Wish implements HttpMessage {
         // 200
         OK(HttpStatus.OK, "성공"),
         CREATED(HttpStatus.CREATED, "리소스가 생성되었습니다."),
@@ -225,7 +225,7 @@ public enum SuccessHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Image {
+    public enum Image implements HttpMessage {
         // 200
         OK(HttpStatus.OK, "성공"),
         CREATED(HttpStatus.CREATED, "리소스가 생성되었습니다."),
