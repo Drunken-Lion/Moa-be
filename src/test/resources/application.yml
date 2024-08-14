@@ -12,7 +12,7 @@ spring:
       enabled: always
   datasource:
     url: jdbc:mysql://localhost:3306/moa_test
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: com.mysql.jdbc.Driver
     username: ON_SECRET
     password: ON_SECRET
     hikari:
