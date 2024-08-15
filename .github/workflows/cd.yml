@@ -27,22 +27,19 @@ jobs:
           touch src/main/resources/application-secret.yml
           echo '${{ secrets.DEV_APPLICATION_SECRET_YML }}' >> src/main/resources/application-secret.yml
 
-      # AWS ECR에 로그인하여 Docker 이미지를 푸시하도록 인증
       - name: Log in to Amazon ECR
         id: ecr-login
         uses: aws-actions/amazon-ecr-login@v1
         with:
-          registry: ${{ secrets.AWS_ECR_REGISTRY }}
-          aws-region: ap-northeast-2
+          registries: ${{ secrets.AWS_ECR_REGISTRY }}
+          region: ap-northeast-2
           mask-password: true
 
-      # Docker 이미지를 빌드하고 SHA 태그와 latest 태그 추가
       - name: Build and tag Docker image
         run: |
           docker build -t ${{ secrets.AWS_ECR_REGISTRY }}/moa-be:${{ github.sha }} .
           docker tag ${{ secrets.AWS_ECR_REGISTRY }}/moa-be:${{ github.sha }} ${{ secrets.AWS_ECR_REGISTRY }}/moa-be:latest
 
-      # 빌드된 Docker 이미지를 AWS ECR에 푸시
       - name: Push Docker image to Amazon ECR
         run: |
           docker push ${{ secrets.AWS_ECR_REGISTRY }}/moa-be:${{ github.sha }}
@@ -53,7 +50,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # AWS 인증 옵션
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -61,7 +57,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
 
-      # LightSail 접근하여 배포
       - name: SSH Commands to Lightsail
         uses: appleboy/ssh-action@master
         with:
