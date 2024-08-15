@@ -1,7 +1,5 @@
 package com.moa.moa.api.time.operatingtime.domain.entity;
 
-import com.moa.moa.api.place.place.domain.entity.Place;
-import com.moa.moa.api.shop.shop.domain.entity.Shop;
 import com.moa.moa.api.time.businesstime.domain.entity.BusinessTime;
 import com.moa.moa.api.time.operatingtime.util.convert.DayTypeConverter;
 import com.moa.moa.api.time.operatingtime.util.convert.OperatingTypeConverter;
@@ -36,16 +34,6 @@ public class OperatingTime extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "business_time_id", columnDefinition = "BIGINT", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private BusinessTime businessTime;
-
-    @Comment("장소")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "place_id", columnDefinition = "BIGINT", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private Place place;
-
-    @Comment("렌탈샵")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shop_id", columnDefinition = "BIGINT", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private Shop shop;
 
     @Comment("영업 상태")
     @Column(name = "status", columnDefinition = "BIGINT")
