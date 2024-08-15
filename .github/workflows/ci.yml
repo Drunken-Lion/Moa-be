@@ -57,12 +57,12 @@ jobs:
           distribution: 'gradle-8.8'
           arguments: -i test
 
-      - name: Wait for MySQL to be ready
-        run: |
-          until mysql -h localhost -u testuser -p"testpassword" -e "SHOW DATABASES;" > /dev/null 2>&1; do
-            echo "Waiting for MySQL..."
-            sleep 3
-          done
+      # - name: Wait for MySQL to be ready
+      #   run: |
+      #     until mysql -h localhost -u testuser -p"testpassword" -e "SHOW DATABASES;" > /dev/null 2>&1; do
+      #       echo "Waiting for MySQL..."
+      #       sleep 3
+      #     done
 
       - name: Check test results
         uses: actions/github-script@v1
