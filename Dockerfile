@@ -16,7 +16,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN chmod +x ./gradlew && ./gradlew bootJar -x test
 
 # 나머지 빌드를 위한 스테이지
-FROM amazoncorretto:17
+FROM amazoncorretto:21
 
 # 타임존 설정
 ENV TZ=Asia/Seoul
