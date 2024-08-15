@@ -43,8 +43,8 @@ jobs:
       # Docker 이미지를 빌드하고 SHA 태그와 latest 태그 추가
       - name: Build and tag Docker image
         run: |
-          docker build -t ${{ secrets.AWS_ECR_REGISTRY }}/moa-be:${{ github.sha }} .
-          docker tag ${{ secrets.AWS_ECR_REGISTRY }}/moa-be:${{ github.sha }} ${{ secrets.AWS_ECR_REGISTRY }}/moa-be:latest
+          docker build -t ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:${{ github.sha }} .
+          docker tag ${{ secrets.AWS_ECR_REGISTRY }}/moa-be:${{ github.sha }} ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:latest
 
       # 빌드된 Docker 이미지를 AWS ECR에 푸시
       - name: Push Docker image to Amazon ECR
