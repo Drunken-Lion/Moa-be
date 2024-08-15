@@ -9,22 +9,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8
-        ports:
-          - 3306:3306
-        env:
-          MYSQL_ROOT_PASSWORD: rootpassword
-          MYSQL_DATABASE: moa_test
-          MYSQL_USER: testuser
-          MYSQL_PASSWORD: testpassword
-        options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
       - uses: actions/checkout@v3
 
@@ -43,12 +27,6 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: '21'
-
-      - name: Check application.yml contents
-        run: cat ./application.yml
-
-      - name: Check application-secret.yml contents
-        run: cat ./application-secret.yml
         
       - name: Use Gradle 8.8
         uses: gradle/actions/setup-gradle@v3
@@ -56,13 +34,6 @@ jobs:
           gradle-wrapper-file: 'gradlew'
           distribution: 'gradle-8.8'
           arguments: -i test
-
-      # - name: Wait for MySQL to be ready
-      #   run: |
-      #     until mysql -h localhost -u testuser -p"testpassword" -e "SHOW DATABASES;" > /dev/null 2>&1; do
-      #       echo "Waiting for MySQL..."
-      #       sleep 3
-      #     done
 
       - name: Check test results
         uses: actions/github-script@v1
