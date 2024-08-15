@@ -44,7 +44,7 @@ jobs:
       - name: Build and tag Docker image
         run: |
           docker build -t ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:${{ github.sha }} .
-          docker tag ${{ secrets.AWS_ECR_REGISTRY }}/moa-be:${{ github.sha }} ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:latest
+          docker tag ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:${{ github.sha }} ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:latest
 
       # 빌드된 Docker 이미지를 AWS ECR에 푸시
       - name: Push Docker image to Amazon ECR
