@@ -52,11 +52,6 @@ jobs:
           docker push ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:${{ github.sha }}
           docker push ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:latest
 
-      - name: Image Check
-        run: |
-          docker build -t ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:${{ github.sha }} .
-          docker tag ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:${{ github.sha }} ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:latest
-
   deploy:
     needs: build
     runs-on: ubuntu-latest
