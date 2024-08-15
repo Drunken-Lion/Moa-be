@@ -49,8 +49,8 @@ jobs:
       # 빌드된 Docker 이미지를 AWS ECR에 푸시
       - name: Push Docker image to Amazon ECR
         run: |
-          docker push ${{ secrets.AWS_ECR_REGISTRY }}/moa-be:${{ github.sha }}
-          docker push ${{ secrets.AWS_ECR_REGISTRY }}/moa-be:latest
+          docker push ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:${{ github.sha }}
+          docker push ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:latest
 
   deploy:
     needs: build
@@ -74,7 +74,7 @@ jobs:
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
           port: ${{ secrets.LIGHTSAIL_PORT }}
           script: |
-            docker pull ${{ secrets.AWS_ECR_REGISTRY }}/moa-be:latest
-            docker stop moa-be || true
-            docker rm moa-be || true
-            docker run -d --name moa-be -p 80:80 ${{ secrets.AWS_ECR_REGISTRY }}/moa-be:latest
+            docker pull ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:latest
+            docker stop moa-dev || true
+            docker rm moa-dev || true
+            docker run -d --name moa-dev -p 80:80 ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:latest
