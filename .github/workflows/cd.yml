@@ -27,6 +27,14 @@ jobs:
           touch src/main/resources/application-secret.yml
           echo '${{ secrets.DEV_APPLICATION_SECRET_YML }}' >> src/main/resources/application-secret.yml
 
+      # AWS 인증 옵션
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+          
       # AWS ECR에 로그인하여 Docker 이미지를 푸시하도록 인증
       - name: Log in to Amazon ECR
         run: |
