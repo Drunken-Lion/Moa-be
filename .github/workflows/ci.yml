@@ -22,17 +22,6 @@ jobs:
           touch ./application-secret.yml
           echo '${{ secrets.TEST_APPLICATION_SECRET_YML }}' >> ./application-secret.yml
 
-#      - name: create application-cloud.yml
-#        run: |
-#          touch ./application-cloud.yml
-#          echo '${{ secrets.TEST_APPLICATION_CLOUD_YML }}' >> ./application-cloud.yml
-#
-#      - name: create application-test.yml
-#        run: |
-#          touch ./application-test.yml
-#          echo '${{ secrets.TEST_APPLICATION_TEST_YML }}' >> ./application-test.yml
-#
-
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
