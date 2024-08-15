@@ -72,7 +72,7 @@ jobs:
           host: ${{ secrets.LIGHTSAIL_HOST }}
           username: ${{ secrets.LIGHTSAIL_USERNAME }}
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
-          # port: ${{ secrets.LIGHTSAIL_PORT }}
+          port: ${{ secrets.LIGHTSAIL_PORT }}
           script: |
             docker pull ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:latest
             docker stop moa-dev || true
