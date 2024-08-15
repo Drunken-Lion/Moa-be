@@ -29,12 +29,8 @@ jobs:
 
       # AWS ECR에 로그인하여 Docker 이미지를 푸시하도록 인증
       - name: Log in to Amazon ECR
-        id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v1
-        with:
-          registry: ${{ secrets.AWS_ECR_REGISTRY }}
-          region: ap-northeast-2
-          mask-password: true
+        run: |
+          aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REGISTRY }}
 
       # Docker 이미지를 빌드하고 SHA 태그와 latest 태그 추가
       - name: Build and tag Docker image
