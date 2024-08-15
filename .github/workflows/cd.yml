@@ -81,6 +81,6 @@ jobs:
           script: |
             aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REGISTRY }}
             docker pull ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:latest
-            docker stop moa-dev || true
-            docker rm moa-dev || true
+            docker stop ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev || true
+            docker rm ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev || true
             docker run -d —name moa-dev -p 80:80 ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:latest
