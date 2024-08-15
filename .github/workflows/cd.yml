@@ -27,11 +27,6 @@ jobs:
           touch src/main/resources/application-secret.yml
           echo '${{ secrets.DEV_APPLICATION_SECRET_YML }}' >> src/main/resources/application-secret.yml
 
-#      - name: create application-cloud.yml
-#        run: |
-#          touch src/main/resources/application-cloud.yml
-#          echo '${{ secrets.DEV_APPLICATION_CLOUD_YML }}' >> src/main/resources/application-cloud.yml
-
       # AWS ECR에 로그인하여 Docker 이미지를 푸시하도록 인증
       - name: Log in to Amazon ECR
         id: ecr-login
