@@ -70,11 +70,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
 
-      # AWS ECR에 로그인하여 Docker 이미지를 푸시하도록 인증
-      - name: Log in to Amazon ECR
-        run: |
-          aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REGISTRY }}
-
       # LightSail 접근하여 배포
       - name: SSH Commands to Lightsail
         uses: appleboy/ssh-action@master
@@ -84,6 +79,7 @@ jobs:
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
           port: ${{ secrets.LIGHTSAIL_PORT }}
           script: |
+            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REGISTRY }}
             docker pull ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:latest
             docker stop moa-dev || true
             docker rm moa-dev || true
