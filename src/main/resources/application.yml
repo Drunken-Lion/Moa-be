@@ -2,9 +2,9 @@ spring:
   application:
     name: chucked
   profiles:
-    active: local
+    active: dev
     group:
-      local:
+      dev:
         - file
         - secret
 
