@@ -22,6 +22,10 @@ jobs:
         run: |
           echo '${{ secrets.DEV_APPLICATION_YML }}' > src/main/resources/application.yml
 
+      - name: create application-dev.yml
+        run: |
+          echo '${{ secrets.DEV_APPLICATION_DEV_YML }}' > src/main/resources/application-dev.yml
+      
       - name: create application-secret.yml
         run: |
           touch src/main/resources/application-secret.yml
