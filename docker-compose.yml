@@ -24,7 +24,7 @@ services:
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
   spring-server:
-    container_name: spring-server
+    container_name: moa-dev
     environment:
       - SPRING_PROFILES_ACTIVE=dev
     build:
