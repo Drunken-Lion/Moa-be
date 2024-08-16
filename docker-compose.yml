@@ -26,7 +26,7 @@ services:
   spring-server:
     container_name: spring-server
     environment:
-      - SPRING_PROFILES_ACTIVE=local
+      - SPRING_PROFILES_ACTIVE=dev
     build:
       context: ./
       dockerfile: Dockerfile
