@@ -24,7 +24,7 @@ public record FindAllPlaceDto() {
 
             FindAllPlaceDto.ImageResponse images,
             FindAllPlaceDto.AddressResponse address,
-            List<OperatingTimeResponse> operatingTimes,
+            List<FindAllPlaceDto.OperatingTimeResponse> operatingTimes,
             List<FindAllPlaceDto.SpecificDayResponse> specificDays,
             List<FindAllPlaceDto.AmenityResponse> amenities,
             List<FindAllPlaceDto.SlopeResponse> slopes
