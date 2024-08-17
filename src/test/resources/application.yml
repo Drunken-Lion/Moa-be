@@ -1,0 +1,35 @@
+spring:
+  profiles:
+    active: test
+    group:
+      local:
+        - file
+      test:
+        - file
+        - secret
+  output:
+    ansi:
+      enabled: always
+  datasource:
+    url: jdbc:mysql://moa-dev.site:3306/moa_test
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ON_SECRET
+    password: ON_SECRET
+    hikari:
+      connection-timeout: 5000
+  jpa:
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+    hibernate:
+      ddl-auto: create
+    database-platform: org.hibernate.dialect.MySQLDialect
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.orm.jdbc.extract: TRACE
+    org.springframework.transaction.interceptor: TRACE

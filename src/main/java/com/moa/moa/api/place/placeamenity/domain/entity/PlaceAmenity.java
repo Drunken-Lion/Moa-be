@@ -31,4 +31,8 @@ public class PlaceAmenity extends BaseEntity {
     @Comment("사용 여부")
     @Column(name = "used", columnDefinition = "TINYINT")
     private Boolean used;
+
+    public void modUse(boolean use) {
+        this.used = use;
+    }
 }

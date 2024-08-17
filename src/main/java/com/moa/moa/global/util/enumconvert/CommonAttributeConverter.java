@@ -1,7 +1,5 @@
 package com.moa.moa.global.util.enumconvert;
 
-import com.moa.moa.global.common.message.FailHttpMessage;
-import com.moa.moa.global.exception.BusinessException;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import lombok.Getter;
@@ -21,11 +19,6 @@ public class CommonAttributeConverter<E extends Enum<E> & CommonEnum> extends Co
 
     @Override
     public Integer convertToDatabaseColumn(E attribute) {
-        // TODO
-        //  - Exception 수정 필요
-        if (attribute == null) {
-            throw new BusinessException(FailHttpMessage.NOT_NULL);
-        }
         return super.toCode(attribute);
     }
 

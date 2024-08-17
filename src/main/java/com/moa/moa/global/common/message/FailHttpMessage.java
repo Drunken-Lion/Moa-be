@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum FailHttpMessage {
+public enum FailHttpMessage implements HttpMessage {
     // 400
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청 입니다."),
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값 입니다."),
@@ -47,7 +47,7 @@ public enum FailHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Auth {
+    public enum Auth implements HttpMessage {
         // 400
         BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청 입니다."),
         INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값 입니다."),
@@ -89,7 +89,7 @@ public enum FailHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Custom {
+    public enum Custom implements HttpMessage {
         // 400
         BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청 입니다."),
         INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값 입니다."),
@@ -131,7 +131,7 @@ public enum FailHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Member {
+    public enum Member implements HttpMessage {
         // 400
         BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청 입니다."),
         INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값 입니다."),
@@ -173,7 +173,7 @@ public enum FailHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Item {
+    public enum Item implements HttpMessage {
         // 400
         BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청 입니다."),
         INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값 입니다."),
@@ -215,7 +215,7 @@ public enum FailHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Place {
+    public enum Place implements HttpMessage {
         // 400
         BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청 입니다."),
         INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값 입니다."),
@@ -257,7 +257,7 @@ public enum FailHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Question {
+    public enum Question implements HttpMessage {
         // 200
         // 400
         BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청 입니다."),
@@ -300,7 +300,7 @@ public enum FailHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Review {
+    public enum Review implements HttpMessage {
         // 400
         BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청 입니다."),
         INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값 입니다."),
@@ -342,7 +342,7 @@ public enum FailHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Shop {
+    public enum Shop implements HttpMessage {
         // 400
         BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청 입니다."),
         INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값 입니다."),
@@ -384,7 +384,7 @@ public enum FailHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Wish {
+    public enum Wish implements HttpMessage {
         // 400
         BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청 입니다."),
         INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값 입니다."),
@@ -426,7 +426,7 @@ public enum FailHttpMessage {
      */
     @Getter
     @RequiredArgsConstructor
-    public enum Image {
+    public enum Image implements HttpMessage {
         // 400
         BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청 입니다."),
         INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값 입니다."),
