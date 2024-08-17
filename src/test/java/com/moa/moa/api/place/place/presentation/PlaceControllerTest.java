@@ -158,12 +158,14 @@ class PlaceControllerTest {
                 .andExpect(jsonPath("$.[0].address.locationY").value(37.6521031526954))
                 .andExpect(jsonPath("$.[0].address.mapUrl").value("https://map.naver.com/p/entry/place/13139708?c=15.00,0,0,0,dh"))
 
+                .andExpect(jsonPath("$.[0].operatingTimes.length()", is(7)))
                 .andExpect(jsonPath("$.[0].operatingTimes[0].id", instanceOf(Number.class)))
                 .andExpect(jsonPath("$.[0].operatingTimes[0].status").value(OperatingType.OPEN.toString()))
                 .andExpect(jsonPath("$.[0].operatingTimes[0].day").value(DayType.MON.toString()))
                 .andExpect(jsonPath("$.[0].operatingTimes[0].open").value(LocalTime.of(8, 0).format(TestUtil.TIME_FORMATTER)))
                 .andExpect(jsonPath("$.[0].operatingTimes[0].close").value(LocalTime.of(2, 0).format(TestUtil.TIME_FORMATTER)))
 
+                .andExpect(jsonPath("$.[0].specificDays.length()", is(3)))
                 .andExpect(jsonPath("$.[0].specificDays[0].id", instanceOf(Number.class)))
                 .andExpect(jsonPath("$.[0].specificDays[0].status").value(SpecificDayType.CLOSED.toString()))
                 .andExpect(jsonPath("$.[0].specificDays[0].reason").value("설연휴"))
@@ -171,9 +173,11 @@ class PlaceControllerTest {
                 .andExpect(jsonPath("$.[0].specificDays[0].open", nullValue()))
                 .andExpect(jsonPath("$.[0].specificDays[0].close", nullValue()))
 
+                .andExpect(jsonPath("$.[0].amenities.length()", is(7)))
                 .andExpect(jsonPath("$.[0].amenities[0].id", instanceOf(Number.class)))
                 .andExpect(jsonPath("$.[0].amenities[0].name").value(AmenityType.HOTEL.toString()))
 
+                .andExpect(jsonPath("$.[0].slopes.length()", is(9)))
                 .andExpect(jsonPath("$.[0].slopes[0].id", instanceOf(Number.class)))
                 .andExpect(jsonPath("$.[0].slopes[0].name").value("발라드"))
                 .andExpect(jsonPath("$.[0].slopes[0].level").value(SlopeLevel.LEVEL_1.toString()));
