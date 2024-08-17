@@ -31,6 +31,7 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
                 .where(inPolygon
                         .and(place.deletedAt.isNull())
                         .and(address1.deletedAt.isNull()))
+                .orderBy(place.id.asc())
                 .fetch();
     }
 }
