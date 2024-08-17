@@ -731,7 +731,6 @@ class PlaceRepositoryTest {
         list_3.get(5).modUse(false);
         places.get(2).addPlaceAmenities(list_3);
 
-
         placeAmenityRepository.saveAll(list_1);
         placeAmenityRepository.saveAll(list_2);
         placeAmenityRepository.saveAll(list_3);
