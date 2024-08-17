@@ -41,6 +41,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -117,13 +118,13 @@ class PlaceRepositoryTest {
     }
 
     @Test
-    @DisplayName("스키장 목록 조회 성공")
+    @DisplayName("스키장 목록 조회 성공 - deleteAt 조건 적용 확인")
     public void t1() {
         //when
         List<Place> places = placeRepository.findAllPlaceInMap(0D, 40D, 130D, 0D);
 
         //then
-        assertThat(places.size()).isEqualTo(3);
+        assertThat(places.size()).isEqualTo(1);
         assertThat(places.get(0).getName()).isEqualTo("비발디파크");
         assertThat(places.get(0).getOpenDate()).isEqualTo(LocalDate.of(2024, 10, 15));
         assertThat(places.get(0).getCloseDate()).isEqualTo(LocalDate.of(2025, 3, 12));
@@ -136,13 +137,13 @@ class PlaceRepositoryTest {
         assertThat(places.get(0).getAddress().getLocation()).isEqualTo(geometryFactory.createPoint(new Coordinate(127.687106349987, 37.6521031526954)));
         assertThat(places.get(0).getAddress().getUrl()).isEqualTo("https://map.naver.com/p/entry/place/13139708?c=15.00,0,0,0,dh");
 
-        assertThat(places.get(0).getBusinessTime().getOperatingTimes().size()).isEqualTo(7);
+        assertThat(places.get(0).getBusinessTime().getOperatingTimes().size()).isEqualTo(6);
         assertThat(places.get(0).getBusinessTime().getOperatingTimes().get(0).getStatus()).isEqualTo(OperatingType.OPEN);
         assertThat(places.get(0).getBusinessTime().getOperatingTimes().get(0).getDay()).isEqualTo(DayType.MON);
         assertThat(places.get(0).getBusinessTime().getOperatingTimes().get(0).getOpenTime()).isEqualTo(LocalTime.of(8, 0));
         assertThat(places.get(0).getBusinessTime().getOperatingTimes().get(0).getCloseTime()).isEqualTo(LocalTime.of(2, 0));
 
-        assertThat(places.get(0).getBusinessTime().getSpecificDays().size()).isEqualTo(3);
+        assertThat(places.get(0).getBusinessTime().getSpecificDays().size()).isEqualTo(2);
         assertThat(places.get(0).getBusinessTime().getSpecificDays().get(0).getStatus()).isEqualTo(SpecificDayType.CLOSED);
         assertThat(places.get(0).getBusinessTime().getSpecificDays().get(0).getReason()).isEqualTo("설연휴");
         assertThat(places.get(0).getBusinessTime().getSpecificDays().get(0).getDate()).isEqualTo(LocalDate.of(2025, 1, 28));
@@ -157,13 +158,23 @@ class PlaceRepositoryTest {
         assertThat(places.get(0).getLiftTickets().get(0).getStartTime()).isNull();
         assertThat(places.get(0).getLiftTickets().get(0).getEndTime()).isNull();
 
-        assertThat(places.get(0).getSlopes().size()).isEqualTo(9);
+        assertThat(places.get(0).getSlopes().size()).isEqualTo(8);
         assertThat(places.get(0).getSlopes().get(0).getName()).isEqualTo("발라드");
         assertThat(places.get(0).getSlopes().get(0).getLevel()).isEqualTo(SlopeLevel.LEVEL_1);
 
-        assertThat(places.get(0).getAmenities().size()).isEqualTo(7);
+        assertThat(places.get(0).getAmenities().size()).isEqualTo(4);
         assertThat(places.get(0).getAmenities().get(0).getUsed()).isEqualTo(true);
         assertThat(places.get(0).getAmenities().get(0).getAmenity().getType()).isEqualTo(AmenityType.HOTEL);
+    }
+
+    @Test
+    @DisplayName("스키장 목록 조회 성공 - 범위 내 스키장 없음")
+    public void t2() {
+        //when
+        List<Place> places = placeRepository.findAllPlaceInMap(0D, 30D, 130D, 0D);
+
+        //then
+        assertThat(places.size()).isEqualTo(0);
     }
 
     private List<Place> createPlace(Category category, List<Address> addresses, List<BusinessTime> businessTimes) {
@@ -177,9 +188,13 @@ class PlaceRepositoryTest {
         Place place_3 = createPlace(category, addresses.get(4), businessTimes.get(4), "엘리시안", LocalDate.of(2024, 10, 17),
                 LocalDate.of(2025, 3, 12), PlaceLevel.LEVEL_4);
 
+        Place place_4 = createPlace(category, addresses.get(8), businessTimes.get(8), "지산리조트", LocalDate.of(2024, 10, 18),
+                LocalDate.of(2025, 3, 15), PlaceLevel.LEVEL_4, true); // 삭제
+
         list.add(place_1);
         list.add(place_2);
         list.add(place_3);
+        list.add(place_4);
 
         placeRepository.saveAll(list);
 
@@ -205,7 +220,7 @@ class PlaceRepositoryTest {
         Address address_3 = createAddress("강원 홍천군 서면 한치골길 952", 37.6935333700434, 127.701873788335,
                 "https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%95%84%EC%A7%80%ED%8A%B8/place/11590090?c=18.01,0,0,0,dh&isCorrectAnswer=true");
         Address address_4 = createAddress("강원 정선군 고한읍 하이원길 424", 37.2072213760495, 128.836835354268,
-                "https://map.naver.com/p/entry/place/92136142?lng=128.8388599&lat=37.204042&placePath=%2Fhome&entry=plt&searchType=place&c=15.00,0,0,0,dh");
+                "https://map.naver.com/p/entry/place/92136142?lng=128.8388599&lat=37.204042&placePath=%2Fhome&entry=plt&searchType=place&c=15.00,0,0,0,dh", true); // 삭제
         Address address_5 = createAddress("강원 춘천시 남산면 북한강변길 688", 37.8300557977982, 127.57878172946,
                 "https://map.naver.com/p/search/%EC%8A%A4%ED%82%A4%EC%9E%A5/place/15648643?placePath=?entry=pll&from=nx&fromNxList=true&searchType=place&c=15.00,0,0,0,dh");
         Address address_6 = createAddress("강원 홍천군 서면 한서로 2137", "비발디파크인생렌탈샵", 37.6167793731889, 127.671714070978,
@@ -240,8 +255,6 @@ class PlaceRepositoryTest {
         List<SpecificDay> specificDays_1 = specific1(businessTime_1);
         list.add(businessTime_1);
 
-        businessTime_1.addOperatingTimes(operatingTimes_1);
-        businessTime_1.addOSpecificDays(specificDays_1);
         operatingTimeRepository.saveAll(operatingTimes_1);
         specificDayRepository.saveAll(specificDays_1);
 
@@ -250,8 +263,6 @@ class PlaceRepositoryTest {
         List<SpecificDay> specificDays_2 = specific2(businessTime_2);
         list.add(businessTime_2);
 
-        businessTime_2.addOperatingTimes(operatingTimes_2);
-        businessTime_2.addOSpecificDays(specificDays_2);
         operatingTimeRepository.saveAll(operatingTimes_2);
         specificDayRepository.saveAll(specificDays_2);
 
@@ -260,8 +271,6 @@ class PlaceRepositoryTest {
         List<SpecificDay> specificDays_3 = specific3(businessTime_3);
         list.add(businessTime_3);
 
-        businessTime_3.addOperatingTimes(operatingTimes_3);
-        businessTime_3.addOSpecificDays(specificDays_3);
         operatingTimeRepository.saveAll(operatingTimes_3);
         specificDayRepository.saveAll(specificDays_3);
 
@@ -270,18 +279,14 @@ class PlaceRepositoryTest {
         List<SpecificDay> specificDays_4 = specific4(businessTime_4);
         list.add(businessTime_4);
 
-        businessTime_4.addOperatingTimes(operatingTimes_4);
-        businessTime_4.addOSpecificDays(specificDays_4);
         operatingTimeRepository.saveAll(operatingTimes_4);
         specificDayRepository.saveAll(specificDays_4);
 
-        BusinessTime businessTime_5 = BusinessTime.builder().build();
+        BusinessTime businessTime_5 = BusinessTime.builder().deletedAt(LocalDateTime.now()).build(); // 삭제
         List<OperatingTime> operatingTimes_5 = operating5(businessTime_5);
         List<SpecificDay> specificDays_5 = specific5(businessTime_5);
         list.add(businessTime_5);
 
-        businessTime_5.addOperatingTimes(operatingTimes_5);
-        businessTime_5.addOSpecificDays(specificDays_5);
         operatingTimeRepository.saveAll(operatingTimes_5);
         specificDayRepository.saveAll(specificDays_5);
 
@@ -290,8 +295,6 @@ class PlaceRepositoryTest {
         List<SpecificDay> specificDays_6 = specific6(businessTime_6);
         list.add(businessTime_6);
 
-        businessTime_6.addOperatingTimes(operatingTimes_6);
-        businessTime_6.addOSpecificDays(specificDays_6);
         operatingTimeRepository.saveAll(operatingTimes_6);
         specificDayRepository.saveAll(specificDays_6);
 
@@ -300,8 +303,6 @@ class PlaceRepositoryTest {
         List<SpecificDay> specificDays_7 = specific7(businessTime_7);
         list.add(businessTime_7);
 
-        businessTime_7.addOperatingTimes(operatingTimes_7);
-        businessTime_7.addOSpecificDays(specificDays_7);
         operatingTimeRepository.saveAll(operatingTimes_7);
         specificDayRepository.saveAll(specificDays_7);
 
@@ -310,8 +311,6 @@ class PlaceRepositoryTest {
         List<SpecificDay> specificDays_8 = specific8(businessTime_8);
         list.add(businessTime_8);
 
-        businessTime_8.addOperatingTimes(operatingTimes_8);
-        businessTime_8.addOSpecificDays(specificDays_8);
         operatingTimeRepository.saveAll(operatingTimes_8);
         specificDayRepository.saveAll(specificDays_8);
 
@@ -320,8 +319,6 @@ class PlaceRepositoryTest {
         List<SpecificDay> specificDays_9 = specific9(businessTime_9);
         list.add(businessTime_9);
 
-        businessTime_9.addOperatingTimes(operatingTimes_9);
-        businessTime_9.addOSpecificDays(specificDays_9);
         operatingTimeRepository.saveAll(operatingTimes_9);
         specificDayRepository.saveAll(specificDays_9);
 
@@ -331,7 +328,9 @@ class PlaceRepositoryTest {
     }
 
     // Create Object
-    private Place createPlace(Category category, Address address, BusinessTime time, String name, LocalDate open, LocalDate close, PlaceLevel level) {
+    private Place createPlace(Category category, Address address, BusinessTime time, String name, LocalDate open, LocalDate close, PlaceLevel level, boolean... isDeleted) {
+        boolean deleted = isDeleted.length > 0 && isDeleted[0];
+
         return Place.builder()
                 .category(category)
                 .address(address)
@@ -340,33 +339,43 @@ class PlaceRepositoryTest {
                 .openDate(open)
                 .closeDate(close)
                 .recLevel(level)
+                .deletedAt(deleted ? LocalDateTime.now() : null)
                 .build();
     }
 
-    private Address createAddress(String address, double y, double x, String url) {
+    private Address createAddress(String address, double y, double x, String url, boolean... isDeleted) {
+        boolean deleted = isDeleted.length > 0 && isDeleted[0];
+
         return Address.builder()
                 .address(address)
                 .location(geometryFactory.createPoint(new Coordinate(x, y)))
                 .url(url)
+                .deletedAt(deleted ? LocalDateTime.now() : null)
                 .build();
     }
 
-    private Address createAddress(String address, String detail, double y, double x, String url) {
+    private Address createAddress(String address, String detail, double y, double x, String url, boolean... isDeleted) {
+        boolean deleted = isDeleted.length > 0 && isDeleted[0];
+
         return Address.builder()
                 .address(address)
                 .addressDetail(detail)
                 .location(geometryFactory.createPoint(new Coordinate(x, y)))
                 .url(url)
+                .deletedAt(deleted ? LocalDateTime.now() : null)
                 .build();
     }
 
-    private OperatingTime createOperatingTime(BusinessTime businessTime, OperatingType type, DayType day, LocalTime open, LocalTime close) {
+    private OperatingTime createOperatingTime(BusinessTime businessTime, OperatingType type, DayType day, LocalTime open, LocalTime close, boolean... isDeleted) {
+        boolean deleted = isDeleted.length > 0 && isDeleted[0];
+
         return OperatingTime.builder()
                 .businessTime(businessTime)
                 .status(type)
                 .day(day)
                 .openTime(open)
                 .closeTime(close)
+                .deletedAt(deleted ? LocalDateTime.now() : null)
                 .build();
     }
 
@@ -386,7 +395,7 @@ class PlaceRepositoryTest {
         list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.SAT, LocalTime.of(8, 0),
                 LocalTime.of(2, 0)));
         list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.SUN, LocalTime.of(8, 0),
-                LocalTime.of(2, 0)));
+                LocalTime.of(2, 0), true)); // 삭제
 
         return list;
     }
@@ -551,12 +560,15 @@ class PlaceRepositoryTest {
         return list;
     }
 
-    private SpecificDay createSpecific(BusinessTime businessTime, SpecificDayType type, String reason, LocalDate date) {
+    private SpecificDay createSpecific(BusinessTime businessTime, SpecificDayType type, String reason, LocalDate date, boolean... isDeleted) {
+        boolean deleted = isDeleted.length > 0 && isDeleted[0];
+
         return SpecificDay.builder()
                 .businessTime(businessTime)
                 .status(type)
                 .reason(reason)
                 .date(date)
+                .deletedAt(deleted ? LocalDateTime.now() : null)
                 .build();
     }
 
@@ -565,7 +577,7 @@ class PlaceRepositoryTest {
 
         list.add(createSpecific(businessTime, SpecificDayType.CLOSED, "설연휴", LocalDate.of(2025, 1, 28)));
         list.add(createSpecific(businessTime, SpecificDayType.CLOSED, "설연휴", LocalDate.of(2025, 1, 29)));
-        list.add(createSpecific(businessTime, SpecificDayType.CLOSED, "설연휴", LocalDate.of(2025, 1, 30)));
+        list.add(createSpecific(businessTime, SpecificDayType.CLOSED, "설연휴", LocalDate.of(2025, 1, 30), true)); // 삭제
 
         return list;
     }
@@ -639,7 +651,7 @@ class PlaceRepositoryTest {
         List<Slope> list_1 = new ArrayList<>();
 
         list_1.add(Slope.builder().place(places.get(0)).name("발라드").level(SlopeLevel.LEVEL_1).build());
-        list_1.add(Slope.builder().place(places.get(0)).name("블루스").level(SlopeLevel.LEVEL_1).build());
+        list_1.add(Slope.builder().place(places.get(0)).name("블루스").level(SlopeLevel.LEVEL_1).deletedAt(LocalDateTime.now()).build()); // 삭제
         list_1.add(Slope.builder().place(places.get(0)).name("레게").level(SlopeLevel.LEVEL_2).build());
         list_1.add(Slope.builder().place(places.get(0)).name("째즈").level(SlopeLevel.LEVEL_2).build());
         list_1.add(Slope.builder().place(places.get(0)).name("클래식").level(SlopeLevel.LEVEL_3).build());
@@ -648,11 +660,9 @@ class PlaceRepositoryTest {
         list_1.add(Slope.builder().place(places.get(0)).name("테크노").level(SlopeLevel.LEVEL_4).build());
         list_1.add(Slope.builder().place(places.get(0)).name("락").level(SlopeLevel.LEVEL_5).build());
 
-        places.get(0).addSlopes(list_1);
-
         List<Slope> list_2 = new ArrayList<>();
 
-        list_2.add(Slope.builder().place(places.get(1)).name("제우스1").level(SlopeLevel.LEVEL_1).build());
+        list_2.add(Slope.builder().place(places.get(1)).name("제우스1").level(SlopeLevel.LEVEL_1).build());
         list_2.add(Slope.builder().place(places.get(1)).name("제우스2").level(SlopeLevel.LEVEL_1).build());
         list_2.add(Slope.builder().place(places.get(1)).name("제우스3").level(SlopeLevel.LEVEL_1).build());
         list_2.add(Slope.builder().place(places.get(1)).name("빅토리아1").level(SlopeLevel.LEVEL_4).build());
@@ -662,12 +672,10 @@ class PlaceRepositoryTest {
         list_2.add(Slope.builder().place(places.get(1)).name("헤라3").level(SlopeLevel.LEVEL_4).build());
         list_2.add(Slope.builder().place(places.get(1)).name("아폴리1").level(SlopeLevel.LEVEL_4).build());
         list_2.add(Slope.builder().place(places.get(1)).name("아폴로3").level(SlopeLevel.LEVEL_4).build());
-        list_2.add(Slope.builder().place(places.get(1)).name("아폴로4").level(SlopeLevel.LEVEL_4).build());
+        list_2.add(Slope.builder().place(places.get(1)).name("아폴로4").level(SlopeLevel.LEVEL_4).build());
         list_2.add(Slope.builder().place(places.get(1)).name("아폴로6").level(SlopeLevel.LEVEL_4).build());
         list_2.add(Slope.builder().place(places.get(1)).name("아테나2").level(SlopeLevel.LEVEL_2).build());
         list_2.add(Slope.builder().place(places.get(1)).name("아테나3").level(SlopeLevel.LEVEL_1).build());
-
-        places.get(1).addSlopes(list_2);
 
         List<Slope> list_3 = new ArrayList<>();
 
@@ -682,8 +690,6 @@ class PlaceRepositoryTest {
         list_3.add(Slope.builder().place(places.get(2)).name("래퍼드").level(SlopeLevel.LEVEL_4).build());
         list_3.add(Slope.builder().place(places.get(2)).name("재규어").level(SlopeLevel.LEVEL_4).build());
 
-        places.get(2).addSlopes(list_3);
-
         slopeRepository.saveAll(list_1);
         slopeRepository.saveAll(list_2);
         slopeRepository.saveAll(list_3);
@@ -693,7 +699,7 @@ class PlaceRepositoryTest {
         List<Amenity> list = new ArrayList<>();
 
         list.add(Amenity.builder().type(AmenityType.HOTEL).build());
-        list.add(Amenity.builder().type(AmenityType.INNER_RENTAL_SHOP).build());
+        list.add(Amenity.builder().type(AmenityType.INNER_RENTAL_SHOP).deletedAt(LocalDateTime.now()).build()); // 삭제
         list.add(Amenity.builder().type(AmenityType.SHUTTLE_BUS).build());
         list.add(Amenity.builder().type(AmenityType.CONVENIENCE_STORE).build());
         list.add(Amenity.builder().type(AmenityType.FOOD_COURT).build());
@@ -710,14 +716,14 @@ class PlaceRepositoryTest {
         for (Amenity amenity : amenities) {
             list_1.add(PlaceAmenity.builder().place(places.get(0)).amenity(amenity).used(true).build());
         }
-        places.get(0).addPlaceAmenities(list_1);
+        list_1.get(2).modUse(false);
+        list_1.get(3).modDeletedAt(); // 삭제
 
         List<PlaceAmenity> list_2 = new ArrayList<>();
         for (Amenity amenity : amenities) {
             list_2.add(PlaceAmenity.builder().place(places.get(1)).amenity(amenity).used(true).build());
         }
         list_2.get(2).modUse(false);
-        places.get(1).addPlaceAmenities(list_2);
 
         List<PlaceAmenity> list_3 = new ArrayList<>();
         for (Amenity amenity : amenities) {
@@ -729,7 +735,6 @@ class PlaceRepositoryTest {
         list_3.get(3).modUse(false);
         list_3.get(4).modUse(false);
         list_3.get(5).modUse(false);
-        places.get(2).addPlaceAmenities(list_3);
 
         placeAmenityRepository.saveAll(list_1);
         placeAmenityRepository.saveAll(list_2);
