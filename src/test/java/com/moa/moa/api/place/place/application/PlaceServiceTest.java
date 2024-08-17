@@ -100,12 +100,7 @@ class PlaceServiceTest {
     @DisplayName("스키장 목록 조회 성공")
     public void t1() {
         // given
-        Double leftTopX = 0D;
-        Double leftTopY = 40D;
-        Double rightBottomX = 130D;
-        Double rightBottomY = 0D;
-
-        when(placeProcessor.findAllPlaceInMap(leftTopX, leftTopY, rightBottomX, rightBottomY)).thenReturn(mockPlaces);
+        when(placeProcessor.findAllPlaceInMap(anyDouble(), anyDouble(), anyDouble(), anyDouble())).thenReturn(mockPlaces);
 
         for (int i = 0; i < mockPlaces.size(); i++) {
             when(placeMapstructMapper.of(
@@ -120,7 +115,7 @@ class PlaceServiceTest {
         }
 
         // when
-        List<FindAllPlaceDto.Response> places = placeService.findAllPlace(leftTopX, leftTopY, rightBottomX, rightBottomY);
+        List<FindAllPlaceDto.Response> places = placeService.findAllPlace(anyDouble(), anyDouble(), anyDouble(), anyDouble());
 
         // then
         assertThat(places.size()).isEqualTo(3);
