@@ -34,7 +34,7 @@ public class BusinessTime extends BaseEntity {
         this.operatingTimes = operatingTimes;
     }
 
-    public void addOSpecificDays(List<SpecificDay> specificDays) {
+    public void addSpecificDays(List<SpecificDay> specificDays) {
         this.specificDays = specificDays;
     }
 }

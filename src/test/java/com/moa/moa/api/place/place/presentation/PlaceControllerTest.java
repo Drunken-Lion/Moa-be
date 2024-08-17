@@ -258,7 +258,7 @@ class PlaceControllerTest {
         list.add(businessTime_1);
 
         businessTime_1.addOperatingTimes(operatingTimes_1);
-        businessTime_1.addOSpecificDays(specificDays_1);
+        businessTime_1.addSpecificDays(specificDays_1);
         operatingTimeRepository.saveAll(operatingTimes_1);
         specificDayRepository.saveAll(specificDays_1);
 
@@ -268,7 +268,7 @@ class PlaceControllerTest {
         list.add(businessTime_2);
 
         businessTime_2.addOperatingTimes(operatingTimes_2);
-        businessTime_2.addOSpecificDays(specificDays_2);
+        businessTime_2.addSpecificDays(specificDays_2);
         operatingTimeRepository.saveAll(operatingTimes_2);
         specificDayRepository.saveAll(specificDays_2);
 
@@ -278,7 +278,7 @@ class PlaceControllerTest {
         list.add(businessTime_3);
 
         businessTime_3.addOperatingTimes(operatingTimes_3);
-        businessTime_3.addOSpecificDays(specificDays_3);
+        businessTime_3.addSpecificDays(specificDays_3);
         operatingTimeRepository.saveAll(operatingTimes_3);
         specificDayRepository.saveAll(specificDays_3);
 
@@ -288,7 +288,7 @@ class PlaceControllerTest {
         list.add(businessTime_4);
 
         businessTime_4.addOperatingTimes(operatingTimes_4);
-        businessTime_4.addOSpecificDays(specificDays_4);
+        businessTime_4.addSpecificDays(specificDays_4);
         operatingTimeRepository.saveAll(operatingTimes_4);
         specificDayRepository.saveAll(specificDays_4);
 
@@ -298,7 +298,7 @@ class PlaceControllerTest {
         list.add(businessTime_5);
 
         businessTime_5.addOperatingTimes(operatingTimes_5);
-        businessTime_5.addOSpecificDays(specificDays_5);
+        businessTime_5.addSpecificDays(specificDays_5);
         operatingTimeRepository.saveAll(operatingTimes_5);
         specificDayRepository.saveAll(specificDays_5);
 
@@ -308,7 +308,7 @@ class PlaceControllerTest {
         list.add(businessTime_6);
 
         businessTime_6.addOperatingTimes(operatingTimes_6);
-        businessTime_6.addOSpecificDays(specificDays_6);
+        businessTime_6.addSpecificDays(specificDays_6);
         operatingTimeRepository.saveAll(operatingTimes_6);
         specificDayRepository.saveAll(specificDays_6);
 
@@ -318,7 +318,7 @@ class PlaceControllerTest {
         list.add(businessTime_7);
 
         businessTime_7.addOperatingTimes(operatingTimes_7);
-        businessTime_7.addOSpecificDays(specificDays_7);
+        businessTime_7.addSpecificDays(specificDays_7);
         operatingTimeRepository.saveAll(operatingTimes_7);
         specificDayRepository.saveAll(specificDays_7);
 
@@ -328,7 +328,7 @@ class PlaceControllerTest {
         list.add(businessTime_8);
 
         businessTime_8.addOperatingTimes(operatingTimes_8);
-        businessTime_8.addOSpecificDays(specificDays_8);
+        businessTime_8.addSpecificDays(specificDays_8);
         operatingTimeRepository.saveAll(operatingTimes_8);
         specificDayRepository.saveAll(specificDays_8);
 
@@ -338,7 +338,7 @@ class PlaceControllerTest {
         list.add(businessTime_9);
 
         businessTime_9.addOperatingTimes(operatingTimes_9);
-        businessTime_9.addOSpecificDays(specificDays_9);
+        businessTime_9.addSpecificDays(specificDays_9);
         operatingTimeRepository.saveAll(operatingTimes_9);
         specificDayRepository.saveAll(specificDays_9);
 

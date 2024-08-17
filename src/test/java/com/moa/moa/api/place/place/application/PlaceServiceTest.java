@@ -226,7 +226,7 @@ class PlaceServiceTest {
         list.add(businessTime_1);
 
         businessTime_1.addOperatingTimes(operatingTimes_1);
-        businessTime_1.addOSpecificDays(specificDays_1);
+        businessTime_1.addSpecificDays(specificDays_1);
 
         BusinessTime businessTime_2 = BusinessTime.builder().build();
         List<OperatingTime> operatingTimes_2 = operating2(businessTime_2);
@@ -234,7 +234,7 @@ class PlaceServiceTest {
         list.add(businessTime_2);
 
         businessTime_2.addOperatingTimes(operatingTimes_2);
-        businessTime_2.addOSpecificDays(specificDays_2);
+        businessTime_2.addSpecificDays(specificDays_2);
 
         BusinessTime businessTime_3 = BusinessTime.builder().build();
         List<OperatingTime> operatingTimes_3 = operating3(businessTime_3);
@@ -242,7 +242,7 @@ class PlaceServiceTest {
         list.add(businessTime_3);
 
         businessTime_3.addOperatingTimes(operatingTimes_3);
-        businessTime_3.addOSpecificDays(specificDays_3);
+        businessTime_3.addSpecificDays(specificDays_3);
 
         BusinessTime businessTime_4 = BusinessTime.builder().build();
         List<OperatingTime> operatingTimes_4 = operating4(businessTime_4);
@@ -250,7 +250,7 @@ class PlaceServiceTest {
         list.add(businessTime_4);
 
         businessTime_4.addOperatingTimes(operatingTimes_4);
-        businessTime_4.addOSpecificDays(specificDays_4);
+        businessTime_4.addSpecificDays(specificDays_4);
 
         BusinessTime businessTime_5 = BusinessTime.builder().build();
         List<OperatingTime> operatingTimes_5 = operating5(businessTime_5);
@@ -258,7 +258,7 @@ class PlaceServiceTest {
         list.add(businessTime_5);
 
         businessTime_5.addOperatingTimes(operatingTimes_5);
-        businessTime_5.addOSpecificDays(specificDays_5);
+        businessTime_5.addSpecificDays(specificDays_5);
 
         BusinessTime businessTime_6 = BusinessTime.builder().build();
         List<OperatingTime> operatingTimes_6 = operating6(businessTime_6);
@@ -266,7 +266,7 @@ class PlaceServiceTest {
         list.add(businessTime_6);
 
         businessTime_6.addOperatingTimes(operatingTimes_6);
-        businessTime_6.addOSpecificDays(specificDays_6);
+        businessTime_6.addSpecificDays(specificDays_6);
 
         BusinessTime businessTime_7 = BusinessTime.builder().build();
         List<OperatingTime> operatingTimes_7 = operating7(businessTime_7);
@@ -274,7 +274,7 @@ class PlaceServiceTest {
         list.add(businessTime_7);
 
         businessTime_7.addOperatingTimes(operatingTimes_7);
-        businessTime_7.addOSpecificDays(specificDays_7);
+        businessTime_7.addSpecificDays(specificDays_7);
 
         BusinessTime businessTime_8 = BusinessTime.builder().build();
         List<OperatingTime> operatingTimes_8 = operating8(businessTime_8);
@@ -282,7 +282,7 @@ class PlaceServiceTest {
         list.add(businessTime_8);
 
         businessTime_8.addOperatingTimes(operatingTimes_8);
-        businessTime_8.addOSpecificDays(specificDays_8);
+        businessTime_8.addSpecificDays(specificDays_8);
 
         BusinessTime businessTime_9 = BusinessTime.builder().build();
         List<OperatingTime> operatingTimes_9 = operating9(businessTime_9);
@@ -290,7 +290,7 @@ class PlaceServiceTest {
         list.add(businessTime_9);
 
         businessTime_9.addOperatingTimes(operatingTimes_9);
-        businessTime_9.addOSpecificDays(specificDays_9);
+        businessTime_9.addSpecificDays(specificDays_9);
 
         return list;
     }
