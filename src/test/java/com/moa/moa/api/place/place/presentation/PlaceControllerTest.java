@@ -181,17 +181,14 @@ class PlaceControllerTest {
 
     private List<Place> createPlace(Category category, List<Address> addresses, List<BusinessTime> businessTimes) {
         List<Place> list = new ArrayList<>();
-        Place place_1 = placeRepository.save(
-                createPlace(category, addresses.get(0), businessTimes.get(0), "비발디파크", LocalDate.of(2024, 10, 15),
-                        LocalDate.of(2025, 3, 12), PlaceLevel.LEVEL_1));
+        Place place_1 = createPlace(category, addresses.get(0), businessTimes.get(0), "비발디파크", LocalDate.of(2024, 10, 15),
+                LocalDate.of(2025, 3, 12), PlaceLevel.LEVEL_1);
 
-        Place place_2 = placeRepository.save(
-                createPlace(category, addresses.get(3), businessTimes.get(3), "하이원리조트", LocalDate.of(2024, 10, 16),
-                        LocalDate.of(2025, 3, 12), PlaceLevel.LEVEL_2));
+        Place place_2 = createPlace(category, addresses.get(3), businessTimes.get(3), "하이원리조트", LocalDate.of(2024, 10, 16),
+                LocalDate.of(2025, 3, 12), PlaceLevel.LEVEL_2);
 
-        Place place_3 = placeRepository.save(
-                createPlace(category, addresses.get(4), businessTimes.get(4), "엘리시안", LocalDate.of(2024, 10, 17),
-                        LocalDate.of(2025, 3, 12), PlaceLevel.LEVEL_4));
+        Place place_3 = createPlace(category, addresses.get(4), businessTimes.get(4), "엘리시안", LocalDate.of(2024, 10, 17),
+                LocalDate.of(2025, 3, 12), PlaceLevel.LEVEL_4);
 
         list.add(place_1);
         list.add(place_2);
