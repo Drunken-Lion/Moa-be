@@ -5,8 +5,20 @@ import com.moa.moa.api.address.address.domain.persistence.AddressRepository;
 import com.moa.moa.api.category.category.domain.entity.Category;
 import com.moa.moa.api.category.category.domain.persistence.CategoryRepository;
 import com.moa.moa.api.category.category.util.enumerated.CategoryType;
+import com.moa.moa.api.place.amenity.domain.entity.Amenity;
+import com.moa.moa.api.place.amenity.domain.persistence.AmenityRepository;
+import com.moa.moa.api.place.amenity.util.enumerated.AmenityType;
+import com.moa.moa.api.place.liftticket.domain.entity.LiftTicket;
+import com.moa.moa.api.place.liftticket.domain.persistence.LiftTicketRepository;
+import com.moa.moa.api.place.liftticket.util.enumerated.LiftTicketStatus;
+import com.moa.moa.api.place.liftticket.util.enumerated.LiftTicketType;
 import com.moa.moa.api.place.place.domain.entity.Place;
 import com.moa.moa.api.place.place.util.enumerated.PlaceLevel;
+import com.moa.moa.api.place.placeamenity.domain.entity.PlaceAmenity;
+import com.moa.moa.api.place.placeamenity.domain.persistence.PlaceAmenityRepository;
+import com.moa.moa.api.place.slope.domain.entity.Slope;
+import com.moa.moa.api.place.slope.domain.persistence.SlopeRepository;
+import com.moa.moa.api.place.slope.util.enumerated.SlopeLevel;
 import com.moa.moa.api.time.businesstime.domain.entity.BusinessTime;
 import com.moa.moa.api.time.businesstime.domain.persistence.BusinessTimeRepository;
 import com.moa.moa.api.time.operatingtime.domain.entity.OperatingTime;
@@ -52,17 +64,21 @@ class PlaceRepositoryTest {
     private SpecificDayRepository specificDayRepository;
     @Autowired
     private PlaceRepository placeRepository;
+    @Autowired
+    private AmenityRepository amenityRepository;
+    @Autowired
+    private LiftTicketRepository liftTicketRepository;
+    @Autowired
+    private PlaceAmenityRepository placeAmenityRepository;
+    @Autowired
+    private SlopeRepository slopeRepository;
 
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
     @BeforeEach
-    @Transactional
     void beforeEach() {
         // 카테고리 생성
-        Category category_1 = categoryRepository.save(
-                Category.builder()
-                        .categoryType(CategoryType.SKI_RESORT)
-                        .build());
+        Category category = createCategory();
 
         // 주소 생성
         List<Address> addresses = createAddress();
@@ -71,11 +87,22 @@ class PlaceRepositoryTest {
         List<BusinessTime> businessTimes = createBusinessTime();
 
         // 스키장 생성
-        List<Place> places = createPlace(category_1, addresses, businessTimes);
+        List<Place> places = createPlace(category, addresses, businessTimes);
+
+        // 슬로프 생성
+        createSlope(places);
+
+        // 편의시설 생성
+        List<Amenity> amenities = createAmenity();
+
+        // 스키장 편의시설 중간테이블 생성
+        createPlaceAmenity(places, amenities);
+
+        // 스키장 리프트권 생성
+        createLiftTicket(places);
     }
 
     @AfterEach
-    @Transactional
     void afterEach() {
         categoryRepository.deleteAll();
         addressRepository.deleteAll();
@@ -83,6 +110,10 @@ class PlaceRepositoryTest {
         operatingTimeRepository.deleteAll();
         specificDayRepository.deleteAll();
         placeRepository.deleteAll();
+        amenityRepository.deleteAll();
+        liftTicketRepository.deleteAll();
+        placeAmenityRepository.deleteAll();
+        slopeRepository.deleteAll();
     }
 
     @Test
@@ -97,6 +128,42 @@ class PlaceRepositoryTest {
         assertThat(places.get(0).getOpenDate()).isEqualTo(LocalDate.of(2024, 10, 15));
         assertThat(places.get(0).getCloseDate()).isEqualTo(LocalDate.of(2025, 3, 12));
         assertThat(places.get(0).getRecLevel()).isEqualTo(PlaceLevel.LEVEL_1);
+
+        assertThat(places.get(0).getCategory().getCategoryType()).isEqualTo(CategoryType.SKI_RESORT);
+
+        assertThat(places.get(0).getAddress().getAddress()).isEqualTo("강원도 홍천군 서면 한치골길 262");
+        assertThat(places.get(0).getAddress().getAddressDetail()).isEqualTo(null);
+        assertThat(places.get(0).getAddress().getLocation()).isEqualTo(geometryFactory.createPoint(new Coordinate(127.687106349987, 37.6521031526954)));
+        assertThat(places.get(0).getAddress().getUrl()).isEqualTo("https://map.naver.com/p/entry/place/13139708?c=15.00,0,0,0,dh");
+
+        assertThat(places.get(0).getBusinessTime().getOperatingTimes().size()).isEqualTo(7);
+        assertThat(places.get(0).getBusinessTime().getOperatingTimes().get(0).getStatus()).isEqualTo(OperatingType.OPEN);
+        assertThat(places.get(0).getBusinessTime().getOperatingTimes().get(0).getDay()).isEqualTo(DayType.MON);
+        assertThat(places.get(0).getBusinessTime().getOperatingTimes().get(0).getOpenTime()).isEqualTo(LocalTime.of(8, 0));
+        assertThat(places.get(0).getBusinessTime().getOperatingTimes().get(0).getCloseTime()).isEqualTo(LocalTime.of(2, 0));
+
+        assertThat(places.get(0).getBusinessTime().getSpecificDays().size()).isEqualTo(3);
+        assertThat(places.get(0).getBusinessTime().getSpecificDays().get(0).getStatus()).isEqualTo(SpecificDayType.CLOSED);
+        assertThat(places.get(0).getBusinessTime().getSpecificDays().get(0).getReason()).isEqualTo("설연휴");
+        assertThat(places.get(0).getBusinessTime().getSpecificDays().get(0).getDate()).isEqualTo(LocalDate.of(2025, 1, 28));
+        assertThat(places.get(0).getBusinessTime().getSpecificDays().get(0).getOpenTime()).isNull();
+        assertThat(places.get(0).getBusinessTime().getSpecificDays().get(0).getCloseTime()).isNull();
+
+        assertThat(places.get(0).getLiftTickets().size()).isEqualTo(10);
+        assertThat(places.get(0).getLiftTickets().get(0).getStatus()).isEqualTo(LiftTicketStatus.WEEK_DAY);
+        assertThat(places.get(0).getLiftTickets().get(0).getName()).isEqualTo("스마트4시간권");
+        assertThat(places.get(0).getLiftTickets().get(0).getTicketType()).isEqualTo(LiftTicketType.SMART);
+        assertThat(places.get(0).getLiftTickets().get(0).getHours()).isEqualTo(4L);
+        assertThat(places.get(0).getLiftTickets().get(0).getStartTime()).isNull();
+        assertThat(places.get(0).getLiftTickets().get(0).getEndTime()).isNull();
+
+        assertThat(places.get(0).getSlopes().size()).isEqualTo(9);
+        assertThat(places.get(0).getSlopes().get(0).getName()).isEqualTo("발라드");
+        assertThat(places.get(0).getSlopes().get(0).getLevel()).isEqualTo(SlopeLevel.LEVEL_1);
+
+        assertThat(places.get(0).getAmenities().size()).isEqualTo(7);
+        assertThat(places.get(0).getAmenities().get(0).getUsed()).isEqualTo(true);
+        assertThat(places.get(0).getAmenities().get(0).getAmenity().getType()).isEqualTo(AmenityType.HOTEL);
     }
 
     private List<Place> createPlace(Category category, List<Address> addresses, List<BusinessTime> businessTimes) {
@@ -116,38 +183,42 @@ class PlaceRepositoryTest {
         list.add(place_1);
         list.add(place_2);
         list.add(place_3);
+
+        placeRepository.saveAll(list);
+
         return list;
+    }
+
+    private Category createCategory() {
+        Category category = Category.builder()
+                .categoryType(CategoryType.SKI_RESORT)
+                .build();
+
+        categoryRepository.save(category);
+
+        return category;
     }
 
     private List<Address> createAddress() {
         List<Address> list = new ArrayList<>();
-        Address address_1 = addressRepository.save(
-                createAddress("강원도 홍천군 서면 한치골길 262", 37.6521031526954, 127.687106349987,
-                        "https://map.naver.com/p/entry/place/13139708?c=15.00,0,0,0,dh"));
-        Address address_2 = addressRepository.save(
-                createAddress("강원 홍천군 서면 한치골길 39", "1, 2층", 37.625378749786, 127.666621133276,
-                        "https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%B0%90%EB%A0%8C%ED%83%88%EC%83%B5/place/1680503531?c=15.00,0,0,0,dh&isCorrectAnswer=true"));
-        Address address_3 = addressRepository.save(
-                createAddress("강원 홍천군 서면 한치골길 952", 37.6935333700434, 127.701873788335,
-                        "https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%95%84%EC%A7%80%ED%8A%B8/place/11590090?c=18.01,0,0,0,dh&isCorrectAnswer=true"));
-        Address address_4 = addressRepository.save(
-                createAddress("강원 정선군 고한읍 하이원길 424", 37.2072213760495, 128.836835354268,
-                        "https://map.naver.com/p/entry/place/92136142?lng=128.8388599&lat=37.204042&placePath=%2Fhome&entry=plt&searchType=place&c=15.00,0,0,0,dh"));
-        Address address_5 = addressRepository.save(
-                createAddress("강원 춘천시 남산면 북한강변길 688", 37.8300557977982, 127.57878172946,
-                        "https://map.naver.com/p/search/%EC%8A%A4%ED%82%A4%EC%9E%A5/place/15648643?placePath=?entry=pll&from=nx&fromNxList=true&searchType=place&c=15.00,0,0,0,dh"));
-        Address address_6 = addressRepository.save(
-                createAddress("강원 홍천군 서면 한서로 2137", "비발디파크인생렌탈샵", 37.6167793731889, 127.671714070978,
-                        "https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%20%ED%8C%8C%ED%81%AC%20%EB%A0%8C%ED%83%88/place/1034233118?c=12.00,0,0,0,dh&placePath=%3Fentry%253Dpll"));
-        Address address_7 = addressRepository.save(
-                createAddress("강원 정선군 고한읍 고한로 40", "하이원 스키샵 월남스키 렌탈샵", 37.2076563451798, 128.843415629048,
-                        "https://map.naver.com/p/search/%ED%95%98%EC%9D%B4%EC%9B%90%EB%A6%AC%EC%A1%B0%ED%8A%B8%20%EB%A0%8C%ED%83%88%EC%83%B5/place/12447242?c=15.00,0,0,0,dh&placePath=%3Fentry%253Dpll"));
-        Address address_8 = addressRepository.save(
-                createAddress("강원 정선군 사북읍 하이원길 36", "눈의나라", 37.2234130104246, 128.814883350542,
-                        "https://map.naver.com/p/search/%ED%95%98%EC%9D%B4%EC%9B%90%EB%A6%AC%EC%A1%B0%ED%8A%B8%20%EB%A0%8C%ED%83%88%EC%83%B5/place/12995662?c=17.00,0,0,0,dh&placePath=%3Fentry%253Dpll"));
-        Address address_9 = addressRepository.save(
-                createAddress("강원 정선군 고한읍 고한로 12", "스노우블루 스키샵", 37.2095420989986, 128.841584050646,
-                        "https://map.naver.com/p/search/%ED%95%98%EC%9D%B4%EC%9B%90%EB%A6%AC%EC%A1%B0%ED%8A%B8%20%EB%A0%8C%ED%83%88%EC%83%B5/place/1053516546?c=17.00,0,0,0,dh&placePath=%3Fentry%253Dpll"));
+        Address address_1 = createAddress("강원도 홍천군 서면 한치골길 262", 37.6521031526954, 127.687106349987,
+                "https://map.naver.com/p/entry/place/13139708?c=15.00,0,0,0,dh");
+        Address address_2 = createAddress("강원 홍천군 서면 한치골길 39", "1, 2층", 37.625378749786, 127.666621133276,
+                "https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%B0%90%EB%A0%8C%ED%83%88%EC%83%B5/place/1680503531?c=15.00,0,0,0,dh&isCorrectAnswer=true");
+        Address address_3 = createAddress("강원 홍천군 서면 한치골길 952", 37.6935333700434, 127.701873788335,
+                "https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%95%84%EC%A7%80%ED%8A%B8/place/11590090?c=18.01,0,0,0,dh&isCorrectAnswer=true");
+        Address address_4 = createAddress("강원 정선군 고한읍 하이원길 424", 37.2072213760495, 128.836835354268,
+                "https://map.naver.com/p/entry/place/92136142?lng=128.8388599&lat=37.204042&placePath=%2Fhome&entry=plt&searchType=place&c=15.00,0,0,0,dh");
+        Address address_5 = createAddress("강원 춘천시 남산면 북한강변길 688", 37.8300557977982, 127.57878172946,
+                "https://map.naver.com/p/search/%EC%8A%A4%ED%82%A4%EC%9E%A5/place/15648643?placePath=?entry=pll&from=nx&fromNxList=true&searchType=place&c=15.00,0,0,0,dh");
+        Address address_6 = createAddress("강원 홍천군 서면 한서로 2137", "비발디파크인생렌탈샵", 37.6167793731889, 127.671714070978,
+                "https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%20%ED%8C%8C%ED%81%AC%20%EB%A0%8C%ED%83%88/place/1034233118?c=12.00,0,0,0,dh&placePath=%3Fentry%253Dpll");
+        Address address_7 = createAddress("강원 정선군 고한읍 고한로 40", "하이원 스키샵 월남스키 렌탈샵", 37.2076563451798, 128.843415629048,
+                "https://map.naver.com/p/search/%ED%95%98%EC%9D%B4%EC%9B%90%EB%A6%AC%EC%A1%B0%ED%8A%B8%20%EB%A0%8C%ED%83%88%EC%83%B5/place/12447242?c=15.00,0,0,0,dh&placePath=%3Fentry%253Dpll");
+        Address address_8 = createAddress("강원 정선군 사북읍 하이원길 36", "눈의나라", 37.2234130104246, 128.814883350542,
+                "https://map.naver.com/p/search/%ED%95%98%EC%9D%B4%EC%9B%90%EB%A6%AC%EC%A1%B0%ED%8A%B8%20%EB%A0%8C%ED%83%88%EC%83%B5/place/12995662?c=17.00,0,0,0,dh&placePath=%3Fentry%253Dpll");
+        Address address_9 = createAddress("강원 정선군 고한읍 고한로 12", "스노우블루 스키샵", 37.2095420989986, 128.841584050646,
+                "https://map.naver.com/p/search/%ED%95%98%EC%9D%B4%EC%9B%90%EB%A6%AC%EC%A1%B0%ED%8A%B8%20%EB%A0%8C%ED%83%88%EC%83%B5/place/1053516546?c=17.00,0,0,0,dh&placePath=%3Fentry%253Dpll");
 
         list.add(address_1);
         list.add(address_2);
@@ -159,55 +230,106 @@ class PlaceRepositoryTest {
         list.add(address_8);
         list.add(address_9);
 
+        addressRepository.saveAll(list);
+
         return list;
     }
 
     private List<BusinessTime> createBusinessTime() {
         List<BusinessTime> list = new ArrayList<>();
-        BusinessTime businessTime_1 = businessTimeRepository.save(BusinessTime.builder().build());
-        operating1(businessTime_1);
-        specific1(businessTime_1);
+
+        BusinessTime businessTime_1 = BusinessTime.builder().build();
+        List<OperatingTime> operatingTimes_1 = operating1(businessTime_1);
+        List<SpecificDay> specificDays_1 = specific1(businessTime_1);
         list.add(businessTime_1);
 
-        BusinessTime businessTime_2 = businessTimeRepository.save(BusinessTime.builder().build());
-        operating2(businessTime_2);
-        specific2(businessTime_2);
+        businessTime_1.addOperatingTimes(operatingTimes_1);
+        businessTime_1.addOSpecificDays(specificDays_1);
+        operatingTimeRepository.saveAll(operatingTimes_1);
+        specificDayRepository.saveAll(specificDays_1);
+
+        BusinessTime businessTime_2 = BusinessTime.builder().build();
+        List<OperatingTime> operatingTimes_2 = operating2(businessTime_2);
+        List<SpecificDay> specificDays_2 = specific2(businessTime_2);
         list.add(businessTime_2);
 
-        BusinessTime businessTime_3 = businessTimeRepository.save(BusinessTime.builder().build());
-        operating3(businessTime_3);
-        specific3(businessTime_3);
+        businessTime_2.addOperatingTimes(operatingTimes_2);
+        businessTime_2.addOSpecificDays(specificDays_2);
+        operatingTimeRepository.saveAll(operatingTimes_2);
+        specificDayRepository.saveAll(specificDays_2);
+
+        BusinessTime businessTime_3 = BusinessTime.builder().build();
+        List<OperatingTime> operatingTimes_3 = operating3(businessTime_3);
+        List<SpecificDay> specificDays_3 = specific3(businessTime_3);
         list.add(businessTime_3);
 
-        BusinessTime businessTime_4 = businessTimeRepository.save(BusinessTime.builder().build());
-        operating4(businessTime_4);
-        specific4(businessTime_4);
+        businessTime_3.addOperatingTimes(operatingTimes_3);
+        businessTime_3.addOSpecificDays(specificDays_3);
+        operatingTimeRepository.saveAll(operatingTimes_3);
+        specificDayRepository.saveAll(specificDays_3);
+
+        BusinessTime businessTime_4 = BusinessTime.builder().build();
+        List<OperatingTime> operatingTimes_4 = operating4(businessTime_4);
+        List<SpecificDay> specificDays_4 = specific4(businessTime_4);
         list.add(businessTime_4);
 
-        BusinessTime businessTime_5 = businessTimeRepository.save(BusinessTime.builder().build());
-        operating5(businessTime_5);
-        specific5(businessTime_5);
+        businessTime_4.addOperatingTimes(operatingTimes_4);
+        businessTime_4.addOSpecificDays(specificDays_4);
+        operatingTimeRepository.saveAll(operatingTimes_4);
+        specificDayRepository.saveAll(specificDays_4);
+
+        BusinessTime businessTime_5 = BusinessTime.builder().build();
+        List<OperatingTime> operatingTimes_5 = operating5(businessTime_5);
+        List<SpecificDay> specificDays_5 = specific5(businessTime_5);
         list.add(businessTime_5);
 
-        BusinessTime businessTime_6 = businessTimeRepository.save(BusinessTime.builder().build());
-        operating6(businessTime_6);
-        specific6(businessTime_6);
+        businessTime_5.addOperatingTimes(operatingTimes_5);
+        businessTime_5.addOSpecificDays(specificDays_5);
+        operatingTimeRepository.saveAll(operatingTimes_5);
+        specificDayRepository.saveAll(specificDays_5);
+
+        BusinessTime businessTime_6 = BusinessTime.builder().build();
+        List<OperatingTime> operatingTimes_6 = operating6(businessTime_6);
+        List<SpecificDay> specificDays_6 = specific6(businessTime_6);
         list.add(businessTime_6);
 
-        BusinessTime businessTime_7 = businessTimeRepository.save(BusinessTime.builder().build());
-        operating7(businessTime_7);
-        specific7(businessTime_7);
+        businessTime_6.addOperatingTimes(operatingTimes_6);
+        businessTime_6.addOSpecificDays(specificDays_6);
+        operatingTimeRepository.saveAll(operatingTimes_6);
+        specificDayRepository.saveAll(specificDays_6);
+
+        BusinessTime businessTime_7 = BusinessTime.builder().build();
+        List<OperatingTime> operatingTimes_7 = operating7(businessTime_7);
+        List<SpecificDay> specificDays_7 = specific7(businessTime_7);
         list.add(businessTime_7);
 
-        BusinessTime businessTime_8 = businessTimeRepository.save(BusinessTime.builder().build());
-        operating8(businessTime_8);
-        specific8(businessTime_8);
+        businessTime_7.addOperatingTimes(operatingTimes_7);
+        businessTime_7.addOSpecificDays(specificDays_7);
+        operatingTimeRepository.saveAll(operatingTimes_7);
+        specificDayRepository.saveAll(specificDays_7);
+
+        BusinessTime businessTime_8 = BusinessTime.builder().build();
+        List<OperatingTime> operatingTimes_8 = operating8(businessTime_8);
+        List<SpecificDay> specificDays_8 = specific8(businessTime_8);
         list.add(businessTime_8);
 
-        BusinessTime businessTime_9 = businessTimeRepository.save(BusinessTime.builder().build());
-        operating9(businessTime_9);
-        specific9(businessTime_9);
+        businessTime_8.addOperatingTimes(operatingTimes_8);
+        businessTime_8.addOSpecificDays(specificDays_8);
+        operatingTimeRepository.saveAll(operatingTimes_8);
+        specificDayRepository.saveAll(specificDays_8);
+
+        BusinessTime businessTime_9 = BusinessTime.builder().build();
+        List<OperatingTime> operatingTimes_9 = operating9(businessTime_9);
+        List<SpecificDay> specificDays_9 = specific9(businessTime_9);
         list.add(businessTime_9);
+
+        businessTime_9.addOperatingTimes(operatingTimes_9);
+        businessTime_9.addOSpecificDays(specificDays_9);
+        operatingTimeRepository.saveAll(operatingTimes_9);
+        specificDayRepository.saveAll(specificDays_9);
+
+        businessTimeRepository.saveAll(list);
+
         return list;
     }
 
@@ -251,204 +373,185 @@ class PlaceRepositoryTest {
                 .build();
     }
 
-    private void operating1(BusinessTime businessTime) {
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.MON, LocalTime.of(8, 0),
-                        LocalTime.of(2, 0)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.TUE, LocalTime.of(8, 0),
-                        LocalTime.of(2, 0)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.WED, LocalTime.of(8, 0),
-                        LocalTime.of(2, 0)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.THU, LocalTime.of(8, 0),
-                        LocalTime.of(2, 0)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.FRI, LocalTime.of(8, 0),
-                        LocalTime.of(2, 0)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.SAT, LocalTime.of(8, 0),
-                        LocalTime.of(2, 0)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.SUN, LocalTime.of(8, 0),
-                        LocalTime.of(2, 0)));
+    private List<OperatingTime> operating1(BusinessTime businessTime) {
+        List<OperatingTime> list = new ArrayList<>();
+
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.MON, LocalTime.of(8, 0),
+                LocalTime.of(2, 0)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.TUE, LocalTime.of(8, 0),
+                LocalTime.of(2, 0)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.WED, LocalTime.of(8, 0),
+                LocalTime.of(2, 0)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.THU, LocalTime.of(8, 0),
+                LocalTime.of(2, 0)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.FRI, LocalTime.of(8, 0),
+                LocalTime.of(2, 0)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.SAT, LocalTime.of(8, 0),
+                LocalTime.of(2, 0)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.SUN, LocalTime.of(8, 0),
+                LocalTime.of(2, 0)));
+
+        return list;
     }
 
-    private void operating2(BusinessTime businessTime) {
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.CLOSED, DayType.MON, LocalTime.of(8, 0),
-                        LocalTime.of(2, 0)));
+    private List<OperatingTime> operating2(BusinessTime businessTime) {
+        List<OperatingTime> list = new ArrayList<>();
 
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.TUE, LocalTime.of(7, 0),
-                        LocalTime.of(2, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.BREAK_TIME, DayType.TUE, LocalTime.of(12, 0),
-                        LocalTime.of(13, 0)));
+        list.add(createOperatingTime(businessTime, OperatingType.CLOSED, DayType.MON, LocalTime.of(8, 0),
+                LocalTime.of(2, 0)));
 
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.WED, LocalTime.of(7, 0),
-                        LocalTime.of(2, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.BREAK_TIME, DayType.WED, LocalTime.of(12, 0),
-                        LocalTime.of(13, 0)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.TUE, LocalTime.of(7, 0),
+                LocalTime.of(2, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.BREAK_TIME, DayType.TUE, LocalTime.of(12, 0),
+                LocalTime.of(13, 0)));
 
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.THU, LocalTime.of(7, 0),
-                        LocalTime.of(2, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.BREAK_TIME, DayType.THU, LocalTime.of(12, 0),
-                        LocalTime.of(13, 0)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.WED, LocalTime.of(7, 0),
+                LocalTime.of(2, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.BREAK_TIME, DayType.WED, LocalTime.of(12, 0),
+                LocalTime.of(13, 0)));
 
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.FRI, LocalTime.of(7, 0),
-                        LocalTime.of(2, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.BREAK_TIME, DayType.FRI, LocalTime.of(12, 0),
-                        LocalTime.of(13, 0)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.THU, LocalTime.of(7, 0),
+                LocalTime.of(2, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.BREAK_TIME, DayType.THU, LocalTime.of(12, 0),
+                LocalTime.of(13, 0)));
 
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.SAT, LocalTime.of(7, 0),
-                        LocalTime.of(2, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.BREAK_TIME, DayType.SAT, LocalTime.of(12, 0),
-                        LocalTime.of(13, 0)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.FRI, LocalTime.of(7, 0),
+                LocalTime.of(2, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.BREAK_TIME, DayType.FRI, LocalTime.of(12, 0),
+                LocalTime.of(13, 0)));
 
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.SUN, LocalTime.of(7, 0),
-                        LocalTime.of(2, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.BREAK_TIME, DayType.SUN, LocalTime.of(12, 0),
-                        LocalTime.of(13, 0)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.SAT, LocalTime.of(7, 0),
+                LocalTime.of(2, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.BREAK_TIME, DayType.SAT, LocalTime.of(12, 0),
+                LocalTime.of(13, 0)));
+
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.SUN, LocalTime.of(7, 0),
+                LocalTime.of(2, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.BREAK_TIME, DayType.SUN, LocalTime.of(12, 0),
+                LocalTime.of(13, 0)));
+
+        return list;
     }
 
-    private void operating3(BusinessTime businessTime) {
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.MON, LocalTime.of(7, 0),
-                        LocalTime.of(2, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.TUE, LocalTime.of(7, 0),
-                        LocalTime.of(2, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.WED, LocalTime.of(7, 0),
-                        LocalTime.of(2, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.THU, LocalTime.of(7, 0),
-                        LocalTime.of(2, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.FRI, LocalTime.of(7, 0),
-                        LocalTime.of(2, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.SAT, LocalTime.of(7, 0),
-                        LocalTime.of(2, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.SUN, LocalTime.of(7, 0),
-                        LocalTime.of(2, 30)));
+    private List<OperatingTime> operating3(BusinessTime businessTime) {
+        List<OperatingTime> list = new ArrayList<>();
+
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.MON, LocalTime.of(7, 0),
+                LocalTime.of(2, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.TUE, LocalTime.of(7, 0),
+                LocalTime.of(2, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.WED, LocalTime.of(7, 0),
+                LocalTime.of(2, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.THU, LocalTime.of(7, 0),
+                LocalTime.of(2, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.FRI, LocalTime.of(7, 0),
+                LocalTime.of(2, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.SAT, LocalTime.of(7, 0),
+                LocalTime.of(2, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.SUN, LocalTime.of(7, 0),
+                LocalTime.of(2, 30)));
+
+        return list;
     }
 
-    private void operating4(BusinessTime businessTime) {
-        operating3(businessTime);
+    private List<OperatingTime> operating4(BusinessTime businessTime) {
+        List<OperatingTime> list = new ArrayList<>();
+
+        list.addAll(operating3(businessTime));
+
+        return list;
     }
 
-    private void operating5(BusinessTime businessTime) {
-        operating3(businessTime);
+    private List<OperatingTime> operating5(BusinessTime businessTime) {
+        List<OperatingTime> list = new ArrayList<>();
+
+        list.addAll(operating3(businessTime));
+
+        return list;
     }
 
-    private void operating6(BusinessTime businessTime) {
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.MON, LocalTime.of(8, 0),
-                        LocalTime.of(1, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.TUE, LocalTime.of(8, 0),
-                        LocalTime.of(1, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.WED, LocalTime.of(8, 0),
-                        LocalTime.of(1, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.THU, LocalTime.of(8, 0),
-                        LocalTime.of(1, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.FRI, LocalTime.of(8, 0),
-                        LocalTime.of(1, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.SAT, LocalTime.of(8, 0),
-                        LocalTime.of(1, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.SUN, LocalTime.of(8, 0),
-                        LocalTime.of(1, 30)));
+    private List<OperatingTime> operating6(BusinessTime businessTime) {
+        List<OperatingTime> list = new ArrayList<>();
+
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.MON, LocalTime.of(8, 0),
+                LocalTime.of(1, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.TUE, LocalTime.of(8, 0),
+                LocalTime.of(1, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.WED, LocalTime.of(8, 0),
+                LocalTime.of(1, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.THU, LocalTime.of(8, 0),
+                LocalTime.of(1, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.FRI, LocalTime.of(8, 0),
+                LocalTime.of(1, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.SAT, LocalTime.of(8, 0),
+                LocalTime.of(1, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.SUN, LocalTime.of(8, 0),
+                LocalTime.of(1, 30)));
+
+        return list;
     }
 
-    private void operating7(BusinessTime businessTime) {
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.MON, LocalTime.of(5, 0),
-                        LocalTime.of(23, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.TUE, LocalTime.of(5, 0),
-                        LocalTime.of(23, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.WED, LocalTime.of(5, 0),
-                        LocalTime.of(23, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.THU, LocalTime.of(5, 0),
-                        LocalTime.of(23, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.FRI, LocalTime.of(5, 0),
-                        LocalTime.of(23, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.SAT, LocalTime.of(5, 0),
-                        LocalTime.of(23, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.SUN, LocalTime.of(5, 0),
-                        LocalTime.of(23, 30)));
+    private List<OperatingTime> operating7(BusinessTime businessTime) {
+        List<OperatingTime> list = new ArrayList<>();
+
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.MON, LocalTime.of(5, 0),
+                LocalTime.of(23, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.TUE, LocalTime.of(5, 0),
+                LocalTime.of(23, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.WED, LocalTime.of(5, 0),
+                LocalTime.of(23, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.THU, LocalTime.of(5, 0),
+                LocalTime.of(23, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.FRI, LocalTime.of(5, 0),
+                LocalTime.of(23, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.SAT, LocalTime.of(5, 0),
+                LocalTime.of(23, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.SUN, LocalTime.of(5, 0),
+                LocalTime.of(23, 30)));
+
+        return list;
     }
 
-    private void operating8(BusinessTime businessTime) {
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.MON, LocalTime.of(11, 0),
-                        LocalTime.of(3, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.TUE, LocalTime.of(11, 0),
-                        LocalTime.of(3, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.WED, LocalTime.of(11, 0),
-                        LocalTime.of(3, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.THU, LocalTime.of(11, 0),
-                        LocalTime.of(3, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.FRI, LocalTime.of(11, 0),
-                        LocalTime.of(3, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.SAT, LocalTime.of(11, 0),
-                        LocalTime.of(3, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.SUN, LocalTime.of(11, 0),
-                        LocalTime.of(3, 30)));
+    private List<OperatingTime> operating8(BusinessTime businessTime) {
+        List<OperatingTime> list = new ArrayList<>();
+
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.MON, LocalTime.of(11, 0),
+                LocalTime.of(3, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.TUE, LocalTime.of(11, 0),
+                LocalTime.of(3, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.WED, LocalTime.of(11, 0),
+                LocalTime.of(3, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.THU, LocalTime.of(11, 0),
+                LocalTime.of(3, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.FRI, LocalTime.of(11, 0),
+                LocalTime.of(3, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.SAT, LocalTime.of(11, 0),
+                LocalTime.of(3, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.SUN, LocalTime.of(11, 0),
+                LocalTime.of(3, 30)));
+
+        return list;
     }
 
-    private void operating9(BusinessTime businessTime) {
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.MON, LocalTime.of(8, 0),
-                        LocalTime.of(1, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.TUE, LocalTime.of(8, 0),
-                        LocalTime.of(1, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.WED, LocalTime.of(8, 0),
-                        LocalTime.of(1, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.THU, LocalTime.of(8, 0),
-                        LocalTime.of(1, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.FRI, LocalTime.of(8, 0),
-                        LocalTime.of(1, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.SAT, LocalTime.of(8, 0),
-                        LocalTime.of(1, 30)));
-        operatingTimeRepository.save(
-                createOperatingTime(businessTime, OperatingType.OPEN, DayType.SUN, LocalTime.of(8, 0),
-                        LocalTime.of(1, 30)));
+    private List<OperatingTime> operating9(BusinessTime businessTime) {
+        List<OperatingTime> list = new ArrayList<>();
+
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.MON, LocalTime.of(8, 0),
+                LocalTime.of(1, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.TUE, LocalTime.of(8, 0),
+                LocalTime.of(1, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.WED, LocalTime.of(8, 0),
+                LocalTime.of(1, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.THU, LocalTime.of(8, 0),
+                LocalTime.of(1, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.FRI, LocalTime.of(8, 0),
+                LocalTime.of(1, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.SAT, LocalTime.of(8, 0),
+                LocalTime.of(1, 30)));
+        list.add(createOperatingTime(businessTime, OperatingType.OPEN, DayType.SUN, LocalTime.of(8, 0),
+                LocalTime.of(1, 30)));
+
+        return list;
     }
 
     private SpecificDay createSpecific(BusinessTime businessTime, SpecificDayType type, String reason, LocalDate date) {
@@ -460,48 +563,267 @@ class PlaceRepositoryTest {
                 .build();
     }
 
-    private void specific1(BusinessTime businessTime) {
-        specificDayRepository.save(
-                createSpecific(businessTime, SpecificDayType.CLOSED, "설연휴", LocalDate.of(2025, 1, 28)));
-        specificDayRepository.save(
-                createSpecific(businessTime, SpecificDayType.CLOSED, "설연휴", LocalDate.of(2025, 1, 29)));
-        specificDayRepository.save(
-                createSpecific(businessTime, SpecificDayType.CLOSED, "설연휴", LocalDate.of(2025, 1, 30)));
+    private List<SpecificDay> specific1(BusinessTime businessTime) {
+        List<SpecificDay> list = new ArrayList<>();
+
+        list.add(createSpecific(businessTime, SpecificDayType.CLOSED, "설연휴", LocalDate.of(2025, 1, 28)));
+        list.add(createSpecific(businessTime, SpecificDayType.CLOSED, "설연휴", LocalDate.of(2025, 1, 29)));
+        list.add(createSpecific(businessTime, SpecificDayType.CLOSED, "설연휴", LocalDate.of(2025, 1, 30)));
+
+        return list;
     }
 
-    private void specific2(BusinessTime businessTime) {
-        specificDayRepository.save(
-                createSpecific(businessTime, SpecificDayType.CLOSED, "신정", LocalDate.of(2025, 1, 1)));
-        specific1(businessTime);
+    private List<SpecificDay> specific2(BusinessTime businessTime) {
+        List<SpecificDay> list = new ArrayList<>();
+
+        list.add(createSpecific(businessTime, SpecificDayType.CLOSED, "신정", LocalDate.of(2025, 1, 1)));
+        list.addAll(specific1(businessTime));
+
+        return list;
     }
 
-    private void specific3(BusinessTime businessTime) {
-        specific1(businessTime);
+    private List<SpecificDay> specific3(BusinessTime businessTime) {
+        List<SpecificDay> list = new ArrayList<>();
+
+        list.addAll(specific1(businessTime));
+
+        return list;
     }
 
-    private void specific4(BusinessTime businessTime) {
-        specificDayRepository.save(
-                createSpecific(businessTime, SpecificDayType.CLOSED, "설연휴", LocalDate.of(2025, 1, 29)));
+    private List<SpecificDay> specific4(BusinessTime businessTime) {
+        List<SpecificDay> list = new ArrayList<>();
+
+        list.add(createSpecific(businessTime, SpecificDayType.CLOSED, "설연휴", LocalDate.of(2025, 1, 29)));
+
+        return list;
     }
 
-    private void specific5(BusinessTime businessTime) {
-        specificDayRepository.save(
-                createSpecific(businessTime, SpecificDayType.CLOSED, "설연휴", LocalDate.of(2025, 1, 29)));
+    private List<SpecificDay> specific5(BusinessTime businessTime) {
+        List<SpecificDay> list = new ArrayList<>();
+
+        list.add(createSpecific(businessTime, SpecificDayType.CLOSED, "설연휴", LocalDate.of(2025, 1, 29)));
+
+        return list;
     }
 
-    private void specific6(BusinessTime businessTime) {
-        specific1(businessTime);
+    private List<SpecificDay> specific6(BusinessTime businessTime) {
+        List<SpecificDay> list = new ArrayList<>();
+
+        list.addAll(specific1(businessTime));
+
+        return list;
     }
 
-    private void specific7(BusinessTime businessTime) {
-        specific1(businessTime);
+    private List<SpecificDay> specific7(BusinessTime businessTime) {
+        List<SpecificDay> list = new ArrayList<>();
+
+        list.addAll(specific1(businessTime));
+
+        return list;
     }
 
-    private void specific8(BusinessTime businessTime) {
-        specific1(businessTime);
+    private List<SpecificDay> specific8(BusinessTime businessTime) {
+        List<SpecificDay> list = new ArrayList<>();
+
+        list.addAll(specific1(businessTime));
+
+        return list;
     }
 
-    private void specific9(BusinessTime businessTime) {
-        specific1(businessTime);
+    private List<SpecificDay> specific9(BusinessTime businessTime) {
+        List<SpecificDay> list = new ArrayList<>();
+
+        list.addAll(specific1(businessTime));
+
+        return list;
+    }
+
+    private void createSlope(List<Place> places) {
+        List<Slope> list_1 = new ArrayList<>();
+
+        list_1.add(Slope.builder().place(places.get(0)).name("발라드").level(SlopeLevel.LEVEL_1).build());
+        list_1.add(Slope.builder().place(places.get(0)).name("블루스").level(SlopeLevel.LEVEL_1).build());
+        list_1.add(Slope.builder().place(places.get(0)).name("레게").level(SlopeLevel.LEVEL_2).build());
+        list_1.add(Slope.builder().place(places.get(0)).name("째즈").level(SlopeLevel.LEVEL_2).build());
+        list_1.add(Slope.builder().place(places.get(0)).name("클래식").level(SlopeLevel.LEVEL_3).build());
+        list_1.add(Slope.builder().place(places.get(0)).name("힙합").level(SlopeLevel.LEVEL_3).build());
+        list_1.add(Slope.builder().place(places.get(0)).name("펑키").level(SlopeLevel.LEVEL_4).build());
+        list_1.add(Slope.builder().place(places.get(0)).name("테크노").level(SlopeLevel.LEVEL_4).build());
+        list_1.add(Slope.builder().place(places.get(0)).name("락").level(SlopeLevel.LEVEL_5).build());
+
+        places.get(0).addSlopes(list_1);
+
+        List<Slope> list_2 = new ArrayList<>();
+
+        list_2.add(Slope.builder().place(places.get(1)).name("제우스1").level(SlopeLevel.LEVEL_1).build());
+        list_2.add(Slope.builder().place(places.get(1)).name("제우스2").level(SlopeLevel.LEVEL_1).build());
+        list_2.add(Slope.builder().place(places.get(1)).name("제우스3").level(SlopeLevel.LEVEL_1).build());
+        list_2.add(Slope.builder().place(places.get(1)).name("빅토리아1").level(SlopeLevel.LEVEL_4).build());
+        list_2.add(Slope.builder().place(places.get(1)).name("빅토리아2").level(SlopeLevel.LEVEL_4).build());
+        list_2.add(Slope.builder().place(places.get(1)).name("헤라1").level(SlopeLevel.LEVEL_2).build());
+        list_2.add(Slope.builder().place(places.get(1)).name("헤라2").level(SlopeLevel.LEVEL_3).build());
+        list_2.add(Slope.builder().place(places.get(1)).name("헤라3").level(SlopeLevel.LEVEL_4).build());
+        list_2.add(Slope.builder().place(places.get(1)).name("아폴리1").level(SlopeLevel.LEVEL_4).build());
+        list_2.add(Slope.builder().place(places.get(1)).name("아폴로3").level(SlopeLevel.LEVEL_4).build());
+        list_2.add(Slope.builder().place(places.get(1)).name("아폴로4").level(SlopeLevel.LEVEL_4).build());
+        list_2.add(Slope.builder().place(places.get(1)).name("아폴로6").level(SlopeLevel.LEVEL_4).build());
+        list_2.add(Slope.builder().place(places.get(1)).name("아테나2").level(SlopeLevel.LEVEL_2).build());
+        list_2.add(Slope.builder().place(places.get(1)).name("아테나3").level(SlopeLevel.LEVEL_1).build());
+
+        places.get(1).addSlopes(list_2);
+
+        List<Slope> list_3 = new ArrayList<>();
+
+        list_3.add(Slope.builder().place(places.get(2)).name("래빗").level(SlopeLevel.LEVEL_1).build());
+        list_3.add(Slope.builder().place(places.get(2)).name("팬더").level(SlopeLevel.LEVEL_1).build());
+        list_3.add(Slope.builder().place(places.get(2)).name("드래곤").level(SlopeLevel.LEVEL_2).build());
+        list_3.add(Slope.builder().place(places.get(2)).name("호스").level(SlopeLevel.LEVEL_2).build());
+        list_3.add(Slope.builder().place(places.get(2)).name("퓨마").level(SlopeLevel.LEVEL_2).build());
+        list_3.add(Slope.builder().place(places.get(2)).name("디어").level(SlopeLevel.LEVEL_2).build());
+        list_3.add(Slope.builder().place(places.get(2)).name("제브라").level(SlopeLevel.LEVEL_2).build());
+        list_3.add(Slope.builder().place(places.get(2)).name("페가수스").level(SlopeLevel.LEVEL_2).build());
+        list_3.add(Slope.builder().place(places.get(2)).name("래퍼드").level(SlopeLevel.LEVEL_4).build());
+        list_3.add(Slope.builder().place(places.get(2)).name("재규어").level(SlopeLevel.LEVEL_4).build());
+
+        places.get(2).addSlopes(list_3);
+
+        slopeRepository.saveAll(list_1);
+        slopeRepository.saveAll(list_2);
+        slopeRepository.saveAll(list_3);
+    }
+
+    private List<Amenity> createAmenity() {
+        List<Amenity> list = new ArrayList<>();
+
+        list.add(Amenity.builder().type(AmenityType.HOTEL).build());
+        list.add(Amenity.builder().type(AmenityType.INNER_RENTAL_SHOP).build());
+        list.add(Amenity.builder().type(AmenityType.SHUTTLE_BUS).build());
+        list.add(Amenity.builder().type(AmenityType.CONVENIENCE_STORE).build());
+        list.add(Amenity.builder().type(AmenityType.FOOD_COURT).build());
+        list.add(Amenity.builder().type(AmenityType.GIFT_SHOP).build());
+        list.add(Amenity.builder().type(AmenityType.INFIRMARY).build());
+
+        amenityRepository.saveAll(list);
+
+        return list;
+    }
+
+    private void createPlaceAmenity(List<Place> places, List<Amenity> amenities) {
+        List<PlaceAmenity> list_1 = new ArrayList<>();
+        for (Amenity amenity : amenities) {
+            list_1.add(PlaceAmenity.builder().place(places.get(0)).amenity(amenity).used(true).build());
+        }
+        places.get(0).addPlaceAmenities(list_1);
+
+        List<PlaceAmenity> list_2 = new ArrayList<>();
+        for (Amenity amenity : amenities) {
+            list_2.add(PlaceAmenity.builder().place(places.get(1)).amenity(amenity).used(true).build());
+        }
+        list_2.get(2).modUse(false);
+        places.get(1).addPlaceAmenities(list_2);
+
+        List<PlaceAmenity> list_3 = new ArrayList<>();
+        for (Amenity amenity : amenities) {
+            list_3.add(PlaceAmenity.builder().place(places.get(2)).amenity(amenity).used(true).build());
+        }
+        list_3.get(0).modUse(false);
+        list_3.get(1).modUse(false);
+        list_3.get(2).modUse(false);
+        list_3.get(3).modUse(false);
+        list_3.get(4).modUse(false);
+        list_3.get(5).modUse(false);
+        places.get(2).addPlaceAmenities(list_3);
+
+
+        placeAmenityRepository.saveAll(list_1);
+        placeAmenityRepository.saveAll(list_2);
+        placeAmenityRepository.saveAll(list_3);
+    }
+
+    private void createLiftTicket(List<Place> places) {
+        // place 1
+        List<LiftTicket> list_1 = new ArrayList<>();
+
+        list_1.add(LiftTicket.builder().place(places.get(0)).status(LiftTicketStatus.WEEK_DAY).name("스마트4시간권").ticketType(
+                LiftTicketType.SMART).hours(4L).build());
+
+        list_1.add(LiftTicket.builder().place(places.get(0)).status(LiftTicketStatus.WEEK_DAY).name("스마트6시간권").ticketType(
+                LiftTicketType.SMART).hours(6L).build());
+
+        list_1.add(LiftTicket.builder().place(places.get(0)).status(LiftTicketStatus.WEEK_DAY).name("오전권").ticketType(
+                LiftTicketType.TIME).hours(4L).startTime(LocalTime.of(8, 0)).endTime(LocalTime.of(12, 0)).build());
+
+        list_1.add(LiftTicket.builder().place(places.get(0)).status(LiftTicketStatus.WEEK_DAY).name("오후권").ticketType(
+                LiftTicketType.TIME).hours(4L).startTime(LocalTime.of(14, 0)).endTime(LocalTime.of(18, 0)).build());
+
+        list_1.add(LiftTicket.builder().place(places.get(0)).status(LiftTicketStatus.WEEK_DAY).name("야간권").ticketType(
+                LiftTicketType.TIME).hours(4L).startTime(LocalTime.of(22, 0)).endTime(LocalTime.of(2, 0)).build());
+
+        list_1.add(LiftTicket.builder().place(places.get(0)).status(LiftTicketStatus.WEEK_END).name("스마트4시간권").ticketType(
+                LiftTicketType.SMART).hours(4L).build());
+
+        list_1.add(LiftTicket.builder().place(places.get(0)).status(LiftTicketStatus.WEEK_END).name("스마트6시간권").ticketType(
+                LiftTicketType.SMART).hours(6L).build());
+
+        list_1.add(LiftTicket.builder().place(places.get(0)).status(LiftTicketStatus.WEEK_END).name("오전권").ticketType(
+                LiftTicketType.TIME).hours(4L).startTime(LocalTime.of(8, 0)).endTime(LocalTime.of(12, 0)).build());
+
+        list_1.add(LiftTicket.builder().place(places.get(0)).status(LiftTicketStatus.WEEK_END).name("오후권").ticketType(
+                LiftTicketType.TIME).hours(4L).startTime(LocalTime.of(14, 0)).endTime(LocalTime.of(18, 0)).build());
+
+        list_1.add(LiftTicket.builder().place(places.get(0)).status(LiftTicketStatus.WEEK_END).name("야간권").ticketType(
+                LiftTicketType.TIME).hours(4L).startTime(LocalTime.of(22, 0)).endTime(LocalTime.of(2, 0)).build());
+
+        places.get(0).addLiftTickets(list_1);
+
+        // place 2
+        List<LiftTicket> list_2 = new ArrayList<>();
+
+        list_2.add(LiftTicket.builder().place(places.get(1)).status(LiftTicketStatus.WEEK_DAY).name("스마트3시간권").ticketType(
+                LiftTicketType.SMART).hours(3L).build());
+
+        list_2.add(LiftTicket.builder().place(places.get(1)).status(LiftTicketStatus.WEEK_DAY).name("스마트4시간권").ticketType(
+                LiftTicketType.SMART).hours(4L).build());
+
+        list_2.add(LiftTicket.builder().place(places.get(1)).status(LiftTicketStatus.WEEK_DAY).name("스마트5시간권").ticketType(
+                LiftTicketType.SMART).hours(5L).build());
+
+        list_2.add(LiftTicket.builder().place(places.get(1)).status(LiftTicketStatus.WEEK_DAY).name("스마트7시간권").ticketType(
+                LiftTicketType.SMART).hours(7L).build());
+
+        list_2.add(LiftTicket.builder().place(places.get(1)).status(LiftTicketStatus.WEEK_DAY).name("종일권").ticketType(
+                LiftTicketType.TIME).hours(13L).startTime(LocalTime.of(9, 0)).endTime(LocalTime.of(22, 0)).build());
+
+        list_2.add(LiftTicket.builder().place(places.get(1)).status(LiftTicketStatus.WEEK_END).name("스마트3시간권").ticketType(
+                LiftTicketType.SMART).hours(3L).build());
+
+        list_2.add(LiftTicket.builder().place(places.get(1)).status(LiftTicketStatus.WEEK_END).name("스마트4시간권").ticketType(
+                LiftTicketType.SMART).hours(4L).build());
+
+        list_2.add(LiftTicket.builder().place(places.get(1)).status(LiftTicketStatus.WEEK_END).name("스마트5시간권").ticketType(
+                LiftTicketType.SMART).hours(5L).build());
+
+        list_2.add(LiftTicket.builder().place(places.get(1)).status(LiftTicketStatus.WEEK_END).name("스마트7시간권").ticketType(
+                LiftTicketType.SMART).hours(7L).build());
+
+        list_2.add(LiftTicket.builder().place(places.get(1)).status(LiftTicketStatus.WEEK_END).name("종일권").ticketType(
+                LiftTicketType.TIME).hours(13L).startTime(LocalTime.of(9, 0)).endTime(LocalTime.of(22, 0)).build());
+
+        places.get(1).addLiftTickets(list_2);
+
+        // place 3
+        List<LiftTicket> list_3 = new ArrayList<>();
+
+        list_3.add(LiftTicket.builder().place(places.get(2)).status(LiftTicketStatus.WEEK_DAY).name("스마트6시간권").ticketType(
+                LiftTicketType.SMART).hours(6L).build());
+
+        list_3.add(LiftTicket.builder().place(places.get(2)).status(LiftTicketStatus.WEEK_END).name("스마트6시간권").ticketType(
+                LiftTicketType.SMART).hours(6L).build());
+
+        places.get(2).addLiftTickets(list_3);
+
+        liftTicketRepository.saveAll(list_1);
+        liftTicketRepository.saveAll(list_2);
+        liftTicketRepository.saveAll(list_3);
     }
 }

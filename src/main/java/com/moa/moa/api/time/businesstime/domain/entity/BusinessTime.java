@@ -29,4 +29,12 @@ public class BusinessTime extends BaseEntity {
     @OneToMany(mappedBy = "businessTime")
     @Builder.Default
     private List<SpecificDay> specificDays = new ArrayList<>();
+
+    public void addOperatingTimes(List<OperatingTime> operatingTimes) {
+        this.operatingTimes = operatingTimes;
+    }
+
+    public void addOSpecificDays(List<SpecificDay> specificDays) {
+        this.specificDays = specificDays;
+    }
 }
