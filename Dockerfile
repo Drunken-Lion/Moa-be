@@ -26,7 +26,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 COPY --from=builder build/libs/moa-0.0.1-SNAPSHOT.jar app.jar
 
 # RUNTIME 환경변수 인자 설정
-ARG PROFILE
+ARG PROFILE=dev
 ENV SPRING_PROFILES_ACTIVE=${PROFILE}
 ENV SPRING_PROFILES_INCLUDE=file,secret
 
