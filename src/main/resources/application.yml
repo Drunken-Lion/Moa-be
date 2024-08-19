@@ -1,6 +1,9 @@
 spring:
   application:
     name: chucked
+  config:
+    import:
+      - "classpath:application-secret.yml"
   profiles:
     active: local
     group:
