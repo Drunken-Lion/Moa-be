@@ -82,4 +82,4 @@ jobs:
             docker pull ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:latest
             docker stop moa-dev || true
             docker rm moa-dev || true
-            docker run -d --name moa-dev ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:latest
+            docker run -d -p 8080:8080 --name moa-dev ${{ secrets.AWS_ECR_REGISTRY }}/moa-dev:latest
