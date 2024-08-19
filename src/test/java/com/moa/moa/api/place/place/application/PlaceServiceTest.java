@@ -11,6 +11,7 @@ import com.moa.moa.api.place.liftticket.util.enumerated.LiftTicketType;
 import com.moa.moa.api.place.place.application.mapstruct.PlaceMapstructMapper;
 import com.moa.moa.api.place.place.domain.PlaceProcessor;
 import com.moa.moa.api.place.place.domain.dto.FindAllPlaceDto;
+import com.moa.moa.api.place.place.domain.dto.FindPlaceDto;
 import com.moa.moa.api.place.place.domain.entity.Place;
 import com.moa.moa.api.place.place.util.enumerated.PlaceLevel;
 import com.moa.moa.api.place.placeamenity.domain.entity.PlaceAmenity;
@@ -23,6 +24,8 @@ import com.moa.moa.api.time.operatingtime.util.enumerated.OperatingType;
 import com.moa.moa.api.time.specificday.domain.entity.SpecificDay;
 import com.moa.moa.api.time.specificday.util.enumerated.SpecificDayType;
 import com.moa.moa.global.aws.s3.images.domain.entity.Image;
+import com.moa.moa.global.common.message.FailHttpMessage;
+import com.moa.moa.global.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,13 +37,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -57,11 +62,9 @@ class PlaceServiceTest {
 
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
-    private final Long id = 1L;
-    private final LocalDateTime createdAt = LocalDateTime.now();
-
     private List<Place> mockPlaces;
-    private List<FindAllPlaceDto.Response> mockPlaceResponses;
+    private List<FindAllPlaceDto.Response> mockAllPlaceResponses;
+    private FindPlaceDto.Response mockPlaceResponse;
 
     @BeforeEach
     void beforeEach() {
@@ -93,7 +96,8 @@ class PlaceServiceTest {
         List<Image> images = createImage();
 
         mockPlaces = places;
-        mockPlaceResponses = createPlaceResponse(places, images);
+        mockAllPlaceResponses = createAllPlaceResponse(places, images);
+        mockPlaceResponse = createResponseFromPlace(places.get(0), images.get(0));
     }
 
     @Test
@@ -111,7 +115,7 @@ class PlaceServiceTest {
                     anyList(),
                     anyList(),
                     anyList()
-            )).thenReturn(mockPlaceResponses.get(i));
+            )).thenReturn(mockAllPlaceResponses.get(i));
         }
 
         // when
@@ -155,6 +159,78 @@ class PlaceServiceTest {
         assertThat(placeResponse.slopes().size()).isEqualTo(9);
         assertThat(placeResponse.slopes().get(0).name()).isEqualTo("발라드");
         assertThat(placeResponse.slopes().get(0).level()).isEqualTo(SlopeLevel.LEVEL_1);
+    }
+
+    @Test
+    @DisplayName("스키장 상세 조회 성공")
+    public void t2() {
+        // given
+        when(placeProcessor.findPlaceById(anyLong())).thenReturn(Optional.ofNullable(mockPlaces.get(0)));
+
+        when(placeMapstructMapper.ofFindPlace(
+                eq(mockPlaces.get(0)),
+                any(),
+                any(),
+                anyList(),
+                anyList(),
+                anyList(),
+                anyList()
+        )).thenReturn(mockPlaceResponse);
+
+        // when
+        FindPlaceDto.Response placeResponse = placeService.findPlace(anyLong());
+
+        // then
+        assertThat(placeResponse.id()).isEqualTo(1L);
+        assertThat(placeResponse.name()).isEqualTo("비발디파크");
+        assertThat(placeResponse.open()).isEqualTo(LocalDate.of(2024, 10, 15));
+        assertThat(placeResponse.close()).isEqualTo(LocalDate.of(2025, 3, 12));
+        assertThat(placeResponse.recLevel()).isEqualTo(PlaceLevel.LEVEL_1);
+
+        // TODO: image 기능 완성 시 구현 추가
+        assertThat(placeResponse.images()).isNotNull();
+
+        assertThat(placeResponse.address().address()).isEqualTo("강원도 홍천군 서면 한치골길 262");
+        assertThat(placeResponse.address().addressDetail()).isEqualTo(null);
+        assertThat(placeResponse.address().locationX()).isEqualTo(127.687106349987);
+        assertThat(placeResponse.address().locationY()).isEqualTo(37.6521031526954);
+        assertThat(placeResponse.address().mapUrl()).isEqualTo("https://map.naver.com/p/entry/place/13139708?c=15.00,0,0,0,dh");
+
+        assertThat(placeResponse.operatingTimes().size()).isEqualTo(7);
+        assertThat(placeResponse.operatingTimes().get(0).status()).isEqualTo(OperatingType.OPEN);
+        assertThat(placeResponse.operatingTimes().get(0).day()).isEqualTo(DayType.MON);
+        assertThat(placeResponse.operatingTimes().get(0).open()).isEqualTo(LocalTime.of(8, 0));
+        assertThat(placeResponse.operatingTimes().get(0).close()).isEqualTo(LocalTime.of(2, 0));
+
+        assertThat(placeResponse.specificDays().size()).isEqualTo(3);
+        assertThat(placeResponse.specificDays().get(0).status()).isEqualTo(SpecificDayType.CLOSED);
+        assertThat(placeResponse.specificDays().get(0).reason()).isEqualTo("설연휴");
+        assertThat(placeResponse.specificDays().get(0).date()).isEqualTo(LocalDate.of(2025, 1, 28));
+        assertThat(placeResponse.specificDays().get(0).open()).isNull();
+        assertThat(placeResponse.specificDays().get(0).close()).isNull();
+
+        assertThat(placeResponse.amenities().size()).isEqualTo(7);
+        assertThat(placeResponse.amenities().get(0).name()).isEqualTo(AmenityType.HOTEL.toString());
+
+        assertThat(placeResponse.slopes().size()).isEqualTo(9);
+        assertThat(placeResponse.slopes().get(0).name()).isEqualTo("발라드");
+        assertThat(placeResponse.slopes().get(0).level()).isEqualTo(SlopeLevel.LEVEL_1);
+    }
+
+    @Test
+    @DisplayName("스키장 상세 조회 실패 - 존재하지 않는 스키장")
+    public void t3() {
+        // given
+        when(placeProcessor.findPlaceById(anyLong())).thenReturn(Optional.empty());
+
+        // when
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            placeService.findPlace(anyLong());
+        });
+
+        // then
+        assertEquals(FailHttpMessage.Place.NOT_FOUND.getStatus(), exception.getStatus());
+        assertEquals(FailHttpMessage.Place.NOT_FOUND.getMessage(), exception.getMessage());
     }
 
     private List<Place> createPlace(Category category, List<Address> addresses, List<BusinessTime> businessTimes) {
@@ -785,20 +861,36 @@ class PlaceServiceTest {
         return list;
     }
 
-    private List<FindAllPlaceDto.Response> createPlaceResponse(List<Place> places, List<Image> images) {
+    private List<FindAllPlaceDto.Response> createAllPlaceResponse(List<Place> places, List<Image> images) {
         List<FindAllPlaceDto.Response> responseList = new ArrayList<>();
 
         for (int i = 0; i < places.size(); i++) {
             Place place = places.get(i);
             Image image = images.get(i);
 
-            responseList.add(createResponseFromPlace(place, image));
+            responseList.add(createAllResponseFromPlace(place, image));
         }
 
         return responseList;
     }
 
-    private FindAllPlaceDto.Response createResponseFromPlace(Place place, Image image) {
+    private FindAllPlaceDto.Response createAllResponseFromPlace(Place place, Image image) {
+        List<Amenity> amenities = place.getAmenities().stream()
+                .map(PlaceAmenity::getAmenity)
+                .collect(Collectors.toList());
+
+        return allMapper(
+                place,
+                image,
+                place.getAddress(),
+                place.getBusinessTime().getOperatingTimes(),
+                place.getBusinessTime().getSpecificDays(),
+                amenities,
+                place.getSlopes()
+        );
+    }
+
+    private FindPlaceDto.Response createResponseFromPlace(Place place, Image image) {
         List<Amenity> amenities = place.getAmenities().stream()
                 .map(PlaceAmenity::getAmenity)
                 .collect(Collectors.toList());
@@ -814,13 +906,13 @@ class PlaceServiceTest {
         );
     }
 
-    private FindAllPlaceDto.Response mapper(Place place,
-                                            Image image,
-                                            Address address,
-                                            List<OperatingTime> operatingTimes,
-                                            List<SpecificDay> specificDays,
-                                            List<Amenity> amenities,
-                                            List<Slope> slopes) {
+    private FindAllPlaceDto.Response allMapper(Place place,
+                                               Image image,
+                                               Address address,
+                                               List<OperatingTime> operatingTimes,
+                                               List<SpecificDay> specificDays,
+                                               List<Amenity> amenities,
+                                               List<Slope> slopes) {
         // TODO: image 기능 완성 시 구현 추가
         FindAllPlaceDto.ImageResponse imageResponse = FindAllPlaceDto.ImageResponse.builder()
                 .id(null)
@@ -874,6 +966,81 @@ class PlaceServiceTest {
                 .collect(Collectors.toList());
 
         return FindAllPlaceDto.Response.builder()
+                .id(place.getId())
+                .name(place.getName())
+                .open(place.getOpenDate())
+                .close(place.getCloseDate())
+                .recLevel(place.getRecLevel())
+                .createdAt(place.getCreatedAt())
+                .images(imageResponse)
+                .address(addressResponse)
+                .operatingTimes(operatingTimeResponses)
+                .specificDays(specificDayResponses)
+                .amenities(amenityResponses)
+                .slopes(slopeResponses)
+                .build();
+    }
+
+    private FindPlaceDto.Response mapper(Place place,
+                                         Image image,
+                                         Address address,
+                                         List<OperatingTime> operatingTimes,
+                                         List<SpecificDay> specificDays,
+                                         List<Amenity> amenities,
+                                         List<Slope> slopes) {
+        // TODO: image 기능 완성 시 구현 추가
+        FindPlaceDto.ImageResponse imageResponse = FindPlaceDto.ImageResponse.builder()
+                .id(null)
+                .keyName(null)
+                .createdAt(null)
+                .build();
+
+        FindPlaceDto.AddressResponse addressResponse = FindPlaceDto.AddressResponse.builder()
+                .id(address.getId())
+                .address(address.getAddress())
+                .addressDetail(address.getAddressDetail())
+                .locationX(address.getLocation().getX())
+                .locationY(address.getLocation().getY())
+                .mapUrl(address.getUrl())
+                .build();
+
+        List<FindPlaceDto.OperatingTimeResponse> operatingTimeResponses = operatingTimes.stream()
+                .map(operatingTime -> FindPlaceDto.OperatingTimeResponse.builder()
+                        .id(operatingTime.getId())
+                        .status(operatingTime.getStatus())
+                        .day(operatingTime.getDay())
+                        .open(operatingTime.getOpenTime())
+                        .close(operatingTime.getCloseTime())
+                        .build())
+                .collect(Collectors.toList());
+
+        List<FindPlaceDto.SpecificDayResponse> specificDayResponses = specificDays.stream()
+                .map(specificDay -> FindPlaceDto.SpecificDayResponse.builder()
+                        .id(specificDay.getId())
+                        .status(specificDay.getStatus())
+                        .reason(specificDay.getReason())
+                        .date(specificDay.getDate())
+                        .open(specificDay.getOpenTime())
+                        .close(specificDay.getCloseTime())
+                        .build())
+                .collect(Collectors.toList());
+
+        List<FindPlaceDto.AmenityResponse> amenityResponses = amenities.stream()
+                .map(amenity -> FindPlaceDto.AmenityResponse.builder()
+                        .id(amenity.getId())
+                        .name(amenity.getType().name())
+                        .build())
+                .collect(Collectors.toList());
+
+        List<FindPlaceDto.SlopeResponse> slopeResponses = slopes.stream()
+                .map(slope -> FindPlaceDto.SlopeResponse.builder()
+                        .id(slope.getId())
+                        .name(slope.getName())
+                        .level(slope.getLevel())
+                        .build())
+                .collect(Collectors.toList());
+
+        return FindPlaceDto.Response.builder()
                 .id(place.getId())
                 .name(place.getName())
                 .open(place.getOpenDate())
