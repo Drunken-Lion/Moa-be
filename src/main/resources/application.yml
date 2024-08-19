@@ -9,7 +9,8 @@ spring:
     group:
       local:
         - file
-        - secret
+    include:
+      - secret
 
 springdoc:
   use-fqn: true
