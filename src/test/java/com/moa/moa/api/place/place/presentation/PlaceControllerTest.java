@@ -39,6 +39,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -200,6 +201,61 @@ class PlaceControllerTest {
                 .andExpect(handler().handlerType(PlaceController.class))
                 .andExpect(handler().methodName("findAllPlace"))
                 .andExpect(jsonPath("$.length()", is(0)));
+    }
+
+    @Test
+    @DisplayName("스키장 상세 조회 성공")
+    void t3() throws Exception {
+        ResultActions actions = mvc
+                .perform(get("/v1/places/" + 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print());
+
+        actions
+                .andExpect(status().isOk())
+                .andExpect(handler().handlerType(PlaceController.class))
+                .andExpect(handler().methodName("findPlace"))
+
+                .andExpect(jsonPath("$.id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.name").value("비발디파크"))
+                .andExpect(jsonPath("$.open").value(LocalDate.of(2024, 10, 15).toString()))
+                .andExpect(jsonPath("$.close").value(LocalDate.of(2025, 3, 12).toString()))
+                .andExpect(jsonPath("$.recLevel").value(PlaceLevel.LEVEL_1.toString()))
+                .andExpect(jsonPath("$.createdAt", matchesPattern(TestUtil.DATETIME_PATTERN)))
+
+                .andExpect(jsonPath("$.images", notNullValue()))
+
+                .andExpect(jsonPath("$.address.id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.address.address").value("강원도 홍천군 서면 한치골길 262"))
+                .andExpect(jsonPath("$.address.addressDetail", nullValue()))
+                .andExpect(jsonPath("$.address.locationX").value(127.687106349987))
+                .andExpect(jsonPath("$.address.locationY").value(37.6521031526954))
+                .andExpect(jsonPath("$.address.mapUrl").value("https://map.naver.com/p/entry/place/13139708?c=15.00,0,0,0,dh"))
+
+                .andExpect(jsonPath("$.operatingTimes.length()", is(6)))
+                .andExpect(jsonPath("$.operatingTimes[0].id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.operatingTimes[0].status").value(OperatingType.OPEN.toString()))
+                .andExpect(jsonPath("$.operatingTimes[0].day").value(DayType.MON.toString()))
+                .andExpect(jsonPath("$.operatingTimes[0].open").value(LocalTime.of(8, 0).format(TestUtil.TIME_FORMATTER)))
+                .andExpect(jsonPath("$.operatingTimes[0].close").value(LocalTime.of(2, 0).format(TestUtil.TIME_FORMATTER)))
+
+                .andExpect(jsonPath("$.specificDays.length()", is(2)))
+                .andExpect(jsonPath("$.specificDays[0].id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.specificDays[0].status").value(SpecificDayType.CLOSED.toString()))
+                .andExpect(jsonPath("$.specificDays[0].reason").value("설연휴"))
+                .andExpect(jsonPath("$.specificDays[0].date").value(LocalDate.of(2025, 1, 28).format(TestUtil.DATE_FORMATTER)))
+                .andExpect(jsonPath("$.specificDays[0].open", nullValue()))
+                .andExpect(jsonPath("$.specificDays[0].close", nullValue()))
+
+                .andExpect(jsonPath("$.amenities.length()", is(4)))
+                .andExpect(jsonPath("$.amenities[0].id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.amenities[0].name").value(AmenityType.HOTEL.toString()))
+
+                .andExpect(jsonPath("$.slopes.length()", is(8)))
+                .andExpect(jsonPath("$.slopes[0].id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.slopes[0].name").value("발라드"))
+                .andExpect(jsonPath("$.slopes[0].level").value(SlopeLevel.LEVEL_1.toString()));
     }
 
     private List<Place> createPlace(Category category, List<Address> addresses, List<BusinessTime> businessTimes) {
