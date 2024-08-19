@@ -44,13 +44,15 @@ public class QuestionControllerTest {
     @BeforeEach
     void beforeEach() {
         if (memberRepository.count() == 0) {
-            Member member1 = memberRepository.save(createMember("test1@moa.com", MemberRole.MEMBER));
+            Member member1 = memberRepository.save(createMember("test1@moa.com", MemberRole.ADMIN));
             Member member2 = memberRepository.save(createMember("test2@moa.com", MemberRole.OWNER));
+            Member member3 = memberRepository.save(createMember("test3@moa.com", MemberRole.MEMBER));
+            Member member4 = memberRepository.save(createMember("three@moa.com", MemberRole.MEMBER));
 
             IntStream.rangeClosed(1, 10).forEach(i -> {
                 QuestionStatus status = i % 2 == 0 ? QuestionStatus.INCOMPLETE : QuestionStatus.COMPLETE;
                 questionRepository.save(
-                        createQuestion(member1, "사용자 문의 " + i, "사용자 문의 내용 " + i, status)
+                        createQuestion(member4, "사용자 문의 " + i, "사용자 문의 내용 " + i, status)
                 );
             });
 
