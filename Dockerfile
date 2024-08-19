@@ -31,4 +31,5 @@ ENV SPRING_PROFILES_ACTIVE=${PROFILE}
 ENV SPRING_PROFILES_INCLUDE=file,secret
 
 # Java 실행
-ENTRYPOINT ["java", "-Dspring.profiles.active=dev", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}", "-Dspring.profiles.include=${SPRING_PROFILES_INCLUDE}", "app.jar"]
+#ENTRYPOINT ["java", "-Dspring.profiles.active=dev", "-jar", "app.jar"]
