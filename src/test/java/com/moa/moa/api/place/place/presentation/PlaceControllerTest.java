@@ -206,8 +206,10 @@ class PlaceControllerTest {
     @Test
     @DisplayName("스키장 상세 조회 성공")
     void t3() throws Exception {
+        List<Place> places = this.placeRepository.findAll();
+
         ResultActions actions = mvc
-                .perform(get("/v1/places/" + 1L)
+                .perform(get("/v1/places/" + places.get(0).getId())
                         .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andDo(print());
