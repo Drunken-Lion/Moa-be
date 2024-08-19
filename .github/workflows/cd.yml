@@ -28,7 +28,7 @@ jobs:
       
       - name: create application-secret.yml
         run: |
-          touch src/main/resources/application-secret.yml
+          # touch src/main/resources/application-secret.yml
           echo '${{ secrets.DEV_APPLICATION_SECRET_YML }}' >> src/main/resources/application-secret.yml
 
       # AWS 인증 옵션
