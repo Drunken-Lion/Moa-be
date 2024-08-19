@@ -36,6 +36,7 @@ public class PlaceController {
     @GetMapping("{id}")
     public ResponseEntity<FindPlaceDto.Response> findPlace(@PathVariable("id") Long id) {
 
-        return ResponseEntity.ok().body(null);
+        FindPlaceDto.Response responses = placeService.findPlace(id);
+        return ResponseEntity.ok().body(responses);
     }
 }

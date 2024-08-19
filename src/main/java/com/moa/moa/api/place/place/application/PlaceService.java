@@ -4,8 +4,11 @@ import com.moa.moa.api.place.amenity.domain.entity.Amenity;
 import com.moa.moa.api.place.place.application.mapstruct.PlaceMapstructMapper;
 import com.moa.moa.api.place.place.domain.PlaceProcessor;
 import com.moa.moa.api.place.place.domain.dto.FindAllPlaceDto;
+import com.moa.moa.api.place.place.domain.dto.FindPlaceDto;
 import com.moa.moa.api.place.place.domain.entity.Place;
 import com.moa.moa.api.place.placeamenity.domain.entity.PlaceAmenity;
+import com.moa.moa.global.common.message.FailHttpMessage;
+import com.moa.moa.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -43,5 +46,24 @@ public class PlaceService {
         }
 
         return findAllPlaceList;
+    }
+
+    public FindPlaceDto.Response findPlace(Long id) {
+        Place place = placeProcessor.findPlaceById(id)
+                .orElseThrow(() -> new BusinessException(FailHttpMessage.Place.NOT_FOUND));
+
+        List<Amenity> amenities = place.getAmenities().stream()
+                .map(PlaceAmenity::getAmenity)
+                .collect(Collectors.toList());
+
+        return placeMapstructMapper.ofFindPlace(
+                place,
+                null,
+                place.getAddress(),
+                (place.getBusinessTime() != null) ? place.getBusinessTime().getOperatingTimes() : new ArrayList<>(),
+                (place.getBusinessTime() != null) ? place.getBusinessTime().getSpecificDays() : new ArrayList<>(),
+                amenities,
+                place.getSlopes()
+        );
     }
 }

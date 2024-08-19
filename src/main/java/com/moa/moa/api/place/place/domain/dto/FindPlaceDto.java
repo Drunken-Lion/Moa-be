@@ -9,6 +9,7 @@ import lombok.Builder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 public record FindPlaceDto() {
@@ -21,7 +22,7 @@ public record FindPlaceDto() {
             PlaceLevel recLevel,
             LocalDateTime createdAt,
 
-            FindPlaceDto.ImageResponse image,
+            FindPlaceDto.ImageResponse images,
             FindPlaceDto.AddressResponse address,
             List<FindPlaceDto.OperatingTimeResponse> operatingTimes,
             List<FindPlaceDto.SpecificDayResponse> specificDays,
@@ -33,9 +34,9 @@ public record FindPlaceDto() {
     @Builder
     public record ImageResponse(
             Long id,
-            String originImageUrl,
-            String lowImageUrl,
-            LocalDateTime createdAt) {
+            String keyName,
+            LocalDateTime createdAt
+    ) {
     }
 
     @Builder
@@ -54,8 +55,8 @@ public record FindPlaceDto() {
             Long id,
             OperatingType status,
             DayType day,
-            LocalDate open,
-            LocalDate close
+            LocalTime open,
+            LocalTime close
     ) {
     }
 
@@ -65,8 +66,8 @@ public record FindPlaceDto() {
             SpecificDayType status,
             String reason,
             LocalDate date,
-            LocalDateTime open,
-            LocalDateTime close
+            LocalTime open,
+            LocalTime close
     ) {
     }
 
