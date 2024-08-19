@@ -71,4 +71,16 @@ public class Place extends BaseEntity {
     @OneToMany(mappedBy = "place")
     @Builder.Default
     private List<PlaceAmenity> amenities = new ArrayList<>();
+
+    public void addLiftTickets(List<LiftTicket> liftTickets) {
+        this.liftTickets = liftTickets;
+    }
+
+    public void addSlopes(List<Slope> slopes) {
+        this.slopes = slopes;
+    }
+
+    public void addPlaceAmenities(List<PlaceAmenity> placeAmenities) {
+        this.amenities = placeAmenities;
+    }
 }
