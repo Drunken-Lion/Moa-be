@@ -103,7 +103,7 @@ class PlaceServiceTest {
         when(placeProcessor.findAllPlaceInMap(anyDouble(), anyDouble(), anyDouble(), anyDouble())).thenReturn(mockPlaces);
 
         for (int i = 0; i < mockPlaces.size(); i++) {
-            when(placeMapstructMapper.of(
+            when(placeMapstructMapper.ofFindAllPlace(
                     eq(mockPlaces.get(i)),
                     any(),
                     any(),

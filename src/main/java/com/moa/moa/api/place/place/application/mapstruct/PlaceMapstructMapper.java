@@ -22,13 +22,13 @@ import java.util.stream.Collectors;
         unmappedTargetPolicy = ReportingPolicy.ERROR
 )
 public interface PlaceMapstructMapper {
-    default FindAllPlaceDto.Response of(Place place,
-                                        Image image,
-                                        Address address,
-                                        List<OperatingTime> operatingTimes,
-                                        List<SpecificDay> specificDays,
-                                        List<Amenity> amenities,
-                                        List<Slope> slopes) {
+    default FindAllPlaceDto.Response ofFindAllPlace(Place place,
+                                                    Image image,
+                                                    Address address,
+                                                    List<OperatingTime> operatingTimes,
+                                                    List<SpecificDay> specificDays,
+                                                    List<Amenity> amenities,
+                                                    List<Slope> slopes) {
         // TODO: image 기능 완성 시 구현 추가
         FindAllPlaceDto.ImageResponse imageResponse = FindAllPlaceDto.ImageResponse.builder()
                 .id(null)

@@ -34,7 +34,7 @@ public class PlaceService {
                     .map(PlaceAmenity::getAmenity)
                     .collect(Collectors.toList());
 
-            findAllPlaceList.add(placeMapstructMapper.of(
+            findAllPlaceList.add(placeMapstructMapper.ofFindAllPlace(
                     place,
                     null,
                     place.getAddress(),
