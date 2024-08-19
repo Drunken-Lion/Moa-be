@@ -21,7 +21,6 @@ public record FindPlaceDto() {
             LocalDate close,
             PlaceLevel recLevel,
             LocalDateTime createdAt,
-
             FindPlaceDto.ImageResponse images,
             FindPlaceDto.AddressResponse address,
             List<FindPlaceDto.OperatingTimeResponse> operatingTimes,
@@ -35,8 +34,7 @@ public record FindPlaceDto() {
     public record ImageResponse(
             Long id,
             String keyName,
-            LocalDateTime createdAt
-    ) {
+            LocalDateTime createdAt) {
     }
 
     @Builder
