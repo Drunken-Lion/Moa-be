@@ -36,19 +36,13 @@ public class QuestionController {
                                                                                                        Pageable pageable) {
 
         // TODO : 회원 관련 기능이 완성되면 삭제할 것
-        Member member1 = Member.builder()
-                .id(1L)
-                .email("test1@kakao.com")
-                .nickname("test1")
+        Member member = Member.builder()
+                .id(4L)
+                .email("three@moa.com")
+                .nickname("three")
                 .build();
 
-        Member member2 = Member.builder()
-                .id(2L)
-                .email("test2@kakao.com")
-                .nickname("test2")
-                .build();
-
-        return ResponseEntity.ok().body(questionService.findAllQuestion(member1, pageable));
+        return ResponseEntity.ok().body(questionService.findAllQuestion(member, pageable));
     }
 
     @Operation(summary = "문의 작성", responses = {@ApiResponse(responseCode = POST)})
