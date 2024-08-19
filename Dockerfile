@@ -26,8 +26,8 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 COPY --from=builder build/libs/*.jar app.jar
 
 # RUNTIME 환경변수 인자 설정
-ARG SPRING_PROFILES_ACTIVE
-ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+ARG PROFILE
+ENV SPRING_PROFILES_ACTIVE=${PROFILE}
 ENV SPRING_PROFILES_INCLUDE=file,secret
 
 # Java 실행

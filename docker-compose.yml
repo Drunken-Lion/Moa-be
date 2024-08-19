@@ -25,8 +25,8 @@ services:
 
   spring-server:
     container_name: moa-dev
-    environment:
-      - "SPRING_PROFILES_ACTIVE=dev"
+#    environment:
+#      - "SPRING_PROFILES_ACTIVE=dev"
     build:
       context: ./
       dockerfile: Dockerfile
