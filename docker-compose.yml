@@ -4,7 +4,7 @@ services:
     image: nginx
     ports:
       - "80:80"
-      - "443:443"
+      - "444:443"
     volumes:
       - /usr/local/docker/data/nginx/build:/home
       - /usr/local/docker/data/nginx/logs:/logs
