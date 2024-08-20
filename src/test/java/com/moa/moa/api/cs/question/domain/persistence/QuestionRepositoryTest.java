@@ -11,7 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,15 +24,15 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest
-@AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
-@Transactional
+@Transactional(readOnly = true)
 public class QuestionRepositoryTest {
     @Autowired
     private MemberRepository memberRepository;
     @Autowired
     private QuestionRepository questionRepository;
 
+    @Transactional
     @BeforeEach
     void beforeEach() {
         if (memberRepository.count() == 0) {
@@ -56,12 +55,14 @@ public class QuestionRepositoryTest {
         }
     }
 
+    @Transactional
     @AfterEach
     void afterEach() {
         memberRepository.deleteAll();
         questionRepository.deleteAll();
     }
 
+    @Transactional
     @Test
     @DisplayName("나의 문의 내역 조회")
     void findAllQuestionTest() {

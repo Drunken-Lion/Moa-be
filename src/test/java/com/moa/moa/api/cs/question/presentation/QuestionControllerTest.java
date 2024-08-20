@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
-@Transactional
+@Transactional(readOnly = true)
 public class QuestionControllerTest {
     @Autowired
     private MockMvc mvc;
@@ -41,6 +41,7 @@ public class QuestionControllerTest {
     @Autowired
     private QuestionRepository questionRepository;
 
+    @Transactional
     @BeforeEach
     void beforeEach() {
         if (memberRepository.count() == 0) {
@@ -65,12 +66,14 @@ public class QuestionControllerTest {
         }
     }
 
+    @Transactional
     @AfterEach
     void afterEach() {
         memberRepository.deleteAll();
         questionRepository.deleteAll();
     }
 
+    @Transactional
     @Test
     @DisplayName("나의 문의 내역 조회")
     void findAllQuestionTest() throws Exception {
