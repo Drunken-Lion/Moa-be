@@ -1,0 +1,23 @@
+spring:
+  output:
+    ansi:
+      enabled: always
+  datasource:
+    # jdbc:h2:mem:demo_test
+    # jdbc:mysql://localhost:3306/server2_test
+    url: jdbc:mysql://localhost:3306/server2_test
+    # org.h2.Driver
+    # com.mysql.cj.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ON_SECRET
+    password: ON_SECRET
+  jpa:
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+    hibernate:
+      ddl-auto: create
+    # database-platform: org.hibernate.dialect.MySQLDialect
