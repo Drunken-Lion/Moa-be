@@ -25,10 +25,10 @@ services:
 
   moa-dev:
     container_name: moa-dev
-    image: moa-dev:latest
-#    build:
-#      context: ./
-#      dockerfile: Dockerfile
+#    image: moa-dev:latest
+    build:
+      context: ./
+      dockerfile: Dockerfile
     ports:
       - "8081:8080"
     volumes:
