@@ -27,7 +27,7 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: '21'
-        
+
       - name: Use Gradle 8.8
         uses: gradle/actions/setup-gradle@v3
         with:
