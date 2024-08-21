@@ -21,7 +21,6 @@ public record FindAllPlaceDto() {
             LocalDate close,
             PlaceLevel recLevel,
             LocalDateTime createdAt,
-
             FindAllPlaceDto.ImageResponse images,
             FindAllPlaceDto.AddressResponse address,
             List<FindAllPlaceDto.OperatingTimeResponse> operatingTimes,
