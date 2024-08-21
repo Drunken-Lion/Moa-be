@@ -201,6 +201,58 @@ class PlaceRepositoryTest {
         return list;
     }
 
+    @Test
+    @DisplayName("스키장 상세 조회 성공")
+    public void t3() {
+        // given
+        List<Place> places = this.placeRepository.findAll();
+
+        //when
+        Place place = placeRepository.findPlaceById(places.get(0).getId()).get();
+
+        //then
+        assertThat(place.getName()).isEqualTo("비발디파크");
+        assertThat(place.getOpenDate()).isEqualTo(LocalDate.of(2024, 10, 15));
+        assertThat(place.getCloseDate()).isEqualTo(LocalDate.of(2025, 3, 12));
+        assertThat(place.getRecLevel()).isEqualTo(PlaceLevel.LEVEL_1);
+
+        assertThat(place.getCategory().getCategoryType()).isEqualTo(CategoryType.SKI_RESORT);
+
+        assertThat(place.getAddress().getAddress()).isEqualTo("강원도 홍천군 서면 한치골길 262");
+        assertThat(place.getAddress().getAddressDetail()).isEqualTo(null);
+        assertThat(place.getAddress().getLocation()).isEqualTo(geometryFactory.createPoint(new Coordinate(127.687106349987, 37.6521031526954)));
+        assertThat(place.getAddress().getUrl()).isEqualTo("https://map.naver.com/p/entry/place/13139708?c=15.00,0,0,0,dh");
+
+        assertThat(place.getBusinessTime().getOperatingTimes().size()).isEqualTo(6);
+        assertThat(place.getBusinessTime().getOperatingTimes().get(0).getStatus()).isEqualTo(OperatingType.OPEN);
+        assertThat(place.getBusinessTime().getOperatingTimes().get(0).getDay()).isEqualTo(DayType.MON);
+        assertThat(place.getBusinessTime().getOperatingTimes().get(0).getOpenTime()).isEqualTo(LocalTime.of(8, 0));
+        assertThat(place.getBusinessTime().getOperatingTimes().get(0).getCloseTime()).isEqualTo(LocalTime.of(2, 0));
+
+        assertThat(place.getBusinessTime().getSpecificDays().size()).isEqualTo(2);
+        assertThat(place.getBusinessTime().getSpecificDays().get(0).getStatus()).isEqualTo(SpecificDayType.CLOSED);
+        assertThat(place.getBusinessTime().getSpecificDays().get(0).getReason()).isEqualTo("설연휴");
+        assertThat(place.getBusinessTime().getSpecificDays().get(0).getDate()).isEqualTo(LocalDate.of(2025, 1, 28));
+        assertThat(place.getBusinessTime().getSpecificDays().get(0).getOpenTime()).isNull();
+        assertThat(place.getBusinessTime().getSpecificDays().get(0).getCloseTime()).isNull();
+
+        assertThat(place.getLiftTickets().size()).isEqualTo(10);
+        assertThat(place.getLiftTickets().get(0).getStatus()).isEqualTo(LiftTicketStatus.WEEK_DAY);
+        assertThat(place.getLiftTickets().get(0).getName()).isEqualTo("스마트4시간권");
+        assertThat(place.getLiftTickets().get(0).getTicketType()).isEqualTo(LiftTicketType.SMART);
+        assertThat(place.getLiftTickets().get(0).getHours()).isEqualTo(4L);
+        assertThat(place.getLiftTickets().get(0).getStartTime()).isNull();
+        assertThat(place.getLiftTickets().get(0).getEndTime()).isNull();
+
+        assertThat(place.getSlopes().size()).isEqualTo(8);
+        assertThat(place.getSlopes().get(0).getName()).isEqualTo("발라드");
+        assertThat(place.getSlopes().get(0).getLevel()).isEqualTo(SlopeLevel.LEVEL_1);
+
+        assertThat(place.getAmenities().size()).isEqualTo(4);
+        assertThat(place.getAmenities().get(0).getUsed()).isEqualTo(true);
+        assertThat(place.getAmenities().get(0).getAmenity().getType()).isEqualTo(AmenityType.HOTEL);
+    }
+
     private Category createCategory() {
         Category category = Category.builder()
                 .categoryType(CategoryType.SKI_RESORT)
