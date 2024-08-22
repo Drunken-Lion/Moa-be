@@ -1,16 +1,12 @@
 spring:
   application:
     name: chucked
-  config:
-    import:
-      - "classpath:application-secret.yml"
   profiles:
     active: local
     group:
       local:
         - file
-    include:
-      - secret
+        - secret
 
 springdoc:
   use-fqn: true
