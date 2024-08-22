@@ -11,6 +11,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.moa.moa.api.address.address.domain.entity.QAddress.address1;
 import static com.moa.moa.api.place.place.domain.entity.QPlace.place;
@@ -75,5 +76,49 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
         }
 
         return places;
+    }
+
+    @Override
+    public Optional<Place> findPlaceById(Long id) {
+        Place placeOne = queryFactory.selectFrom(place)
+                .leftJoin(place.address, address1).fetchJoin()
+                .leftJoin(place.businessTime, businessTime).fetchJoin()
+                .where(place.id.eq(id)
+                        .and(place.deletedAt.isNull())
+                        .and(address1.deletedAt.isNull())
+                        .and(businessTime.deletedAt.isNull())
+                )
+                .orderBy(place.id.asc())
+                .fetchOne();
+
+        if (placeOne != null) {
+            List<OperatingTime> operatingTimes = queryFactory.selectFrom(operatingTime)
+                    .where(operatingTime.businessTime.eq(placeOne.getBusinessTime())
+                            .and(operatingTime.deletedAt.isNull()))
+                    .fetch();
+            placeOne.getBusinessTime().addOperatingTimes(operatingTimes);
+
+            List<SpecificDay> specificDays = queryFactory.selectFrom(specificDay)
+                    .where(specificDay.businessTime.eq(placeOne.getBusinessTime())
+                            .and(specificDay.deletedAt.isNull()))
+                    .fetch();
+            placeOne.getBusinessTime().addSpecificDays(specificDays);
+
+            List<PlaceAmenity> placeAmenities = queryFactory.selectFrom(placeAmenity)
+                    .where(placeAmenity.place.eq(placeOne)
+                            .and(placeAmenity.used.isTrue())
+                            .and(placeAmenity.deletedAt.isNull())
+                            .and(placeAmenity.amenity.deletedAt.isNull()))
+                    .fetch();
+            placeOne.addPlaceAmenities(placeAmenities);
+
+            List<Slope> slopes = queryFactory.selectFrom(slope)
+                    .where(slope.place.eq(placeOne)
+                            .and(slope.deletedAt.isNull()))
+                    .fetch();
+            placeOne.addSlopes(slopes);
+        }
+
+        return Optional.ofNullable(placeOne);
     }
 }
