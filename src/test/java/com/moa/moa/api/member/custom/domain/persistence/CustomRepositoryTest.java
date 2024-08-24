@@ -53,7 +53,7 @@ class CustomRepositoryTest {
     @DisplayName("내 스키어 리스트 조회 성공 - deleteAt 조건 적용 확인")
     public void t1() {
         // given
-        Member member = memberRepository.findById(4L).get();
+        Member member = memberRepository.findByEmail("three@moa.com").get();
 
         //when
         List<Custom> customs = customRepository.findAllCustomByMember(member);

@@ -75,7 +75,7 @@ class CustomControllerTest {
                 .andExpect(jsonPath("$.length()", is(2)))
 
                 .andExpect(jsonPath("$.[0].id", instanceOf(Number.class)))
-                .andExpect(jsonPath("$.[0].memberId").value(4L))
+                .andExpect(jsonPath("$.[0].memberId").value(memberRepository.findByEmail("three@moa.com").get().getId()))
                 .andExpect(jsonPath("$.[0].gender").value(Gender.FEMALE.toString()))
                 .andExpect(jsonPath("$.[0].nickname").value("삼남매 첫째"))
                 .andExpect(jsonPath("$.[0].packageType").value(PackageType.LIFT_EQUIPMENT.toString()))

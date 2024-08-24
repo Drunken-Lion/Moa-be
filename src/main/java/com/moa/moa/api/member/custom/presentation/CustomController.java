@@ -5,6 +5,7 @@ import com.moa.moa.api.member.custom.domain.dto.AddCustomDto;
 import com.moa.moa.api.member.custom.domain.dto.FindAllCustomDto;
 import com.moa.moa.api.member.custom.domain.dto.ModCustomDto;
 import com.moa.moa.api.member.member.domain.entity.Member;
+import com.moa.moa.api.member.member.domain.persistence.MemberRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -27,6 +28,7 @@ import static com.moa.moa.global.common.response.ApiResponseCode.*;
 @RequestMapping("/v1/customs")
 public class CustomController {
     private final CustomService customService;
+    private final MemberRepository memberRepository;
 
     @Operation(summary = "내 스키어 추가", responses = {@ApiResponse(responseCode = POST)})
     @PostMapping
@@ -40,11 +42,7 @@ public class CustomController {
     @GetMapping
     public ResponseEntity<List<FindAllCustomDto.Response>> findAllCustom(@AuthenticationPrincipal UserPrincipal user) {
         // TODO : 회원 관련 기능이 완성되면 삭제할 것
-        Member member = Member.builder()
-                .id(4L)
-                .email("three@moa.com")
-                .nickname("three")
-                .build();
+        Member member = memberRepository.findByEmail("three@moa.com").get();
 
         List<FindAllCustomDto.Response> responses = customService.findAllCustom(member);
         return ResponseEntity.ok().body(responses);
