@@ -11,8 +11,11 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 
 import java.util.List;
+import java.util.Optional;
 
+import static com.moa.moa.api.cs.answer.domain.entity.QAnswer.answer;
 import static com.moa.moa.api.cs.question.domain.entity.QQuestion.question;
+import static com.moa.moa.api.member.member.domain.entity.QMember.member;
 
 @RequiredArgsConstructor
 public class QuestionDslRepositoryImpl implements QuestionDslRepository {
@@ -33,14 +36,32 @@ public class QuestionDslRepositoryImpl implements QuestionDslRepository {
                 .limit(pageable.getPageSize() + 1)
                 .fetch();
 
-        return checkListPage(questions, pageable);
+        return checkLastPage(questions, pageable);
+    }
+
+    @Override
+    public Optional<Question> findQuestionById(Long id) {
+        BooleanBuilder cond = new BooleanBuilder();
+
+        cond.and(question.id.eq(id))
+                .and(question.deletedAt.isNull());
+
+        Question findQuestion = queryFactory
+                .selectFrom(question)
+                .leftJoin(question.member, member)
+                .leftJoin(question.answers, answer)
+                .fetchJoin()
+                .where(cond)
+                .fetchOne();
+
+        return Optional.ofNullable(findQuestion);
     }
 
     private BooleanExpression ltCursorId(int lastId) {
         return lastId == 0 ? null : question.id.lt(lastId);
     }
 
-    private Slice<Question> checkListPage(List<Question> questions, Pageable pageable) {
+    private Slice<Question> checkLastPage(List<Question> questions, Pageable pageable) {
         boolean hasNext = false;
 
         if (questions.size() > pageable.getPageSize()) {

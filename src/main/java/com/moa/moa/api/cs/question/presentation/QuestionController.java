@@ -57,7 +57,14 @@ public class QuestionController {
     @GetMapping("{id}")
     public ResponseEntity<FindQuestionDto.Response> findQuestion(@PathVariable("id") Long id,
                                                                  @AuthenticationPrincipal UserPrincipal user) {
-        return ResponseEntity.ok().body(null);
+        // TODO : 회원 관련 기능이 완성되면 삭제할 것
+        Member member = Member.builder()
+                .id(4L)
+                .email("three@moa.com")
+                .nickname("three")
+                .build();
+
+        return ResponseEntity.ok().body(questionService.findQuestion(id, member));
     }
 
     @Operation(summary = "내 문의 내역 수정", responses = {@ApiResponse(responseCode = PUT)})
