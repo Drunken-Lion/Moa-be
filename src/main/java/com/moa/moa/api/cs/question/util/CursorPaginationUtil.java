@@ -16,7 +16,7 @@ public class CursorPaginationUtil<T> {
      *
      * @param idPath ID 필드를 나타내는 NumberPath 객체
      * @param lastId 기준이 되는 ID 값
-     * @return lastId보다 작은 ID를 가진 데이터를 조회하기 위한 조건식
+     * @return lastId보다 큰 ID를 가진 데이터를 조회하기 위한 조건식
      */
     public BooleanExpression gtCursorId(NumberPath<Long> idPath, int lastId) {
         return lastId == 0 ? null : idPath.gt(lastId);
