@@ -1,4 +1,4 @@
-package com.moa.moa.api.cs.question.util;
+package com.moa.moa.global.util.pagination;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberPath;

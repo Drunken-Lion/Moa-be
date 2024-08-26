@@ -1,8 +1,8 @@
 package com.moa.moa.api.cs.question.domain.persistence;
 
 import com.moa.moa.api.cs.question.domain.entity.Question;
-import com.moa.moa.api.cs.question.util.CursorPaginationUtil;
 import com.moa.moa.api.member.member.domain.entity.Member;
+import com.moa.moa.global.util.pagination.CursorPaginationUtil;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
