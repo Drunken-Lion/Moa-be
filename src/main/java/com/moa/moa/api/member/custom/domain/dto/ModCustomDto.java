@@ -1,24 +1,22 @@
-package com.moa.moa.api.member.custom.presentation.dto;
+package com.moa.moa.api.member.custom.domain.dto;
 
 import com.moa.moa.api.member.custom.util.enumerated.ClothesType;
 import com.moa.moa.api.member.custom.util.enumerated.EquipmentType;
 import com.moa.moa.api.member.custom.util.enumerated.Gender;
 import com.moa.moa.api.member.custom.util.enumerated.PackageType;
-import lombok.Builder;
+import jakarta.validation.constraints.NotNull;
 
-import java.time.LocalDateTime;
-
-public record FindAllCustomExternalDto() {
-    @Builder
-    public record Response(
-            Long id,
-            Long memberId,
+public record ModCustomDto() {
+    public record Request(
+            @NotNull
             Gender gender,
+            @NotNull
             String nickname,
+            @NotNull
             PackageType packageType,
             ClothesType clothesType,
-            EquipmentType equipmentType,
-            LocalDateTime createdAt
-    ) {
-    }
+            EquipmentType equipmentType
+    ) {}
+
+    public record Response(Long id) {}
 }

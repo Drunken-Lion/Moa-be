@@ -1,4 +1,4 @@
-package com.moa.moa.api.member.custom.presentation.dto;
+package com.moa.moa.api.member.custom.domain.dto;
 
 import com.moa.moa.api.member.custom.util.enumerated.ClothesType;
 import com.moa.moa.api.member.custom.util.enumerated.EquipmentType;
@@ -6,7 +6,7 @@ import com.moa.moa.api.member.custom.util.enumerated.Gender;
 import com.moa.moa.api.member.custom.util.enumerated.PackageType;
 import jakarta.validation.constraints.NotNull;
 
-public record AddCustomExternalDto() {
+public record AddCustomDto() {
     public record Request(
             @NotNull
             Gender gender,
