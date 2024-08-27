@@ -15,7 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
 
@@ -34,8 +36,18 @@ public class CustomController {
     @PostMapping
     public ResponseEntity<AddCustomDto.Response> addCustom(@Valid @RequestBody final AddCustomDto.Request request,
                                                            @AuthenticationPrincipal UserPrincipal user) {
+        // TODO : 회원 관련 기능이 완성되면 삭제할 것
+        Member member = memberRepository.findByEmail("three@moa.com").get();
 
-        return ResponseEntity.created(null).body(null);
+        AddCustomDto.Response response = customService.addCustom(request, member);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.id())
+                .toUri();
+
+        return ResponseEntity.created(location).body(response);
     }
 
     @Operation(summary = "내 스키어 리스트 조회", responses = {@ApiResponse(responseCode = GET)})

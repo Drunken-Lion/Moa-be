@@ -2,6 +2,7 @@ package com.moa.moa.api.member.custom.application;
 
 import com.moa.moa.api.member.custom.application.mapstruct.CustomMapstructMapper;
 import com.moa.moa.api.member.custom.domain.CustomProcessor;
+import com.moa.moa.api.member.custom.domain.dto.AddCustomDto;
 import com.moa.moa.api.member.custom.domain.dto.FindAllCustomDto;
 import com.moa.moa.api.member.custom.domain.entity.Custom;
 import com.moa.moa.api.member.member.domain.entity.Member;
@@ -23,5 +24,11 @@ public class CustomService {
         return customs.stream()
                 .map(customMapstructMapper::of)
                 .collect(Collectors.toList());
+    }
+
+    public AddCustomDto.Response addCustom(AddCustomDto.Request request, Member member) {
+        Custom custom = customProcessor.addCustom(customMapstructMapper.addOf(request, member.getId()));
+
+        return customMapstructMapper.addOf(custom);
     }
 }

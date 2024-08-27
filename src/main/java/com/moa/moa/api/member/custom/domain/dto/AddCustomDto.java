@@ -18,5 +18,7 @@ public record AddCustomDto() {
             EquipmentType equipmentType
     ) {}
 
-    public record Response(Long id) {}
+    public record Response(
+            Long id
+    ) {}
 }
