@@ -53,8 +53,11 @@ public class CustomController {
     public ResponseEntity<ModCustomDto.Response> modCustom(@PathVariable("id") Long id,
                                                            @Valid @RequestBody final ModCustomDto.Request request,
                                                            @AuthenticationPrincipal UserPrincipal user) {
+        // TODO : 회원 관련 기능이 완성되면 삭제할 것
+        Member member = memberRepository.findByEmail("three@moa.com").get();
 
-        return ResponseEntity.ok().body(null);
+        ModCustomDto.Response response = customService.modCustom(id, request, member);
+        return ResponseEntity.ok().body(response);
     }
 
     @Operation(summary = "내 스키어 삭제", responses = {@ApiResponse(responseCode = DELETE)})
