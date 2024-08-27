@@ -5,8 +5,10 @@ import com.moa.moa.api.member.custom.util.enumerated.EquipmentType;
 import com.moa.moa.api.member.custom.util.enumerated.Gender;
 import com.moa.moa.api.member.custom.util.enumerated.PackageType;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 
 public record AddCustomDto() {
+    @Builder
     public record Request(
             @NotNull
             Gender gender,
