@@ -1,6 +1,7 @@
 package com.moa.moa.api.member.custom.application;
 
 import com.moa.moa.api.member.custom.application.mapstruct.CustomMapstructMapper;
+import com.moa.moa.api.member.custom.application.mapstruct.CustomMapstructMapperImpl;
 import com.moa.moa.api.member.custom.domain.CustomProcessor;
 import com.moa.moa.api.member.custom.domain.dto.AddCustomDto;
 import com.moa.moa.api.member.custom.domain.dto.FindAllCustomDto;
@@ -25,7 +26,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,6 +41,8 @@ class CustomServiceTest {
     @Mock
     private CustomMapstructMapper customMapstructMapper;
 
+    private CustomMapstructMapperImpl customMapstructMapperImpl;
+
     @InjectMocks
     private CustomService customService;
 
@@ -50,6 +52,8 @@ class CustomServiceTest {
 
     @BeforeEach
     void beforeEach() {
+        customMapstructMapperImpl = new CustomMapstructMapperImpl();
+
         // 회원 생성
         List<Member> members = createMember();
 
@@ -111,9 +115,9 @@ class CustomServiceTest {
                 .equipmentType(EquipmentType.SNOW_BOARD)
                 .build();
 
-        when(customMapstructMapper.addOf(any(), any())).thenReturn(addMapper(request, 4L));
+        when(customMapstructMapper.addOf(any(), any())).thenReturn(customMapstructMapperImpl.addOf(request, 4L));
         when(customProcessor.addCustom(any())).thenReturn(custom);
-        when(customMapstructMapper.addOf(any())).thenReturn(addMapper(custom));
+        when(customMapstructMapper.addOf(any())).thenReturn(customMapstructMapperImpl.addOf(custom));
 
         // when
         AddCustomDto.Response response = customService.addCustom(request, mockMembers.get(3));
@@ -155,9 +159,9 @@ class CustomServiceTest {
                 .build();
 
         when(customProcessor.findCustomById(anyLong())).thenReturn(Optional.of(preCustom));
-        when(customMapstructMapper.modOf(any(), any())).thenReturn(modMapper(preCustom, request));
+        when(customMapstructMapper.modOf(any(), any())).thenReturn(customMapstructMapperImpl.modOf(preCustom, request));
         when(customProcessor.modCustom(any())).thenReturn(newCustom);
-        when(customMapstructMapper.modOf(any())).thenReturn(modMapper(newCustom));
+        when(customMapstructMapper.modOf(any())).thenReturn(customMapstructMapperImpl.modOf(newCustom));
 
         // when
         ModCustomDto.Response response = customService.modCustom(10L, request, mockMembers.get(3));
@@ -248,105 +252,11 @@ class CustomServiceTest {
     }
 
     private List<FindAllCustomDto.Response> createAllCustomResponse(List<Custom> customs) {
-        return customs.stream()
-                .map(this::allMapper)
-                .collect(Collectors.toList());
-    }
-
-    private FindAllCustomDto.Response allMapper(Custom custom) {
-        return FindAllCustomDto.Response.builder()
-                .id(custom.getId())
-                .memberId(custom.getMember().getId())
-                .gender(custom.getGender())
-                .nickname(custom.getNickname())
-                .packageType(custom.getPackageType())
-                .clothesType(custom.getClothesType())
-                .equipmentType(custom.getEquipmentType())
-                .createdAt(custom.getCreatedAt())
-                .build();
-    }
-
-    private AddCustomDto.Response addMapper(Custom custom) {
-        if (custom == null) {
-            return null;
+        List<FindAllCustomDto.Response> responses = new ArrayList<>();
+        for (Custom custom : customs) {
+            FindAllCustomDto.Response response = customMapstructMapperImpl.of(custom);
+            responses.add(response);
         }
-
-        Long id = null;
-
-        id = custom.getId();
-
-        AddCustomDto.Response response = new AddCustomDto.Response(id);
-
-        return response;
-    }
-
-    private Custom addMapper(AddCustomDto.Request request, Long memberId) {
-        if (request == null && memberId == null) {
-            return null;
-        }
-
-        Custom.CustomBuilder<?, ?> custom = Custom.builder();
-
-        if (request != null) {
-            custom.gender(request.gender());
-            custom.nickname(request.nickname());
-            custom.packageType(request.packageType());
-            custom.equipmentType(request.equipmentType());
-            custom.clothesType(request.clothesType());
-        }
-        custom.member(longToMember(memberId));
-
-        return custom.build();
-    }
-
-    private Custom modMapper(Custom custom, ModCustomDto.Request request) {
-        if ( custom == null && request == null ) {
-            return null;
-        }
-
-        Custom.CustomBuilder<?, ?> custom1 = Custom.builder();
-
-        if ( custom != null ) {
-            custom1.id( custom.getId() );
-            custom1.createdAt( custom.getCreatedAt() );
-            custom1.updatedAt( custom.getUpdatedAt() );
-            custom1.deletedAt( custom.getDeletedAt() );
-            custom1.member( custom.getMember() );
-        }
-        if ( request != null ) {
-            custom1.gender( request.gender() );
-            custom1.nickname( request.nickname() );
-            custom1.packageType( request.packageType() );
-            custom1.clothesType( request.clothesType() );
-            custom1.equipmentType( request.equipmentType() );
-        }
-
-        return custom1.build();
-    }
-
-    private ModCustomDto.Response modMapper(Custom custom) {
-        if ( custom == null ) {
-            return null;
-        }
-
-        Long id = null;
-
-        id = custom.getId();
-
-        ModCustomDto.Response response = new ModCustomDto.Response( id );
-
-        return response;
-    }
-
-    protected Member longToMember(Long long1) {
-        if (long1 == null) {
-            return null;
-        }
-
-        Member.MemberBuilder<?, ?> member = Member.builder();
-
-        member.id(long1);
-
-        return member.build();
+        return responses;
     }
 }
