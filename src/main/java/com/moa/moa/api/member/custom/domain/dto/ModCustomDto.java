@@ -5,8 +5,10 @@ import com.moa.moa.api.member.custom.util.enumerated.EquipmentType;
 import com.moa.moa.api.member.custom.util.enumerated.Gender;
 import com.moa.moa.api.member.custom.util.enumerated.PackageType;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 
 public record ModCustomDto() {
+    @Builder
     public record Request(
             @NotNull
             Gender gender,
@@ -18,5 +20,7 @@ public record ModCustomDto() {
             EquipmentType equipmentType
     ) {}
 
-    public record Response(Long id) {}
+    public record Response(
+            Long id
+    ) {}
 }
