@@ -1,10 +1,10 @@
 spring:
   h2:
     console:
-      enabled: true
+      enabled: false
       path: /h2-console
   datasource:
-    url: jdbc:mysql://moa-dev.site:3306/server2
+    url: jdbc:mysql://localhost:3306/server2
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ON_SECRET
     password: ON_SECRET
