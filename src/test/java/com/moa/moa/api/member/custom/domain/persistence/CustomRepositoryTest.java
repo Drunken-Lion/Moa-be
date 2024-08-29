@@ -50,7 +50,7 @@ class CustomRepositoryTest {
     }
 
     @Test
-    @DisplayName("내 스키어 리스트 조회 성공 - deleteAt 조건 적용 확인")
+    @DisplayName("사용자 별 스키어 리스트 조회 성공 - deleteAt 조건 적용 확인")
     public void t1() {
         // given
         Member member = memberRepository.findByEmail("three@moa.com").get();
@@ -66,6 +66,25 @@ class CustomRepositoryTest {
         assertThat(customs.get(0).getPackageType()).isEqualTo(PackageType.LIFT_EQUIPMENT);
         assertThat(customs.get(0).getEquipmentType()).isEqualTo(EquipmentType.SNOW_BOARD);
         assertThat(customs.get(0).getClothesType()).isEqualTo(null);
+    }
+
+    @Test
+    @DisplayName("상세 스키어 조회 성공")
+    public void t2() {
+        // given
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+        List<Custom> customs = customRepository.findAllCustomByMember(member);
+
+        //when
+        Custom custom = customRepository.findCustomById(customs.get(0).getId()).get();
+
+        //then
+        assertThat(custom.getMember()).isEqualTo(member);
+        assertThat(custom.getGender()).isEqualTo(Gender.FEMALE);
+        assertThat(custom.getNickname()).isEqualTo("삼남매 첫째");
+        assertThat(custom.getPackageType()).isEqualTo(PackageType.LIFT_EQUIPMENT);
+        assertThat(custom.getEquipmentType()).isEqualTo(EquipmentType.SNOW_BOARD);
+        assertThat(custom.getClothesType()).isEqualTo(null);
     }
 
     private List<Member> createMember() {
