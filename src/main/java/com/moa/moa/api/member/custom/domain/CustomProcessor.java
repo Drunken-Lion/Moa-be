@@ -22,6 +22,10 @@ public class CustomProcessor {
         return customRepository.findCustomById(id);
     }
 
+    public Custom addCustom(Custom custom) {
+        return customRepository.save(custom);
+    }
+
     public Custom modCustom(Custom custom) {
         return customRepository.save(custom);
     }
