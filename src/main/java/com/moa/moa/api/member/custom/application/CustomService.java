@@ -40,11 +40,24 @@ public class CustomService {
         Custom custom = customProcessor.findCustomById(id)
                 .orElseThrow(() -> new BusinessException(FailHttpMessage.Custom.NOT_FOUND));
 
-        if(!Objects.equals(custom.getMember().getId(), member.getId())){
+        if (!Objects.equals(custom.getMember().getId(), member.getId())) {
             throw new BusinessException(FailHttpMessage.Custom.FORBIDDEN);
         }
 
         Custom modCustom = customProcessor.modCustom(customMapstructMapper.modOf(custom, request));
         return customMapstructMapper.modOf(modCustom);
+    }
+
+    public void delCustom(Long id, Member member) {
+        Custom custom = customProcessor.findCustomById(id)
+                .orElseThrow(() -> new BusinessException(FailHttpMessage.Custom.NOT_FOUND));
+
+        if (!Objects.equals(custom.getMember().getId(), member.getId())) {
+            throw new BusinessException(FailHttpMessage.Custom.FORBIDDEN);
+        }
+
+        custom.modDeletedAt();
+
+        customProcessor.delCustom(custom);
     }
 }
