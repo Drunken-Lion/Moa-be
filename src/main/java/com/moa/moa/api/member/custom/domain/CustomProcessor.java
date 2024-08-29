@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -17,7 +18,15 @@ public class CustomProcessor {
         return customRepository.findAllCustomByMember(member);
     }
 
+    public Optional<Custom> findCustomById(Long id) {
+        return customRepository.findCustomById(id);
+    }
+
     public Custom addCustom(Custom custom) {
+        return customRepository.save(custom);
+    }
+
+    public Custom modCustom(Custom custom) {
         return customRepository.save(custom);
     }
 }

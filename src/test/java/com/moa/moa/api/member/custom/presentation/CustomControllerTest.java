@@ -1,6 +1,7 @@
 package com.moa.moa.api.member.custom.presentation;
 
 import com.moa.moa.api.member.custom.domain.dto.AddCustomDto;
+import com.moa.moa.api.member.custom.domain.dto.ModCustomDto;
 import com.moa.moa.api.member.custom.domain.entity.Custom;
 import com.moa.moa.api.member.custom.domain.persistence.CustomRepository;
 import com.moa.moa.api.member.custom.util.enumerated.ClothesType;
@@ -29,9 +30,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -110,6 +111,43 @@ class CustomControllerTest {
                 .andExpect(handler().handlerType(CustomController.class))
                 .andExpect(handler().methodName("addCustom"))
                 .andExpect(jsonPath("$.id", instanceOf(Number.class)));
+    }
+
+    @Test
+    @DisplayName("내 스키어 수정 성공")
+    void t3() throws Exception {
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+        Custom custom = customRepository.findAllCustomByMember(member).get(0);
+
+        ModCustomDto.Request request = ModCustomDto.Request.builder()
+                .gender(Gender.FEMALE)
+                .nickname("TEST USER")
+                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
+                .clothesType(ClothesType.STANDARD)
+                .equipmentType(EquipmentType.SNOW_BOARD)
+                .build();
+
+        ResultActions actions = mvc
+                .perform(put("/v1/customs/" + custom.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonConvertor.build(request))
+                )
+                .andDo(print());
+
+        Custom modCustom = customRepository.findCustomById(custom.getId()).get();
+
+        actions
+                .andExpect(status().isOk())
+                .andExpect(handler().handlerType(CustomController.class))
+                .andExpect(handler().methodName("modCustom"))
+                .andExpect(jsonPath("$.id", instanceOf(Number.class)));
+
+        assertThat(modCustom.getMember()).isEqualTo(member);
+        assertThat(modCustom.getGender()).isEqualTo(Gender.FEMALE);
+        assertThat(modCustom.getNickname()).isEqualTo("TEST USER");
+        assertThat(modCustom.getPackageType()).isEqualTo(PackageType.LIFT_EQUIPMENT_CLOTHES);
+        assertThat(modCustom.getEquipmentType()).isEqualTo(EquipmentType.SNOW_BOARD);
+        assertThat(modCustom.getClothesType()).isEqualTo(ClothesType.STANDARD);
     }
 
     private List<Member> createMember() {
