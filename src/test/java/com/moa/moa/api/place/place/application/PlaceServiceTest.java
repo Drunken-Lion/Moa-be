@@ -9,6 +9,7 @@ import com.moa.moa.api.place.liftticket.domain.entity.LiftTicket;
 import com.moa.moa.api.place.liftticket.util.enumerated.LiftTicketStatus;
 import com.moa.moa.api.place.liftticket.util.enumerated.LiftTicketType;
 import com.moa.moa.api.place.place.application.mapstruct.PlaceMapstructMapper;
+import com.moa.moa.api.place.place.application.mapstruct.PlaceMapstructMapperImpl;
 import com.moa.moa.api.place.place.domain.PlaceProcessor;
 import com.moa.moa.api.place.place.domain.dto.FindAllPlaceDto;
 import com.moa.moa.api.place.place.domain.dto.FindPlaceDto;
@@ -46,8 +47,6 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import java.time.LocalDateTime;
-
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -58,6 +57,8 @@ class PlaceServiceTest {
 
     @Mock
     private PlaceMapstructMapper placeMapstructMapper;
+
+    private PlaceMapstructMapperImpl placeMapstructMapperImpl;
 
     @InjectMocks
     private PlaceService placeService;
@@ -70,6 +71,8 @@ class PlaceServiceTest {
 
     @BeforeEach
     void beforeEach() {
+        placeMapstructMapperImpl = new PlaceMapstructMapperImpl();
+
         // 카테고리 생성
         Category category = createCategory();
 
@@ -881,7 +884,7 @@ class PlaceServiceTest {
                 .map(PlaceAmenity::getAmenity)
                 .collect(Collectors.toList());
 
-        return allMapper(
+        return placeMapstructMapperImpl.ofFindAllPlace(
                 place,
                 image,
                 place.getAddress(),
@@ -897,7 +900,7 @@ class PlaceServiceTest {
                 .map(PlaceAmenity::getAmenity)
                 .collect(Collectors.toList());
 
-        return mapper(
+        return placeMapstructMapperImpl.ofFindPlace(
                 place,
                 image,
                 place.getAddress(),
@@ -906,155 +909,5 @@ class PlaceServiceTest {
                 amenities,
                 place.getSlopes()
         );
-    }
-
-    private FindAllPlaceDto.Response allMapper(Place place,
-                                               Image image,
-                                               Address address,
-                                               List<OperatingTime> operatingTimes,
-                                               List<SpecificDay> specificDays,
-                                               List<Amenity> amenities,
-                                               List<Slope> slopes) {
-        // TODO: image 기능 완성 시 구현 추가
-        FindAllPlaceDto.ImageResponse imageResponse = FindAllPlaceDto.ImageResponse.builder()
-                .id(null)
-                .keyName(null)
-                .createdAt(null)
-                .build();
-
-        FindAllPlaceDto.AddressResponse addressResponse = FindAllPlaceDto.AddressResponse.builder()
-                .id(address.getId())
-                .address(address.getAddress())
-                .addressDetail(address.getAddressDetail())
-                .locationX(address.getLocation().getX())
-                .locationY(address.getLocation().getY())
-                .mapUrl(address.getUrl())
-                .build();
-
-        List<FindAllPlaceDto.OperatingTimeResponse> operatingTimeResponses = operatingTimes.stream()
-                .map(operatingTime -> FindAllPlaceDto.OperatingTimeResponse.builder()
-                        .id(operatingTime.getId())
-                        .status(operatingTime.getStatus())
-                        .day(operatingTime.getDay())
-                        .open(operatingTime.getOpenTime())
-                        .close(operatingTime.getCloseTime())
-                        .build())
-                .collect(Collectors.toList());
-
-        List<FindAllPlaceDto.SpecificDayResponse> specificDayResponses = specificDays.stream()
-                .map(specificDay -> FindAllPlaceDto.SpecificDayResponse.builder()
-                        .id(specificDay.getId())
-                        .status(specificDay.getStatus())
-                        .reason(specificDay.getReason())
-                        .date(specificDay.getDate())
-                        .open(specificDay.getOpenTime())
-                        .close(specificDay.getCloseTime())
-                        .build())
-                .collect(Collectors.toList());
-
-        List<FindAllPlaceDto.AmenityResponse> amenityResponses = amenities.stream()
-                .map(amenity -> FindAllPlaceDto.AmenityResponse.builder()
-                        .id(amenity.getId())
-                        .name(amenity.getType().name())
-                        .build())
-                .collect(Collectors.toList());
-
-        List<FindAllPlaceDto.SlopeResponse> slopeResponses = slopes.stream()
-                .map(slope -> FindAllPlaceDto.SlopeResponse.builder()
-                        .id(slope.getId())
-                        .name(slope.getName())
-                        .level(slope.getLevel())
-                        .build())
-                .collect(Collectors.toList());
-
-        return FindAllPlaceDto.Response.builder()
-                .id(place.getId())
-                .name(place.getName())
-                .open(place.getOpenDate())
-                .close(place.getCloseDate())
-                .recLevel(place.getRecLevel())
-                .createdAt(place.getCreatedAt())
-                .images(imageResponse)
-                .address(addressResponse)
-                .operatingTimes(operatingTimeResponses)
-                .specificDays(specificDayResponses)
-                .amenities(amenityResponses)
-                .slopes(slopeResponses)
-                .build();
-    }
-
-    private FindPlaceDto.Response mapper(Place place,
-                                         Image image,
-                                         Address address,
-                                         List<OperatingTime> operatingTimes,
-                                         List<SpecificDay> specificDays,
-                                         List<Amenity> amenities,
-                                         List<Slope> slopes) {
-        // TODO: image 기능 완성 시 구현 추가
-        FindPlaceDto.ImageResponse imageResponse = FindPlaceDto.ImageResponse.builder()
-                .id(null)
-                .keyName(null)
-                .createdAt(null)
-                .build();
-
-        FindPlaceDto.AddressResponse addressResponse = FindPlaceDto.AddressResponse.builder()
-                .id(address.getId())
-                .address(address.getAddress())
-                .addressDetail(address.getAddressDetail())
-                .locationX(address.getLocation().getX())
-                .locationY(address.getLocation().getY())
-                .mapUrl(address.getUrl())
-                .build();
-
-        List<FindPlaceDto.OperatingTimeResponse> operatingTimeResponses = operatingTimes.stream()
-                .map(operatingTime -> FindPlaceDto.OperatingTimeResponse.builder()
-                        .id(operatingTime.getId())
-                        .status(operatingTime.getStatus())
-                        .day(operatingTime.getDay())
-                        .open(operatingTime.getOpenTime())
-                        .close(operatingTime.getCloseTime())
-                        .build())
-                .collect(Collectors.toList());
-
-        List<FindPlaceDto.SpecificDayResponse> specificDayResponses = specificDays.stream()
-                .map(specificDay -> FindPlaceDto.SpecificDayResponse.builder()
-                        .id(specificDay.getId())
-                        .status(specificDay.getStatus())
-                        .reason(specificDay.getReason())
-                        .date(specificDay.getDate())
-                        .open(specificDay.getOpenTime())
-                        .close(specificDay.getCloseTime())
-                        .build())
-                .collect(Collectors.toList());
-
-        List<FindPlaceDto.AmenityResponse> amenityResponses = amenities.stream()
-                .map(amenity -> FindPlaceDto.AmenityResponse.builder()
-                        .id(amenity.getId())
-                        .name(amenity.getType().name())
-                        .build())
-                .collect(Collectors.toList());
-
-        List<FindPlaceDto.SlopeResponse> slopeResponses = slopes.stream()
-                .map(slope -> FindPlaceDto.SlopeResponse.builder()
-                        .id(slope.getId())
-                        .name(slope.getName())
-                        .level(slope.getLevel())
-                        .build())
-                .collect(Collectors.toList());
-
-        return FindPlaceDto.Response.builder()
-                .id(place.getId())
-                .name(place.getName())
-                .open(place.getOpenDate())
-                .close(place.getCloseDate())
-                .recLevel(place.getRecLevel())
-                .createdAt(place.getCreatedAt())
-                .images(imageResponse)
-                .address(addressResponse)
-                .operatingTimes(operatingTimeResponses)
-                .specificDays(specificDayResponses)
-                .amenities(amenityResponses)
-                .slopes(slopeResponses)
-                .build();
     }
 }
