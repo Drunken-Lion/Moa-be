@@ -1,5 +1,6 @@
 package com.moa.moa.api.member.custom.presentation;
 
+import com.moa.moa.api.member.custom.domain.dto.AddCustomDto;
 import com.moa.moa.api.member.custom.domain.entity.Custom;
 import com.moa.moa.api.member.custom.domain.persistence.CustomRepository;
 import com.moa.moa.api.member.custom.util.enumerated.ClothesType;
@@ -9,6 +10,7 @@ import com.moa.moa.api.member.custom.util.enumerated.PackageType;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.member.member.domain.persistence.MemberRepository;
 import com.moa.moa.api.member.member.util.enumerated.MemberRole;
+import com.moa.moa.global.common.util.JsonConvertor;
 import com.moa.moa.global.util.TestUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +31,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -82,6 +85,31 @@ class CustomControllerTest {
                 .andExpect(jsonPath("$.[0].clothesType", nullValue()))
                 .andExpect(jsonPath("$.[0].equipmentType").value(EquipmentType.SNOW_BOARD.toString()))
                 .andExpect(jsonPath("$.[0].createdAt", matchesPattern(TestUtil.DATETIME_PATTERN)));
+    }
+
+    @Test
+    @DisplayName("내 스키어 추가 성공")
+    void t2() throws Exception {
+        AddCustomDto.Request request = AddCustomDto.Request.builder()
+                .gender(Gender.FEMALE)
+                .nickname("TEST USER")
+                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
+                .clothesType(ClothesType.STANDARD)
+                .equipmentType(EquipmentType.SNOW_BOARD)
+                .build();
+
+        ResultActions actions = mvc
+                .perform(post("/v1/customs")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonConvertor.build(request))
+                )
+                .andDo(print());
+
+        actions
+                .andExpect(status().isCreated())
+                .andExpect(handler().handlerType(CustomController.class))
+                .andExpect(handler().methodName("addCustom"))
+                .andExpect(jsonPath("$.id", instanceOf(Number.class)));
     }
 
     private List<Member> createMember() {

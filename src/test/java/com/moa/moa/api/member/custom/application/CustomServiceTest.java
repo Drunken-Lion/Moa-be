@@ -2,6 +2,7 @@ package com.moa.moa.api.member.custom.application;
 
 import com.moa.moa.api.member.custom.application.mapstruct.CustomMapstructMapper;
 import com.moa.moa.api.member.custom.domain.CustomProcessor;
+import com.moa.moa.api.member.custom.domain.dto.AddCustomDto;
 import com.moa.moa.api.member.custom.domain.dto.FindAllCustomDto;
 import com.moa.moa.api.member.custom.domain.entity.Custom;
 import com.moa.moa.api.member.custom.util.enumerated.ClothesType;
@@ -38,6 +39,7 @@ class CustomServiceTest {
     @InjectMocks
     private CustomService customService;
 
+    private List<Member> mockMembers;
     private List<Custom> mockCustoms;
     private List<FindAllCustomDto.Response> mockAllCustomResponses;
 
@@ -49,12 +51,13 @@ class CustomServiceTest {
         // 스키어 생성
         List<Custom> customs = createCustom(members);
 
+        mockMembers = members;
         mockCustoms = customs;
         mockAllCustomResponses = createAllCustomResponse(customs);
     }
 
     @Test
-    @DisplayName("스키장 목록 조회 성공")
+    @DisplayName("내 스키어 리스트 조회 성공")
     public void t1() {
         // given
         when(customProcessor.findAllCustomByMember(any())).thenReturn(mockCustoms);
@@ -79,6 +82,39 @@ class CustomServiceTest {
         assertThat(customResponse.packageType()).isEqualTo(PackageType.LIFT_EQUIPMENT);
         assertThat(customResponse.clothesType()).isEqualTo(null);
         assertThat(customResponse.equipmentType()).isEqualTo(EquipmentType.SNOW_BOARD);
+    }
+
+    @Test
+    @DisplayName("내 스키어 추가 성공")
+    public void t2() {
+        // given
+        AddCustomDto.Request request = AddCustomDto.Request.builder()
+                .gender(Gender.FEMALE)
+                .nickname("TEST USER")
+                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
+                .clothesType(ClothesType.STANDARD)
+                .equipmentType(EquipmentType.SNOW_BOARD)
+                .build();
+
+        Custom custom = Custom.builder()
+                .id(10L)
+                .member(mockMembers.get(3))
+                .gender(Gender.FEMALE)
+                .nickname("TEST USER")
+                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
+                .clothesType(ClothesType.STANDARD)
+                .equipmentType(EquipmentType.SNOW_BOARD)
+                .build();
+
+        when(customMapstructMapper.addOf(any(), any())).thenReturn(addMapper(request, 4L));
+        when(customProcessor.addCustom(any())).thenReturn(custom);
+        when(customMapstructMapper.addOf(any())).thenReturn(addMapper(custom));
+
+        // when
+        AddCustomDto.Response response = customService.addCustom(request, mockMembers.get(3));
+
+        // then
+        assertThat(response.id()).isEqualTo(10L);
     }
 
     private List<Member> createMember() {
@@ -121,5 +157,50 @@ class CustomServiceTest {
                 .equipmentType(custom.getEquipmentType())
                 .createdAt(custom.getCreatedAt())
                 .build();
+    }
+
+    private AddCustomDto.Response addMapper(Custom custom) {
+        if (custom == null) {
+            return null;
+        }
+
+        Long id = null;
+
+        id = custom.getId();
+
+        AddCustomDto.Response response = new AddCustomDto.Response(id);
+
+        return response;
+    }
+
+    private Custom addMapper(AddCustomDto.Request request, Long memberId) {
+        if (request == null && memberId == null) {
+            return null;
+        }
+
+        Custom.CustomBuilder<?, ?> custom = Custom.builder();
+
+        if (request != null) {
+            custom.gender(request.gender());
+            custom.nickname(request.nickname());
+            custom.packageType(request.packageType());
+            custom.equipmentType(request.equipmentType());
+            custom.clothesType(request.clothesType());
+        }
+        custom.member(longToMember(memberId));
+
+        return custom.build();
+    }
+
+    protected Member longToMember(Long long1) {
+        if (long1 == null) {
+            return null;
+        }
+
+        Member.MemberBuilder<?, ?> member = Member.builder();
+
+        member.id(long1);
+
+        return member.build();
     }
 }

@@ -3,7 +3,6 @@ package com.moa.moa.api.member.custom.domain;
 import com.moa.moa.api.member.custom.domain.entity.Custom;
 import com.moa.moa.api.member.custom.domain.persistence.CustomRepository;
 import com.moa.moa.api.member.member.domain.entity.Member;
-import com.moa.moa.api.place.place.domain.entity.Place;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,5 +15,9 @@ public class CustomProcessor {
 
     public List<Custom> findAllCustomByMember(Member member) {
         return customRepository.findAllCustomByMember(member);
+    }
+
+    public Custom addCustom(Custom custom) {
+        return customRepository.save(custom);
     }
 }
