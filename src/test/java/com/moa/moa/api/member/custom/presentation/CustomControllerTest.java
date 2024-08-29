@@ -91,6 +91,8 @@ class CustomControllerTest {
     @Test
     @DisplayName("내 스키어 추가 성공")
     void t2() throws Exception {
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+
         AddCustomDto.Request request = AddCustomDto.Request.builder()
                 .gender(Gender.FEMALE)
                 .nickname("TEST USER")
@@ -106,11 +108,20 @@ class CustomControllerTest {
                 )
                 .andDo(print());
 
+        Custom addCustom = customRepository.findAllCustomByMember(member).getLast();
+
         actions
                 .andExpect(status().isCreated())
                 .andExpect(handler().handlerType(CustomController.class))
                 .andExpect(handler().methodName("addCustom"))
                 .andExpect(jsonPath("$.id", instanceOf(Number.class)));
+
+        assertThat(addCustom.getMember()).isEqualTo(member);
+        assertThat(addCustom.getGender()).isEqualTo(Gender.FEMALE);
+        assertThat(addCustom.getNickname()).isEqualTo("TEST USER");
+        assertThat(addCustom.getPackageType()).isEqualTo(PackageType.LIFT_EQUIPMENT_CLOTHES);
+        assertThat(addCustom.getEquipmentType()).isEqualTo(EquipmentType.SNOW_BOARD);
+        assertThat(addCustom.getClothesType()).isEqualTo(ClothesType.STANDARD);
     }
 
     @Test
