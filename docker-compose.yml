@@ -11,9 +11,9 @@ services:
       - /usr/local/docker/data/certbot/conf:/etc/letsencrypt
       - /usr/local/docker/data/certbot/www:/var/www/certbot
     command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
-    depends_on:
-      - moa-dev
-      - db
+#    depends_on:
+#      - moa-dev
+#      - db
 
   certbot:
     container_name: certbot
