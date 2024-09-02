@@ -1,7 +1,11 @@
 package com.moa.moa.api.cs.question.application.mapstruct;
 
+import com.moa.moa.api.cs.answer.domain.entity.Answer;
 import com.moa.moa.api.cs.question.domain.dto.FindAllQuestionDto;
+import com.moa.moa.api.cs.question.domain.dto.FindQuestionDto;
 import com.moa.moa.api.cs.question.domain.entity.Question;
+import com.moa.moa.api.member.member.domain.entity.Member;
+import com.moa.moa.global.aws.s3.images.domain.entity.Image;
 import com.moa.moa.global.common.response.PageExternalDto;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
@@ -22,5 +26,19 @@ public interface QuestionMapstructMapper {
 
     @Mapping(target = "data", expression = "java(responses.getContent())")
     @Mapping(target = "pageInfo", expression = "java(new PageExternalDto.PageInfo(pageable.getPageNumber(), pageable.getPageSize(), responses.hasNext(), totalSize))")
-    PageExternalDto.Response<List<FindAllQuestionDto.Response>> of(Slice<FindAllQuestionDto.Response> responses, Pageable pageable, Integer totalSize);
+    PageExternalDto.Response<List<FindAllQuestionDto.Response>> of(Slice<FindAllQuestionDto.Response> responses,
+                                                                   Pageable pageable,
+                                                                   Integer totalSize);
+
+    @Mapping(target = "id", expression = "java(question.getId())")
+    FindQuestionDto.Response of(Question question,
+                                FindQuestionDto.MemberResponse member,
+                                List<FindQuestionDto.ImageResponse> images,
+                                List<FindQuestionDto.AnswerResponse> answers);
+
+    FindQuestionDto.MemberResponse of(Member member);
+
+    FindQuestionDto.ImageResponse of(Image image);
+
+    FindQuestionDto.AnswerResponse of(Answer answer);
 }

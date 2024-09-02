@@ -34,8 +34,7 @@ public record FindQuestionDto() {
     @Builder
     public record ImageResponse(
             Long id,
-            String originImageUrl,
-            String lowImageUrl,
+            String key,
             LocalDateTime createdAt
     ) {
     }

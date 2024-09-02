@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.Matchers.*;
@@ -31,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
-@Transactional(readOnly = true)
+@Transactional
 public class QuestionControllerTest {
     @Autowired
     private MockMvc mvc;
@@ -41,7 +42,6 @@ public class QuestionControllerTest {
     @Autowired
     private QuestionRepository questionRepository;
 
-    @Transactional
     @BeforeEach
     void beforeEach() {
         if (memberRepository.count() == 0) {
@@ -66,14 +66,12 @@ public class QuestionControllerTest {
         }
     }
 
-    @Transactional
     @AfterEach
     void afterEach() {
         memberRepository.deleteAll();
         questionRepository.deleteAll();
     }
 
-    @Transactional
     @Test
     @DisplayName("나의 문의 내역 조회")
     void findAllQuestionTest() throws Exception {
@@ -99,8 +97,44 @@ public class QuestionControllerTest {
                 .andExpect(jsonPath("$.pageInfo.page", is(0)))
                 .andExpect(jsonPath("$.pageInfo.size", is(10)))
                 .andExpect(jsonPath("$.pageInfo.hasNext", is(false)))
-                .andExpect(jsonPath("$.pageInfo.totalSize", is(10)))
-        ;
+                .andExpect(jsonPath("$.pageInfo.totalSize", is(10)));
+    }
+
+    @Test
+    @DisplayName("나의 문의 내역 상세 조회")
+    void findQuestionTest() throws Exception {
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+
+        Question question = Question.builder()
+                .member(member)
+                .type(QuestionType.COMMON)
+                .title("제목 테스트")
+                .content("내용 테스트")
+                .status(QuestionStatus.INCOMPLETE)
+                .build();
+
+        questionRepository.save(question);
+
+        ResultActions actions = mvc
+                .perform(get("/v1/questions/" + question.getId()))
+                .andDo(print());
+
+        actions.andExpect(status().isOk())
+                .andExpect(handler().handlerType(QuestionController.class))
+                .andExpect(handler().methodName("findQuestion"))
+                .andExpect(jsonPath("$.id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.type", is(QuestionType.COMMON.toString())))
+                .andExpect(jsonPath("$.title", is("제목 테스트")))
+                .andExpect(jsonPath("$.content", is("내용 테스트")))
+                .andExpect(jsonPath("$.status", is(QuestionStatus.INCOMPLETE.toString())))
+                .andExpect(jsonPath("$.createdAt", matchesPattern(TestUtil.DATETIME_PATTERN)))
+
+                .andExpect(jsonPath("$.member.id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.member.email", is("three@moa.com")))
+                .andExpect(jsonPath("$.member.nickname", is("three")))
+
+                .andExpect(jsonPath("$.images", instanceOf(List.class)))
+                .andExpect(jsonPath("$.answers", instanceOf(List.class)));
     }
 
     private Member createMember(String email, MemberRole role) {
