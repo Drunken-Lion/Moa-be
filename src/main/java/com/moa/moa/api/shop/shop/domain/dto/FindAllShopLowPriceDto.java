@@ -1,4 +1,4 @@
-package com.moa.moa.api.shop.shop.presentation.dto;
+package com.moa.moa.api.shop.shop.domain.dto;
 
 import com.moa.moa.api.member.custom.util.enumerated.ClothesType;
 import com.moa.moa.api.member.custom.util.enumerated.EquipmentType;
@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public record FindAllShopLowPriceExternalDto() {
+public record FindAllShopLowPriceDto() {
     @Builder
     public record Request(
             PlaceRequest place,
