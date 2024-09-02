@@ -161,6 +161,28 @@ class CustomControllerTest {
         assertThat(modCustom.getClothesType()).isEqualTo(ClothesType.STANDARD);
     }
 
+    @Test
+    @DisplayName("내 스키어 삭제 성공")
+    void t4() throws Exception {
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+        Custom custom = customRepository.findAllCustomByMember(member).get(0);
+
+        ResultActions actions = mvc
+                .perform(delete("/v1/customs/" + custom.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print());
+
+        List<Custom> customs = customRepository.findAllCustomByMember(member);
+
+        actions
+                .andExpect(status().isNoContent())
+                .andExpect(handler().handlerType(CustomController.class))
+                .andExpect(handler().methodName("delCustom"));
+
+        assertThat(customs.size()).isEqualTo(1);
+    }
+
     private List<Member> createMember() {
         List<Member> list = new ArrayList<>();
 
