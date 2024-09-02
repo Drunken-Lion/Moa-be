@@ -1,5 +1,6 @@
 package com.moa.moa.api.shop.shop.domain.dto;
 
+import com.moa.moa.api.member.custom.util.enumerated.PackageType;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -22,15 +23,14 @@ public record FindAllShopDto() {
     @Builder
     public record ImageResponse(
             Long id,
-            String originImageUrl,
-            String lowImageUrl,
+            String keyName,
             LocalDateTime createdAt
     ) {}
 
     @Builder
     public record PackageResponse(
             Long id,
-            String type,
+            PackageType type,
             String name,
             BigDecimal price
     ) {}

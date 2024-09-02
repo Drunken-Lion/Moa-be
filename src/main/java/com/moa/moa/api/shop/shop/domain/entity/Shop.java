@@ -63,9 +63,8 @@ public class Shop extends BaseEntity {
     private List<PlaceShop> placeShops = new ArrayList<>();
 
     @Comment("샵의 네이버 리뷰")
-    @OneToMany(mappedBy = "shop")
-    @Builder.Default
-    private List<NaverReview> naverReviews = new ArrayList<>();
+    @OneToOne(mappedBy = "shop")
+    private NaverReview naverReview;
 
     @Comment("샵의 리뷰")
     @OneToMany(mappedBy = "shop")
@@ -81,4 +80,16 @@ public class Shop extends BaseEntity {
     @OneToMany(mappedBy = "shop")
     @Builder.Default
     private List<ItemOption> itemOptions = new ArrayList<>();
+
+    public void addItems(List<Item> items) {
+        this.items = items;
+    }
+
+    public void addPlaceShops(List<PlaceShop> placeShops) {
+        this.placeShops = placeShops;
+    }
+
+    public void addNaverReview(NaverReview naverReview) {
+        this.naverReview = naverReview;
+    }
 }
