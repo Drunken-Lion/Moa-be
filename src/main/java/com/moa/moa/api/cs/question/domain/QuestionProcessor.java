@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class QuestionProcessor {
@@ -19,5 +21,9 @@ public class QuestionProcessor {
 
     public Integer countMyQuestion(Member member) {
         return questionRepository.countByMember(member);
+    }
+
+    public Optional<Question> findQuestionById(Long id) {
+        return questionRepository.findQuestionById(id);
     }
 }

@@ -1,13 +1,17 @@
 package com.moa.moa.api.cs.question.application;
 
+import com.moa.moa.api.cs.answer.domain.entity.Answer;
 import com.moa.moa.api.cs.question.application.mapstruct.QuestionMapstructMapper;
+import com.moa.moa.api.cs.question.application.mapstruct.QuestionMapstructMapperImpl;
 import com.moa.moa.api.cs.question.domain.QuestionProcessor;
 import com.moa.moa.api.cs.question.domain.dto.FindAllQuestionDto;
+import com.moa.moa.api.cs.question.domain.dto.FindQuestionDto;
 import com.moa.moa.api.cs.question.domain.entity.Question;
 import com.moa.moa.api.cs.question.util.enumerated.QuestionStatus;
 import com.moa.moa.api.cs.question.util.enumerated.QuestionType;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.member.member.util.enumerated.MemberRole;
+import com.moa.moa.global.aws.s3.images.domain.entity.Image;
 import com.moa.moa.global.common.response.PageExternalDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +27,9 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,6 +43,8 @@ public class QuestionServiceTest {
 
     @Mock
     private QuestionMapstructMapper questionMapstructMapper;
+
+    private QuestionMapstructMapperImpl questionMapstructMapperImpl;
 
     @InjectMocks
     private QuestionService questionService;
@@ -54,12 +62,15 @@ public class QuestionServiceTest {
     private final QuestionStatus questionStatus = QuestionStatus.INCOMPLETE;
     private final LocalDateTime questionCreatedAt = LocalDateTime.now();
 
+    private final LocalDateTime answerCreatedAt = LocalDateTime.now();
+
     private final int page = 0;
     private final int size = 10;
     private final boolean hasNext = false;
 
     @BeforeEach
     void beforeEach() {
+        questionMapstructMapperImpl = new QuestionMapstructMapperImpl();
     }
 
     @AfterEach
@@ -71,8 +82,8 @@ public class QuestionServiceTest {
     void findAllQuestion() {
         // given
         Slice<Question> questionSlice = getQuestionSlice();
-        Slice<FindAllQuestionDto.Response> questionResponse = questionSlice.map(this::mapper);
-        PageExternalDto.Response<List<FindAllQuestionDto.Response>> pageResponse = pageMapper(questionResponse, PageRequest.of(page, size), 1);
+        Slice<FindAllQuestionDto.Response> questionResponse = questionSlice.map(questionMapstructMapperImpl::of);
+        PageExternalDto.Response<List<FindAllQuestionDto.Response>> pageResponse = questionMapstructMapperImpl.of(questionResponse, PageRequest.of(page, size), 1);
 
         when(questionProcessor.findAllMyQuestion(any(), any(Pageable.class))).thenReturn(questionSlice);
         when(questionProcessor.countMyQuestion(any())).thenReturn(1);
@@ -99,6 +110,44 @@ public class QuestionServiceTest {
         assertThat(questionList.get(0).createdAt()).isEqualTo(questionCreatedAt);
     }
 
+    @Test
+    @DisplayName("문의 상세 조회")
+    void findQuestion() {
+        // given
+        FindQuestionDto.MemberResponse memberResponse = questionMapstructMapperImpl.of(getMember());
+        FindQuestionDto.ImageResponse imageResponse = questionMapstructMapperImpl.of(getImage());
+        List<FindQuestionDto.AnswerResponse> answerResponses = new ArrayList<>();
+
+        when(questionProcessor.findQuestionById(any())).thenReturn(Optional.ofNullable(getQuestion()));
+        when(questionMapstructMapper.of(any(Member.class))).thenReturn(memberResponse);
+        when(questionMapstructMapper.of(any(Image.class))).thenReturn(imageResponse);
+
+        for (Answer answer : getQuestion().getAnswers()) {
+            FindQuestionDto.AnswerResponse answerResponse = questionMapstructMapperImpl.of(answer);
+            answerResponses.add(answerResponse);
+            when(questionMapstructMapper.of(answer)).thenReturn(answerResponse);
+        }
+
+        when(questionMapstructMapper.of(any(), any(), any(), any())).thenReturn(questionMapstructMapperImpl.of(getQuestion(), memberResponse, List.of(imageResponse), answerResponses));
+
+        // when
+        FindQuestionDto.Response question =
+                questionService.findQuestion(getQuestion().getId(), getMember());
+
+        // then
+        assertThat(question.id()).isEqualTo(questionId);
+        assertThat(question.type()).isEqualTo(questionType);
+        assertThat(question.title()).isEqualTo(questionTitle);
+        assertThat(question.status()).isEqualTo(questionStatus);
+        assertThat(question.createdAt()).isEqualTo(questionCreatedAt);
+
+        List<FindQuestionDto.AnswerResponse> answerList = question.answers();
+        assertThat(answerList.size()).isEqualTo(answerResponses.size());
+        assertThat(answerList.get(0).id()).isEqualTo(1L);
+        assertThat(answerList.get(0).content()).isEqualTo("답변");
+        assertThat(answerList.get(0).createdAt()).isEqualTo(answerCreatedAt);
+    }
+
     private Slice<Question> getQuestionSlice() {
         Pageable pageable = PageRequest.of(page, size);
         return new SliceImpl<>(List.of(getQuestion()), pageable, hasNext);
@@ -123,6 +172,19 @@ public class QuestionServiceTest {
                 .type(questionType)
                 .status(questionStatus)
                 .createdAt(questionCreatedAt)
+                .answers(List.of(getAnswer()))
+                .build();
+    }
+
+    private Image getImage() {
+        return Image.builder().build();
+    }
+
+    private Answer getAnswer() {
+        return Answer.builder()
+                .id(1L)
+                .content("답변")
+                .createdAt(answerCreatedAt)
                 .build();
     }
 
