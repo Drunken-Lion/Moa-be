@@ -76,7 +76,10 @@ public class CustomController {
     @DeleteMapping("{id}")
     public ResponseEntity<Void> delCustom(@PathVariable("id") Long id,
                                           @AuthenticationPrincipal UserPrincipal user) {
+        // TODO : 회원 관련 기능이 완성되면 삭제할 것
+        Member member = memberRepository.findByEmail("three@moa.com").get();
 
+        customService.delCustom(id, member);
         return ResponseEntity.noContent().build();
     }
 }
