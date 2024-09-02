@@ -1,12 +1,14 @@
-package com.moa.moa.api.member.custom.presentation.dto;
+package com.moa.moa.api.member.custom.domain.dto;
 
 import com.moa.moa.api.member.custom.util.enumerated.ClothesType;
 import com.moa.moa.api.member.custom.util.enumerated.EquipmentType;
 import com.moa.moa.api.member.custom.util.enumerated.Gender;
 import com.moa.moa.api.member.custom.util.enumerated.PackageType;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 
-public record AddCustomExternalDto() {
+public record AddCustomDto() {
+    @Builder
     public record Request(
             @NotNull
             Gender gender,
@@ -18,5 +20,7 @@ public record AddCustomExternalDto() {
             EquipmentType equipmentType
     ) {}
 
-    public record Response(Long id) {}
+    public record Response(
+            Long id
+    ) {}
 }
