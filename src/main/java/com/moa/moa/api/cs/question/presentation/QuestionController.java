@@ -6,6 +6,7 @@ import com.moa.moa.api.cs.question.domain.dto.FindAllQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.FindQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.ModQuestionDto;
 import com.moa.moa.api.member.member.domain.entity.Member;
+import com.moa.moa.api.member.member.domain.persistence.MemberRepository;
 import com.moa.moa.global.common.response.PageExternalDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -29,6 +30,8 @@ import static com.moa.moa.global.common.response.ApiResponseCode.*;
 @Tag(name = "Question-API", description = "문의 API")
 public class QuestionController {
     private final QuestionService questionService;
+    // TODO: 회원 관련 기능이 완성되면 삭제할 것
+    private final MemberRepository memberRepository;
 
     @Operation(summary = "나의 문의 내역 전체 조회", responses = {@ApiResponse(responseCode = GET)})
     @GetMapping
@@ -36,11 +39,7 @@ public class QuestionController {
                                                                                                        Pageable pageable) {
 
         // TODO : 회원 관련 기능이 완성되면 삭제할 것
-        Member member = Member.builder()
-                .id(4L)
-                .email("three@moa.com")
-                .nickname("three")
-                .build();
+        Member member = memberRepository.findByEmail("three@moa.com").get();
 
         return ResponseEntity.ok().body(questionService.findAllQuestion(member, pageable));
     }
@@ -58,11 +57,7 @@ public class QuestionController {
     public ResponseEntity<FindQuestionDto.Response> findQuestion(@PathVariable("id") Long id,
                                                                  @AuthenticationPrincipal UserPrincipal user) {
         // TODO : 회원 관련 기능이 완성되면 삭제할 것
-        Member member = Member.builder()
-                .id(4L)
-                .email("three@moa.com")
-                .nickname("three")
-                .build();
+        Member member = memberRepository.findByEmail("three@moa.com").get();
 
         return ResponseEntity.ok().body(questionService.findQuestion(id, member));
     }
