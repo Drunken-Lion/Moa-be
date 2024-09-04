@@ -65,7 +65,7 @@ public interface ShopMapstructMapper {
                 .id(shop.getId())
                 .name(shop.getName())
                 .wishId(wish != null ? wish.getId() : null)
-                .image(imageResponse)
+                .images(imageResponse)
                 .packages(packageResponses)
                 .moaReview(moaReviewResponse)
                 .naverReview(naverReviewResponse)

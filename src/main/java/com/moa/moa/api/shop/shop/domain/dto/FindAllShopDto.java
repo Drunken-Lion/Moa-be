@@ -13,7 +13,7 @@ public record FindAllShopDto() {
             Long id,
             String name,
             Long wishId,
-            FindAllShopDto.ImageResponse image,
+            FindAllShopDto.ImageResponse images,
             List<FindAllShopDto.PackageResponse> packages,
             FindAllShopDto.MoaReviewResponse moaReview,
             FindAllShopDto.NaverReviewResponse naverReview,
