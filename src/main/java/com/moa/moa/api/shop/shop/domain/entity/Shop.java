@@ -89,6 +89,10 @@ public class Shop extends BaseEntity {
         this.placeShops = placeShops;
     }
 
+    public void addReviews(List<Review> reviews) {
+        this.reviews = reviews;
+    }
+
     public void addNaverReview(NaverReview naverReview) {
         this.naverReview = naverReview;
     }

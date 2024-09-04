@@ -3,6 +3,7 @@ package com.moa.moa.api.shop.shop.domain.persistence;
 import com.moa.moa.api.shop.item.domain.entity.Item;
 import com.moa.moa.api.shop.naverreview.domain.entity.NaverReview;
 import com.moa.moa.api.shop.placeshop.domain.entity.PlaceShop;
+import com.moa.moa.api.shop.review.domain.entity.Review;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -15,6 +16,7 @@ import static com.moa.moa.api.address.address.domain.entity.QAddress.address1;
 import static com.moa.moa.api.shop.item.domain.entity.QItem.item;
 import static com.moa.moa.api.shop.naverreview.domain.entity.QNaverReview.naverReview;
 import static com.moa.moa.api.shop.placeshop.domain.entity.QPlaceShop.placeShop;
+import static com.moa.moa.api.shop.review.domain.entity.QReview.review;
 import static com.moa.moa.api.shop.shop.domain.entity.QShop.shop;
 
 @RequiredArgsConstructor
@@ -54,6 +56,12 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
                             .and(placeShop.place.deletedAt.isNull()))
                     .fetch();
             shop.addPlaceShops(placeShops);
+
+            List<Review> reviews = queryFactory.selectFrom(review)
+                    .where(review.shop.eq(shop)
+                            .and(review.deletedAt.isNull()))
+                    .fetch();
+            shop.addReviews(reviews);
 
             NaverReview naverReviewOne = queryFactory.selectFrom(naverReview)
                     .where(naverReview.shop.eq(shop)
