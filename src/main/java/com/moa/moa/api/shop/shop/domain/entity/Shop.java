@@ -81,10 +81,6 @@ public class Shop extends BaseEntity {
     @Builder.Default
     private List<ItemOption> itemOptions = new ArrayList<>();
 
-    public void addItems(List<Item> items) {
-        this.items = items;
-    }
-
     public void addPlaceShops(List<PlaceShop> placeShops) {
         this.placeShops = placeShops;
     }
@@ -95,5 +91,13 @@ public class Shop extends BaseEntity {
 
     public void addNaverReview(NaverReview naverReview) {
         this.naverReview = naverReview;
+    }
+
+    public void addItems(List<Item> items) {
+        this.items = items;
+    }
+
+    public void addItemOptions(List<ItemOption> itemOptions) {
+        this.itemOptions = itemOptions;
     }
 }
