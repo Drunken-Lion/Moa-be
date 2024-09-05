@@ -1,4 +1,4 @@
-package com.moa.moa.api.shop.shop.presentation.dto;
+package com.moa.moa.api.shop.shop.domain.dto;
 
 import lombok.Builder;
 
@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public record FindShopExternalDto() {
+public record FindShopDto() {
     @Builder
     public record Response(
             Long id,
@@ -16,11 +16,11 @@ public record FindShopExternalDto() {
             String storeUrl,
             LocalDateTime createdAt,
             Boolean isWish,
-            List<FindShopExternalDto.PlaceResponse> places,
-            FindShopExternalDto.ImageResponse image,
-            FindShopExternalDto.AddressResponse address,
-            FindShopExternalDto.MoaReviewResponse moaReview,
-            FindShopExternalDto.NaverReviewResponse naverReview
+            List<FindShopDto.PlaceResponse> places,
+            FindShopDto.ImageResponse image,
+            FindShopDto.AddressResponse address,
+            FindShopDto.MoaReviewResponse moaReview,
+            FindShopDto.NaverReviewResponse naverReview
     ) {}
 
     @Builder

@@ -1,14 +1,14 @@
-package com.moa.moa.api.shop.shop.presentation.dto;
+package com.moa.moa.api.shop.shop.domain.dto;
 
 import lombok.Builder;
 
 import java.time.LocalDateTime;
 
-public record FindAllShopPhotoReviewExternalDto() {
+public record FindAllShopPhotoReviewDto() {
     @Builder
     public record Response(
             Long reviewId,
-            FindAllShopPhotoReviewExternalDto.ImageResponse image
+            FindAllShopPhotoReviewDto.ImageResponse image
     ) {}
 
     @Builder

@@ -18,7 +18,7 @@ import org.hibernate.annotations.Comment;
 @Table(name = "naver_review")
 public class NaverReview extends BaseEntity {
     @Comment("렌탈샵")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id", columnDefinition = "BIGINT", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Shop shop;
 
