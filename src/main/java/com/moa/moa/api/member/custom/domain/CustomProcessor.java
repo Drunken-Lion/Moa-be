@@ -29,4 +29,8 @@ public class CustomProcessor {
     public Custom modCustom(Custom custom) {
         return customRepository.save(custom);
     }
+
+    public void delCustom(Custom custom) {
+        customRepository.save(custom);
+    }
 }

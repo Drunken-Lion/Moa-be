@@ -275,13 +275,11 @@ public enum FailHttpMessage implements HttpMessage {
         INVALID_ACCOUNT(HttpStatus.UNAUTHORIZED, "계정정보가 일치하지 않습니다."),
 
         // 403
-        FORBIDDEN(HttpStatus.FORBIDDEN, "권한이 없는 접근입니다."),
-        DEACTIVATE_USER(HttpStatus.FORBIDDEN, "비활성화 상태 계정입니다."),
+        QUESTION_FORBIDDEN(HttpStatus.FORBIDDEN, "문의글은 작성자 및 운영자만 열람할 수 있습니다."),
 
         // 404
-        NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 리소스입니다."),
-        NOT_FOUND_DESC(HttpStatus.NOT_FOUND, "존재하지 않는 타입입니다."),
-        NOT_FOUND_CODE(HttpStatus.NOT_FOUND, "존재하지 않는 타입 코드입니다."),
+        QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 문의를 찾을 수 없습니다."),
+
         // 405
         METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "허용되지 않은 HTTP METHOD 입니다."),
 

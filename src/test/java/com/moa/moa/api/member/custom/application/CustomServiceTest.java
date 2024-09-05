@@ -15,10 +15,12 @@ import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.member.member.util.enumerated.MemberRole;
 import com.moa.moa.global.common.message.FailHttpMessage;
 import com.moa.moa.global.exception.BusinessException;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -31,6 +33,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -221,6 +224,74 @@ class CustomServiceTest {
         // when
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             customService.modCustom(10L, request, mockMembers.get(3));
+        });
+
+        // then
+        assertEquals(FailHttpMessage.Custom.FORBIDDEN.getStatus(), exception.getStatus());
+        assertEquals(FailHttpMessage.Custom.FORBIDDEN.getMessage(), exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("내 스키어 삭제 성공")
+    public void t6() {
+        // given
+        Custom preCustom = Custom.builder()
+                .id(10L)
+                .member(mockMembers.get(3))
+                .gender(Gender.MALE)
+                .nickname("PRE TEST USER")
+                .packageType(PackageType.LIFT_CLOTHES)
+                .clothesType(ClothesType.LUXURY)
+                .equipmentType(null)
+                .build();
+
+        when(customProcessor.findCustomById(anyLong())).thenReturn(Optional.of(preCustom));
+        ArgumentCaptor<Custom> categoryCaptor = ArgumentCaptor.forClass(Custom.class);
+
+        // when
+        customService.delCustom(10L, mockMembers.get(3));
+
+        // then
+        verify(customProcessor).delCustom(categoryCaptor.capture());
+        Custom savedCustom = categoryCaptor.getValue();
+        Assertions.assertThat(savedCustom.getDeletedAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("내 스키어 삭제 실패 - 존재하지 않는 스키어")
+    public void t7() {
+        // given
+        when(customProcessor.findCustomById(anyLong())).thenReturn(Optional.empty());
+
+        // when
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            customService.delCustom(10L, mockMembers.get(3));
+        });
+
+        // then
+        assertEquals(FailHttpMessage.Custom.NOT_FOUND.getStatus(), exception.getStatus());
+        assertEquals(FailHttpMessage.Custom.NOT_FOUND.getMessage(), exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("내 스키어 삭제 실패 - 권한이 없는 사용자")
+    public void t8() {
+        // given
+        Custom preCustom = Custom.builder()
+                .id(10L)
+                .member(mockMembers.get(2))
+                .gender(Gender.MALE)
+                .nickname("PRE TEST USER")
+                .packageType(PackageType.LIFT_CLOTHES)
+                .clothesType(ClothesType.LUXURY)
+                .equipmentType(null)
+                .build();
+
+        when(customProcessor.findCustomById(anyLong())).thenReturn(Optional.of(preCustom));
+
+        // when
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            customService.delCustom(10L, mockMembers.get(3));
         });
 
         // then
