@@ -1,5 +1,6 @@
 package com.moa.moa.api.place.place.domain.persistence;
 
+import com.moa.moa.api.place.liftticket.domain.entity.LiftTicket;
 import com.moa.moa.api.place.place.domain.entity.Place;
 import com.moa.moa.api.place.placeamenity.domain.entity.PlaceAmenity;
 import com.moa.moa.api.place.slope.domain.entity.Slope;
@@ -14,6 +15,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.moa.moa.api.address.address.domain.entity.QAddress.address1;
+import static com.moa.moa.api.category.category.domain.entity.QCategory.category;
+import static com.moa.moa.api.place.liftticket.domain.entity.QLiftTicket.liftTicket;
 import static com.moa.moa.api.place.place.domain.entity.QPlace.place;
 import static com.moa.moa.api.place.placeamenity.domain.entity.QPlaceAmenity.placeAmenity;
 import static com.moa.moa.api.place.slope.domain.entity.QSlope.slope;
@@ -37,10 +40,12 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
         BooleanExpression inPolygon = Expressions.booleanTemplate("ST_Contains(ST_PolygonFromText({0}), {1})", polygon, address1.location);
 
         List<Place> places = queryFactory.selectFrom(place)
+                .leftJoin(place.category, category).fetchJoin()
                 .leftJoin(place.address, address1).fetchJoin()
                 .leftJoin(place.businessTime, businessTime).fetchJoin()
                 .where(inPolygon
                         .and(place.deletedAt.isNull())
+                        .and(category.deletedAt.isNull())
                         .and(address1.deletedAt.isNull())
                         .and(businessTime.deletedAt.isNull())
                 )
@@ -60,6 +65,18 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
                     .fetch();
             place.getBusinessTime().addSpecificDays(specificDays);
 
+            List<LiftTicket> liftTickets = queryFactory.selectFrom(liftTicket)
+                    .where(liftTicket.place.eq(place)
+                            .and(liftTicket.deletedAt.isNull()))
+                    .fetch();
+            place.addLiftTickets(liftTickets);
+
+            List<Slope> slopes = queryFactory.selectFrom(slope)
+                    .where(slope.place.eq(place)
+                            .and(slope.deletedAt.isNull()))
+                    .fetch();
+            place.addSlopes(slopes);
+
             List<PlaceAmenity> placeAmenities = queryFactory.selectFrom(placeAmenity)
                     .where(placeAmenity.place.eq(place)
                             .and(placeAmenity.used.isTrue())
@@ -68,11 +85,6 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
                     .fetch();
             place.addPlaceAmenities(placeAmenities);
 
-            List<Slope> slopes = queryFactory.selectFrom(slope)
-                    .where(slope.place.eq(place)
-                            .and(slope.deletedAt.isNull()))
-                    .fetch();
-            place.addSlopes(slopes);
         }
 
         return places;
@@ -81,10 +93,12 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
     @Override
     public Optional<Place> findPlaceById(Long id) {
         Place placeOne = queryFactory.selectFrom(place)
+                .leftJoin(place.category, category).fetchJoin()
                 .leftJoin(place.address, address1).fetchJoin()
                 .leftJoin(place.businessTime, businessTime).fetchJoin()
                 .where(place.id.eq(id)
                         .and(place.deletedAt.isNull())
+                        .and(category.deletedAt.isNull())
                         .and(address1.deletedAt.isNull())
                         .and(businessTime.deletedAt.isNull())
                 )
@@ -104,6 +118,18 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
                     .fetch();
             placeOne.getBusinessTime().addSpecificDays(specificDays);
 
+            List<LiftTicket> liftTickets = queryFactory.selectFrom(liftTicket)
+                    .where(liftTicket.place.eq(placeOne)
+                            .and(liftTicket.deletedAt.isNull()))
+                    .fetch();
+            placeOne.addLiftTickets(liftTickets);
+
+            List<Slope> slopes = queryFactory.selectFrom(slope)
+                    .where(slope.place.eq(placeOne)
+                            .and(slope.deletedAt.isNull()))
+                    .fetch();
+            placeOne.addSlopes(slopes);
+
             List<PlaceAmenity> placeAmenities = queryFactory.selectFrom(placeAmenity)
                     .where(placeAmenity.place.eq(placeOne)
                             .and(placeAmenity.used.isTrue())
@@ -111,12 +137,6 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
                             .and(placeAmenity.amenity.deletedAt.isNull()))
                     .fetch();
             placeOne.addPlaceAmenities(placeAmenities);
-
-            List<Slope> slopes = queryFactory.selectFrom(slope)
-                    .where(slope.place.eq(placeOne)
-                            .and(slope.deletedAt.isNull()))
-                    .fetch();
-            placeOne.addSlopes(slopes);
         }
 
         return Optional.ofNullable(placeOne);
