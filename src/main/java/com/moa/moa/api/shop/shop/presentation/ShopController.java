@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
+import java.util.Optional;
 
 import static com.moa.moa.global.common.response.ApiResponseCode.GET;
 
@@ -39,15 +40,18 @@ public class ShopController {
         Member member = memberRepository.findByEmail("three@moa.com").get();
 
         List<FindAllShopDto.Response> responses = shopService.findAllShopWithinRange(leftTopX, leftTopY, rightBottomX, rightBottomY, member);
-
         return ResponseEntity.ok().body(responses);
     }
 
     @Operation(summary = "렌탈샵 상세 조회", responses = {@ApiResponse(responseCode = GET)})
     @GetMapping("{id}")
-    public ResponseEntity<FindShopDto.Response> findShop(@PathVariable("id") Long id) {
+    public ResponseEntity<FindShopDto.Response> findShop(@PathVariable("id") Long id,
+                                                         @AuthenticationPrincipal UserPrincipal user) {
+        // TODO : 회원 관련 기능이 완성되면 삭제할 것
+        Member member = memberRepository.findByEmail("three@moa.com").get();
 
-        return ResponseEntity.ok().body(null);
+        FindShopDto.Response response = shopService.findShop(id, member);
+        return ResponseEntity.ok().body(response);
     }
 
     @Operation(summary = "최근 본 렌탈샵 조회", responses = {@ApiResponse(responseCode = GET)})

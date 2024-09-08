@@ -24,5 +24,4 @@ public class WishDslRepositoryImpl implements WishDslRepository{
 
         return Optional.ofNullable(wishOne);
     }
-
 }
