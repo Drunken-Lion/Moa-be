@@ -238,6 +238,77 @@ class ShopRepositoryTest {
         assertThat(shops.size()).isEqualTo(0);
     }
 
+    @Test
+    @DisplayName("렌탈샵 상세 조회 성공")
+    void t3() {
+        // given
+        List<Shop> shops = this.shopRepository.findAll();
+
+        //when
+        Shop shop = shopRepository.findShopById(shops.get(0).getId()).get();
+
+        //then
+        assertThat(shop.getName()).isEqualTo("찐렌탈샵");
+        assertThat(shop.getPickUp()).isEqualTo(true);
+        assertThat(shop.getUrl()).isEqualTo("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9");
+
+        assertThat(shop.getMember().getEmail()).isEqualTo("admin@moa.com");
+        assertThat(shop.getMember().getNickname()).isEqualTo("admin");
+        assertThat(shop.getMember().getRole()).isEqualTo(MemberRole.ADMIN);
+
+        assertThat(shop.getCategory().getCategoryType()).isEqualTo(CategoryType.SKI_RESORT);
+
+        assertThat(shop.getAddress().getAddress()).isEqualTo("강원 홍천군 서면 한치골길 39");
+        assertThat(shop.getAddress().getAddressDetail()).isEqualTo("1, 2층");
+        assertThat(shop.getAddress().getLocation()).isEqualTo(geometryFactory.createPoint(new Coordinate(127.666621133276, 37.625378749786)));
+        assertThat(shop.getAddress().getUrl()).isEqualTo("https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%B0%90%EB%A0%8C%ED%83%88%EC%83%B5/place/1680503531?c=15.00,0,0,0,dh&isCorrectAnswer=true");
+
+        assertThat(shop.getBusinessTime().getOperatingTimes().size()).isEqualTo(13);
+        assertThat(shop.getBusinessTime().getOperatingTimes().get(0).getStatus()).isEqualTo(OperatingType.CLOSED);
+        assertThat(shop.getBusinessTime().getOperatingTimes().get(0).getDay()).isEqualTo(DayType.MON);
+        assertThat(shop.getBusinessTime().getOperatingTimes().get(0).getOpenTime()).isEqualTo(LocalTime.of(8, 0));
+        assertThat(shop.getBusinessTime().getOperatingTimes().get(0).getCloseTime()).isEqualTo(LocalTime.of(2, 0));
+
+        assertThat(shop.getBusinessTime().getSpecificDays().size()).isEqualTo(4);
+        assertThat(shop.getBusinessTime().getSpecificDays().get(0).getStatus()).isEqualTo(SpecificDayType.CLOSED);
+        assertThat(shop.getBusinessTime().getSpecificDays().get(0).getReason()).isEqualTo("신정");
+        assertThat(shop.getBusinessTime().getSpecificDays().get(0).getDate()).isEqualTo(LocalDate.of(2025, 1, 1));
+        assertThat(shop.getBusinessTime().getSpecificDays().get(0).getOpenTime()).isNull();
+        assertThat(shop.getBusinessTime().getSpecificDays().get(0).getCloseTime()).isNull();
+
+        assertThat(shop.getPlaceShops().size()).isEqualTo(1);
+        assertThat(shop.getPlaceShops().get(0).getPlace().getName()).isEqualTo("비발디파크");
+        assertThat(shop.getPlaceShops().get(0).getPlace().getOpenDate()).isEqualTo(LocalDate.of(2024, 10, 15));
+        assertThat(shop.getPlaceShops().get(0).getPlace().getCloseDate()).isEqualTo(LocalDate.of(2025, 3, 12));
+        assertThat(shop.getPlaceShops().get(0).getPlace().getRecLevel()).isEqualTo(PlaceLevel.LEVEL_1);
+
+        assertThat(shop.getNaverReview().getAvgScore()).isEqualTo(4.5D);
+        assertThat(shop.getNaverReview().getTotalReview()).isEqualTo(186L);
+
+        assertThat(shop.getReviews().size()).isEqualTo(4);
+        assertThat(shop.getReviews().get(0).getScore()).isEqualTo(4D);
+        assertThat(shop.getReviews().get(0).getContent()).isEqualTo("좋아요");
+
+        assertThat(shop.getItems().size()).isEqualTo(30);
+        assertThat(shop.getItems().get(0).getLiftTicket().getStatus()).isEqualTo(LiftTicketStatus.WEEK_DAY);
+        assertThat(shop.getItems().get(0).getLiftTicket().getName()).isEqualTo("스마트4시간권");
+        assertThat(shop.getItems().get(0).getLiftTicket().getTicketType()).isEqualTo(LiftTicketType.SMART);
+        assertThat(shop.getItems().get(0).getLiftTicket().getHours()).isEqualTo(4L);
+        assertThat(shop.getItems().get(0).getLiftTicket().getStartTime()).isNull();
+        assertThat(shop.getItems().get(0).getLiftTicket().getEndTime()).isNull();
+        assertThat(shop.getItems().get(0).getType()).isEqualTo(PackageType.LIFT_EQUIPMENT_CLOTHES);
+        assertThat(shop.getItems().get(0).getName()).isEqualTo("주중 스마트4시간권+장비+의류");
+        assertThat(shop.getItems().get(0).getPrice()).isEqualTo(BigDecimal.valueOf(67000L));
+        assertThat(shop.getItems().get(0).getUsed()).isEqualTo(true);
+
+        assertThat(shop.getItemOptions().size()).isEqualTo(6);
+        assertThat(shop.getItemOptions().get(0).getName()).isEqualTo(ItemOptionName.LUXURY);
+        assertThat(shop.getItemOptions().get(0).getUsed()).isEqualTo(true);
+        assertThat(shop.getItemOptions().get(0).getStartTime()).isEqualTo(0L);
+        assertThat(shop.getItemOptions().get(0).getEndTime()).isEqualTo(24L);
+        assertThat(shop.getItemOptions().get(0).getAddPrice()).isEqualTo(BigDecimal.valueOf(10000L));
+    }
+
     private Category createCategory() {
         Category category = Category.builder()
                 .categoryType(CategoryType.SKI_RESORT)
