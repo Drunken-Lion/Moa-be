@@ -2,9 +2,11 @@ package com.moa.moa.api.cs.question.application;
 
 import com.moa.moa.api.cs.question.application.mapstruct.QuestionMapstructMapper;
 import com.moa.moa.api.cs.question.domain.QuestionProcessor;
+import com.moa.moa.api.cs.question.domain.dto.AddQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.FindAllQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.FindQuestionDto;
 import com.moa.moa.api.cs.question.domain.entity.Question;
+import com.moa.moa.api.cs.question.util.enumerated.QuestionStatus;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.global.aws.s3.images.domain.entity.Image;
 import com.moa.moa.global.common.message.FailHttpMessage;
@@ -46,5 +48,15 @@ public class QuestionService {
 
         // TODO : 이미지 기능이 완료되면 수정
         return questionMapstructMapper.of(question, memberResponse, List.of(imageResponse), answerResponses);
+    }
+
+    public AddQuestionDto.Response addQuestion(AddQuestionDto.Request request, Member member) {
+        Question question = questionProcessor.addQuestion(
+                questionMapstructMapper.addOf(request), member, QuestionStatus.INCOMPLETE);
+
+
+        // TODO : 이미지 기능이 완료되면 수정
+        
+        return questionMapstructMapper.addOf(question);
     }
 }

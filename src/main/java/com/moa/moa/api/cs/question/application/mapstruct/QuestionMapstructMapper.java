@@ -1,6 +1,7 @@
 package com.moa.moa.api.cs.question.application.mapstruct;
 
 import com.moa.moa.api.cs.answer.domain.entity.Answer;
+import com.moa.moa.api.cs.question.domain.dto.AddQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.FindAllQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.FindQuestionDto;
 import com.moa.moa.api.cs.question.domain.entity.Question;
@@ -41,4 +42,15 @@ public interface QuestionMapstructMapper {
     FindQuestionDto.ImageResponse of(Image image);
 
     FindQuestionDto.AnswerResponse of(Answer answer);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "deletedAt", ignore = true)
+    @Mapping(target = "member", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "answers", ignore = true)
+    Question addOf(AddQuestionDto.Request request);
+
+    AddQuestionDto.Response addOf(Question question);
 }

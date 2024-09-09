@@ -49,7 +49,10 @@ public class QuestionController {
     @PostMapping
     public ResponseEntity<AddQuestionDto.Response> addQuestion(@AuthenticationPrincipal UserPrincipal user,
                                                                @Valid @RequestBody final AddQuestionDto.Request request) {
-        return ResponseEntity.ok().body(null);
+        // TODO : 회원 관련 기능이 완성되면 삭제할 것
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+
+        return ResponseEntity.ok().body(questionService.addQuestion(request, member));
     }
 
     @Operation(summary = "문의 내역 상세 조회", responses = {@ApiResponse(responseCode = GET)})
