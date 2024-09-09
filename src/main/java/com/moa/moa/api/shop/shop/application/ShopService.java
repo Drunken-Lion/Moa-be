@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,8 +37,7 @@ public class ShopService {
         List<FindAllShopDto.Response> findAllShopList = new ArrayList<>();
 
         for (Shop shop : shops) {
-            Optional<Wish> optionalWish = wishProcessor.findWishByShopAndMember(shop, member);
-            Wish wish = optionalWish.orElse(null);
+            Wish wish = wishProcessor.findWishByShopAndMember(shop, member).orElse(null);
 
             List<Review> reviews = shop.getReviews();
             Long moaTotalCount = (long) reviews.size();
@@ -79,7 +77,7 @@ public class ShopService {
         Shop shop = shopProcessor.findShopById(id)
                 .orElseThrow(() -> new BusinessException(FailHttpMessage.Shop.NOT_FOUND));
 
-        Optional<Wish> optionalWish = member != null ? wishProcessor.findWishByShopAndMember(shop, member) : Optional.empty();
+        Wish wish = wishProcessor.findWishByShopAndMember(shop, member).orElse(null);
 
         List<Review> reviews = shop.getReviews();
         Long moaTotalCount = (long) reviews.size();
@@ -102,7 +100,7 @@ public class ShopService {
 
         return shopMapstructMapper.ofFindShop(
                 shop,
-                optionalWish.isPresent(),
+                wish,
                 places,
                 null,
                 shop.getAddress(),

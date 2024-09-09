@@ -76,7 +76,7 @@ public interface ShopMapstructMapper {
     }
 
     default FindShopDto.Response ofFindShop(Shop shop,
-                                            Boolean isWish,
+                                            Wish wish,
                                             List<Place> places,
                                             Image image,
                                             Address address,
@@ -125,7 +125,7 @@ public interface ShopMapstructMapper {
                 .pickUp(shop.getPickUp())
                 .storeUrl(shop.getUrl())
                 .createdAt(shop.getCreatedAt())
-                .isWish(isWish)
+                .wishId(wish != null ? wish.getId() : null)
                 .places(placeResponses)
                 .images(imageResponse)
                 .address(addressResponse)

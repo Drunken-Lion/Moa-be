@@ -15,7 +15,7 @@ public record FindShopDto() {
             Boolean pickUp,
             String storeUrl,
             LocalDateTime createdAt,
-            Boolean isWish,
+            Long wishId,
             List<FindShopDto.PlaceResponse> places,
             FindShopDto.ImageResponse images,
             FindShopDto.AddressResponse address,

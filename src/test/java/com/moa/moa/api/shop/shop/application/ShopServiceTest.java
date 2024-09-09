@@ -204,7 +204,7 @@ class ShopServiceTest {
 
         when(shopMapstructMapper.ofFindShop(
                 eq(mockShops.get(0)),
-                anyBoolean(),
+                any(),
                 anyList(),
                 any(),
                 any(),
@@ -222,7 +222,7 @@ class ShopServiceTest {
         assertThat(shopResponse.name()).isEqualTo("찐렌탈샵");
         assertThat(shopResponse.pickUp()).isEqualTo(true);
         assertThat(shopResponse.storeUrl()).isEqualTo("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9");
-        assertThat(shopResponse.isWish()).isEqualTo(true);
+        assertThat(shopResponse.wishId()).isEqualTo(1L);
 
         assertThat(shopResponse.places().size()).isEqualTo(1);
         assertThat(shopResponse.places().get(0).id()).isEqualTo(1L);
@@ -1345,7 +1345,7 @@ class ShopServiceTest {
 
         return shopMapstructMapperImpl.ofFindShop(
                 shop,
-                wish != null,
+                wish,
                 places,
                 image,
                 shop.getAddress(),

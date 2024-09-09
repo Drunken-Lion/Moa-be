@@ -247,7 +247,7 @@ class ShopControllerTest {
                 .andExpect(jsonPath("$.pickUp").value(true))
                 .andExpect(jsonPath("$.storeUrl").value("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9"))
                 .andExpect(jsonPath("$.createdAt", matchesPattern(TestUtil.DATETIME_PATTERN)))
-                .andExpect(jsonPath("$.isWish").value(false))
+                .andExpect(jsonPath("$.wishId", nullValue()))
 
                 .andExpect(jsonPath("$.places.length()", is(1)))
                 .andExpect(jsonPath("$.places[0].id", instanceOf(Number.class)))
