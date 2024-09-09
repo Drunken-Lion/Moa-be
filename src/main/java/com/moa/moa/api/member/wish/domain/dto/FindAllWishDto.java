@@ -11,7 +11,7 @@ public record FindAllWishDto() {
             Long id,
             LocalDateTime createdAt,
             FindAllWishDto.ShopResponse shop,
-            FindAllWishDto.ImageResponse image,
+            FindAllWishDto.ImageResponse images,
             FindAllWishDto.AddressResponse address,
             FindAllWishDto.MoaReviewResponse moaReview,
             List<FindAllWishDto.PlaceResponse> places
@@ -28,8 +28,7 @@ public record FindAllWishDto() {
     @Builder
     public record ImageResponse(
             Long id,
-            String originImageUrl,
-            String lowImageUrl,
+            String keyName,
             LocalDateTime createdAt
     ) {
     }

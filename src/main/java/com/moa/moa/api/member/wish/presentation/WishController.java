@@ -1,5 +1,8 @@
 package com.moa.moa.api.member.wish.presentation;
 
+import com.moa.moa.api.member.member.domain.entity.Member;
+import com.moa.moa.api.member.member.domain.persistence.MemberRepository;
+import com.moa.moa.api.member.wish.application.WIshService;
 import com.moa.moa.api.member.wish.domain.dto.AddWishDto;
 import com.moa.moa.api.member.wish.domain.dto.FindAllWishDto;
 import com.moa.moa.global.common.response.PageExternalDto;
@@ -9,6 +12,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +28,9 @@ import static com.moa.moa.global.common.response.ApiResponseCode.*;
 @SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/v1/wishes")
 public class WishController {
+    private final WIshService wishService;
+    private final MemberRepository memberRepository;
+
     @Operation(summary = "렌탈샵 찜 추가", responses = {@ApiResponse(responseCode = POST)})
     @PostMapping
     public ResponseEntity<AddWishDto.Response> addWish(@Valid @RequestBody final AddWishDto.Request request,
@@ -36,7 +43,11 @@ public class WishController {
     public ResponseEntity<PageExternalDto.Response<List<FindAllWishDto.Response>>> findAllWish(@RequestParam(name = "page", defaultValue = "0") int page,
                                                                                                @RequestParam(name = "size", defaultValue = "10") int size,
                                                                                                @AuthenticationPrincipal UserPrincipal user) {
-        return ResponseEntity.ok().body(null);
+        // TODO : 회원 관련 기능이 완성되면 삭제할 것
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+
+        PageExternalDto.Response<List<FindAllWishDto.Response>> pageResponse = wishService.findAllWish(member, PageRequest.of(page, size));
+        return ResponseEntity.ok().body(pageResponse);
     }
 
     @Operation(summary = "내 찜 항목 삭제", responses = {@ApiResponse(responseCode = DELETE)})
