@@ -1,5 +1,7 @@
 package com.moa.moa.api.shop.shop.domain;
 
+import com.moa.moa.api.member.custom.domain.dto.FindLowPriceCustomDto;
+import com.moa.moa.api.shop.shop.domain.dto.FindLowPriceShopDto;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
 import com.moa.moa.api.shop.shop.domain.persistence.ShopRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,5 +16,9 @@ public class ShopProcessor {
 
     public List<Shop> findAllShopWithinRange(Double leftTopX, Double leftTopY, Double rightBottomX, Double rightBottomY) {
         return shopRepository.findAllShopWithinRange(leftTopX, leftTopY, rightBottomX, rightBottomY);
+    }
+
+    public FindLowPriceShopDto findShopWithCustomForSearch(Long shopId, List<FindLowPriceCustomDto> customs, Boolean pickUp) {
+        return shopRepository.findShopWithCustomForSearch(shopId, customs, pickUp);
     }
 }

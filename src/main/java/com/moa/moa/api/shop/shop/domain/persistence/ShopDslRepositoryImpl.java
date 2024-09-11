@@ -1,15 +1,19 @@
 package com.moa.moa.api.shop.shop.domain.persistence;
 
+import com.moa.moa.api.member.custom.domain.dto.FindLowPriceCustomDto;
 import com.moa.moa.api.shop.item.domain.entity.Item;
 import com.moa.moa.api.shop.itemoption.domain.entity.ItemOption;
 import com.moa.moa.api.shop.naverreview.domain.entity.NaverReview;
 import com.moa.moa.api.shop.placeshop.domain.entity.PlaceShop;
 import com.moa.moa.api.shop.review.domain.entity.Review;
+import com.moa.moa.api.shop.shop.domain.dto.FindLowPriceShopDto;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
 import com.moa.moa.api.time.operatingtime.domain.entity.OperatingTime;
 import com.moa.moa.api.time.specificday.domain.entity.SpecificDay;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -104,5 +108,52 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
         }
 
         return shops;
+    }
+
+    @Override
+    public FindLowPriceShopDto findShopWithCustomForSearch(Long shopId,
+                                                                           List<FindLowPriceCustomDto> customs,
+                                                                           Boolean pickUp) {
+
+        // TODO custom 별 item, itemOption 조회 서브쿼리
+        System.out.println("11111111111111");
+
+        // 메인 쿼리
+        FindLowPriceShopDto findLowPriceShopDto = queryFactory.select(Projections.constructor(FindLowPriceShopDto.class,
+                        shop.id,
+                        shop.name,
+                        shop.pickUp,
+                        shop.url.as("storeUrl"),
+                        getReviewAvgScore(),
+                        getReviewTotalCount(),
+                        naverReview.avgScore.as("nrAvgScore"),
+                        naverReview.totalReview.as("nrTotalCount")
+                ))
+                .from(shop)
+                .leftJoin(naverReview).on(shop.id.eq(naverReview.shop.id))
+                .where(shop.id.eq(shopId)
+                        .and(shop.pickUp.eq(pickUp)))
+                .fetchOne();
+        System.out.println("findLowPriceShopDto = " + findLowPriceShopDto);
+        System.out.println("findLowPriceShopDto.getShopId() = " + findLowPriceShopDto.getShopId());
+        System.out.println("findLowPriceShopDto.getAvgScore() = " + findLowPriceShopDto.getAvgScore());
+
+        return null;
+    }
+
+    private JPAQuery<Double> getReviewAvgScore() {
+        return queryFactory
+                .select(review.score.avg())
+                .from(review)
+                .where(review.shop.id.eq(shop.id))
+                .groupBy(review.shop.id);
+    }
+
+    private JPAQuery<Long> getReviewTotalCount() {
+        return queryFactory
+                .select(review.count())
+                .from(review)
+                .where(review.shop.id.eq(shop.id))
+                .groupBy(review.shop.id);
     }
 }

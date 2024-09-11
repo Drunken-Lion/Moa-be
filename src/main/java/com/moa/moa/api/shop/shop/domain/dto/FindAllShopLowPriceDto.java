@@ -15,15 +15,19 @@ import java.util.List;
 public record FindAllShopLowPriceDto() {
     @Builder
     public record Request(
-            PlaceRequest place,
-            List<CustomRequest> custom
+            FindAllShopLowPriceDto.PlaceRequest place,
+            FindAllShopLowPriceDto.ShopRequest shop,
+            List<FindAllShopLowPriceDto.CustomRequest> custom
     ) {}
 
     public record PlaceRequest(
             @NotNull
             Long id,
             @NotNull
-            LocalDate visitDate,
+            LocalDate visitDate
+    ) {}
+
+    public record ShopRequest(
             @NotNull
             Boolean pickUp
     ) {}
@@ -33,6 +37,10 @@ public record FindAllShopLowPriceDto() {
             Gender gender,
             @NotNull
             String nickname,
+            @NotNull
+            String liftType,
+            @NotNull
+            String liftTime,
             @NotNull
             PackageType packageType,
             @NotNull
@@ -44,48 +52,47 @@ public record FindAllShopLowPriceDto() {
     @Builder
     public record Response(
             LocalDate visitDate,
-            PlaceResponse place,
-            List<ShopResponse> shop
+            FindAllShopLowPriceDto.PlaceResponse place,
+            List<FindAllShopLowPriceDto.ShopResponse> shop
     ) {}
 
     @Builder
     public record PlaceResponse(
             Long id,
-            Long categoryId,
-            Long addressId,
             String name,
             LocalDate open,
             LocalDate close,
+            FindAllShopLowPriceDto.AddressResponse address,
+            FindAllShopLowPriceDto.ImageResponse images,
             String recLevel
     ) {}
 
     @Builder
     public record ShopResponse(
             Long id,
-            Long memberId,
-            Long categoryId,
+            Long wishId,
+            BigDecimal totalPrice,
+            String memberName,
             String name,
             Boolean pickUp,
             String storeUrl,
-            BigDecimal totalPrice,
-            ImageResponse image,
-            List<CustomResponse> custom,
-            AddressResponse address,
-            MoaReviewResponse moaReview,
-            NaverReviewResponse naverReview,
-            WishResponse wish
+            FindAllShopLowPriceDto.MoaReviewResponse moaReview,
+            FindAllShopLowPriceDto.NaverReviewResponse naverReview,
+            FindAllShopLowPriceDto.AddressResponse address,
+            FindAllShopLowPriceDto.ImageResponse image,
+            List<FindAllShopLowPriceDto.CustomResponse> custom
     ) {}
 
     @Builder
     public record ImageResponse(
             Long id,
-            String originImageUrl,
-            String lowImageUrl,
+            String keyName,
             LocalDateTime createdAt
     ) {}
 
     @Builder
     public record CustomResponse(
+            Long id,
             Gender gender,
             String nickname,
             PackageType packageType,
@@ -114,10 +121,5 @@ public record FindAllShopLowPriceDto() {
     public record NaverReviewResponse(
             Double avgScore,
             Long totalCount
-    ) {}
-
-    @Builder
-    public record WishResponse(
-            Long id
     ) {}
 }
