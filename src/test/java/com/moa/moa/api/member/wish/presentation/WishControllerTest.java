@@ -9,6 +9,7 @@ import com.moa.moa.api.member.custom.util.enumerated.PackageType;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.member.member.domain.persistence.MemberRepository;
 import com.moa.moa.api.member.member.util.enumerated.MemberRole;
+import com.moa.moa.api.member.wish.domain.dto.AddWishDto;
 import com.moa.moa.api.member.wish.domain.entity.Wish;
 import com.moa.moa.api.member.wish.domain.persistence.WishRepository;
 import com.moa.moa.api.place.liftticket.domain.entity.LiftTicket;
@@ -40,6 +41,7 @@ import com.moa.moa.api.time.operatingtime.util.enumerated.OperatingType;
 import com.moa.moa.api.time.specificday.domain.entity.SpecificDay;
 import com.moa.moa.api.time.specificday.domain.persistence.SpecificDayRepository;
 import com.moa.moa.api.time.specificday.util.enumerated.SpecificDayType;
+import com.moa.moa.global.common.util.JsonConvertor;
 import com.moa.moa.global.util.TestUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +52,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -63,8 +66,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -211,6 +216,35 @@ class WishControllerTest {
                 .andExpect(jsonPath("$.pageInfo.size", is(10)))
                 .andExpect(jsonPath("$.pageInfo.hasNext", is(false)))
                 .andExpect(jsonPath("$.pageInfo.totalSize", is(1)));
+    }
+
+    @Test
+    @DisplayName("렌탈샵 찜 추가 성공")
+    void t2() throws Exception {
+        Shop shop = shopRepository.findShopById(1L).get();
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+
+        AddWishDto.Request request = AddWishDto.Request.builder()
+                .shopId(1L)
+                .build();
+
+        ResultActions actions = mvc
+                .perform(post("/v1/wishes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonConvertor.build(request))
+                )
+                .andDo(print());
+
+        Wish addWish = wishRepository.findWishByShopAndMember(shop, member).get();
+
+        actions
+                .andExpect(status().isCreated())
+                .andExpect(handler().handlerType(WishController.class))
+                .andExpect(handler().methodName("addWish"))
+                .andExpect(jsonPath("$.id", instanceOf(Number.class)));
+
+        assertThat(addWish.getMember()).isEqualTo(member);
+        assertThat(addWish.getShop()).isEqualTo(shop);
     }
 
     private Category createCategory() {
