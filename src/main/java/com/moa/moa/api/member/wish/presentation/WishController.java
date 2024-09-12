@@ -2,7 +2,7 @@ package com.moa.moa.api.member.wish.presentation;
 
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.member.member.domain.persistence.MemberRepository;
-import com.moa.moa.api.member.wish.application.WIshService;
+import com.moa.moa.api.member.wish.application.WishService;
 import com.moa.moa.api.member.wish.domain.dto.AddWishDto;
 import com.moa.moa.api.member.wish.domain.dto.FindAllWishDto;
 import com.moa.moa.global.common.response.PageExternalDto;
@@ -28,7 +28,7 @@ import static com.moa.moa.global.common.response.ApiResponseCode.*;
 @SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/v1/wishes")
 public class WishController {
-    private final WIshService wishService;
+    private final WishService wishService;
     private final MemberRepository memberRepository;
 
     @Operation(summary = "렌탈샵 찜 추가", responses = {@ApiResponse(responseCode = POST)})
