@@ -50,7 +50,7 @@ public class WishDslRepositoryImpl implements WishDslRepository{
     }
 
     @Override
-    public Slice<Wish> findAllWishByMember(Member memberMy, Pageable pageable) {
+    public Slice<Wish> findAllWishByMember(Member userMember, Pageable pageable) {
         List<Wish> wishes = queryFactory
                 .selectFrom(wish)
                 .leftJoin(wish.shop, shop).fetchJoin()
@@ -58,7 +58,7 @@ public class WishDslRepositoryImpl implements WishDslRepository{
                 .leftJoin(wish.shop.category, category).fetchJoin()
                 .leftJoin(wish.shop.address, address1).fetchJoin()
                 .leftJoin(wish.shop.businessTime, businessTime).fetchJoin()
-                .where(wish.member.eq(memberMy)
+                .where(wish.member.eq(userMember)
                         .and(wish.deletedAt.isNull())
                         .and(shop.deletedAt.isNull())
                         .and(shop.member.deletedAt.isNull())
