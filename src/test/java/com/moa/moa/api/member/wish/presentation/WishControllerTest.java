@@ -1,4 +1,4 @@
-package com.moa.moa.api.member.wish.domain.persistence;
+package com.moa.moa.api.member.wish.presentation;
 
 import com.moa.moa.api.address.address.domain.entity.Address;
 import com.moa.moa.api.address.address.domain.persistence.AddressRepository;
@@ -10,6 +10,7 @@ import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.member.member.domain.persistence.MemberRepository;
 import com.moa.moa.api.member.member.util.enumerated.MemberRole;
 import com.moa.moa.api.member.wish.domain.entity.Wish;
+import com.moa.moa.api.member.wish.domain.persistence.WishRepository;
 import com.moa.moa.api.place.liftticket.domain.entity.LiftTicket;
 import com.moa.moa.api.place.liftticket.domain.persistence.LiftTicketRepository;
 import com.moa.moa.api.place.liftticket.util.enumerated.LiftTicketStatus;
@@ -39,6 +40,7 @@ import com.moa.moa.api.time.operatingtime.util.enumerated.OperatingType;
 import com.moa.moa.api.time.specificday.domain.entity.SpecificDay;
 import com.moa.moa.api.time.specificday.domain.persistence.SpecificDayRepository;
 import com.moa.moa.api.time.specificday.util.enumerated.SpecificDayType;
+import com.moa.moa.global.util.TestUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -48,10 +50,9 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -59,16 +60,21 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 @Transactional
-class WishRepositoryTest {
+class WishControllerTest {
+    @Autowired
+    private MockMvc mvc;
     @Autowired
     private MemberRepository memberRepository;
     @Autowired
@@ -164,120 +170,47 @@ class WishRepositoryTest {
     }
 
     @Test
-    @DisplayName("내가 선택한 렌탈샵의 찜 조회 성공")
-    void t1() {
-        //given
-        Shop shop = shopRepository.findAll().get(2);
-        Member member = memberRepository.findByEmail("three@moa.com").get();
-
-        //when
-        Wish wish = wishRepository.findWishByShopAndMember(shop, member).get();
-
-        //then
-        assertThat(wish.getMember().getEmail()).isEqualTo("three@moa.com");
-        assertThat(wish.getMember().getNickname()).isEqualTo("three");
-        assertThat(wish.getMember().getRole()).isEqualTo(MemberRole.MEMBER);
-
-        assertThat(wish.getShop().getName()).isEqualTo("인생렌탈샵");
-        assertThat(wish.getShop().getPickUp()).isEqualTo(false);
-        assertThat(wish.getShop().getUrl()).isEqualTo("https://smartstore.naver.com/dgshop/products/9614236927");
-    }
-
-    @Test
-    @DisplayName("내가 선택한 렌탈샵의 찜 조회 성공 - 찜하지 않아 값 없음")
-    void t2() {
-        //given
-        Shop shop = shopRepository.findAll().get(0);
-        Member member = memberRepository.findByEmail("three@moa.com").get();
-
-        //when
-        Optional<Wish> wish = wishRepository.findWishByShopAndMember(shop, member);
-
-        //then
-        assertThat(wish).isEqualTo(Optional.empty());
-    }
-
-    @Test
     @DisplayName("나의 찜 목록 조회 성공")
-    public void t3() {
-        // given
-        Member member = memberRepository.findByEmail("three@moa.com").get();
-        Pageable pageable = PageRequest.of(0, 20);
+    public void t1() throws Exception{
+        ResultActions actions = mvc
+                .perform(get("/v1/wishes")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andDo(print());
 
-        //when
-        Slice<Wish> wishSlice = wishRepository.findAllWishByMember(member, pageable);
+        actions.andExpect(status().isOk())
+                .andExpect(handler().handlerType(WishController.class))
+                .andExpect(handler().methodName("findAllWish"))
+                .andExpect(jsonPath("$.length()", is(2)))
 
-        //then
-        assertThat(wishSlice.getNumber()).isEqualTo(0);
-        assertThat(wishSlice.getSize()).isEqualTo(20);
+                .andExpect(jsonPath("$.data.length()", is(1)))
+                .andExpect(jsonPath("$.data[0].id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.data[0].createdAt", matchesPattern(TestUtil.DATETIME_PATTERN)))
 
-        List<Wish> wishes = wishSlice.getContent();
-        assertThat(wishes).isInstanceOf(List.class);
-        assertThat(wishes.size()).isEqualTo(1);
+                .andExpect(jsonPath("$.data[0].shop.id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.data[0].shop.name").value("인생렌탈샵"))
 
-        assertThat(wishes.get(0).getMember().getEmail()).isEqualTo("three@moa.com");
-        assertThat(wishes.get(0).getMember().getNickname()).isEqualTo("three");
-        assertThat(wishes.get(0).getMember().getRole()).isEqualTo(MemberRole.MEMBER);
+                .andExpect(jsonPath("$.data[0].images", notNullValue()))
 
-        assertThat(wishes.get(0).getShop().getName()).isEqualTo("인생렌탈샵");
-        assertThat(wishes.get(0).getShop().getPickUp()).isEqualTo(false);
-        assertThat(wishes.get(0).getShop().getUrl()).isEqualTo("https://smartstore.naver.com/dgshop/products/9614236927");
+                .andExpect(jsonPath("$.data[0].address.id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.data[0].address.address").value("강원 홍천군 서면 한서로 2137"))
+                .andExpect(jsonPath("$.data[0].address.addressDetail").value("비발디파크인생렌탈샵"))
+                .andExpect(jsonPath("$.data[0].address.locationX").value(127.671714070978))
+                .andExpect(jsonPath("$.data[0].address.locationY").value(37.6167793731889))
+                .andExpect(jsonPath("$.data[0].address.mapUrl").value("https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%20%ED%8C%8C%ED%81%AC%20%EB%A0%8C%ED%83%88/place/1034233118?c=12.00,0,0,0,dh&placePath=%3Fentry%253Dpll"))
 
-        assertThat(wishes.get(0).getShop().getMember().getEmail()).isEqualTo("admin@moa.com");
-        assertThat(wishes.get(0).getShop().getMember().getNickname()).isEqualTo("admin");
-        assertThat(wishes.get(0).getShop().getMember().getRole()).isEqualTo(MemberRole.ADMIN);
+                .andExpect(jsonPath("$.data[0].moaReview.avgScore").value(3.0D))
+                .andExpect(jsonPath("$.data[0].moaReview.totalCount").value(5L))
 
-        assertThat(wishes.get(0).getShop().getCategory().getCategoryType()).isEqualTo(CategoryType.SKI_RESORT);
+                .andExpect(jsonPath("$.data[0].places.length()", is(1)))
+                .andExpect(jsonPath("$.data[0].places[0].id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.data[0].places[0].name").value("비발디파크"))
 
-        assertThat(wishes.get(0).getShop().getAddress().getAddress()).isEqualTo("강원 홍천군 서면 한서로 2137");
-        assertThat(wishes.get(0).getShop().getAddress().getAddressDetail()).isEqualTo("비발디파크인생렌탈샵");
-        assertThat(wishes.get(0).getShop().getAddress().getLocation()).isEqualTo(geometryFactory.createPoint(new Coordinate(127.671714070978, 37.6167793731889)));
-        assertThat(wishes.get(0).getShop().getAddress().getUrl()).isEqualTo("https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%20%ED%8C%8C%ED%81%AC%20%EB%A0%8C%ED%83%88/place/1034233118?c=12.00,0,0,0,dh&placePath=%3Fentry%253Dpll");
-
-        assertThat(wishes.get(0).getShop().getBusinessTime().getOperatingTimes().size()).isEqualTo(7);
-        assertThat(wishes.get(0).getShop().getBusinessTime().getOperatingTimes().get(0).getStatus()).isEqualTo(OperatingType.OPEN);
-        assertThat(wishes.get(0).getShop().getBusinessTime().getOperatingTimes().get(0).getDay()).isEqualTo(DayType.MON);
-        assertThat(wishes.get(0).getShop().getBusinessTime().getOperatingTimes().get(0).getOpenTime()).isEqualTo(LocalTime.of(8, 0));
-        assertThat(wishes.get(0).getShop().getBusinessTime().getOperatingTimes().get(0).getCloseTime()).isEqualTo(LocalTime.of(1, 30));
-
-        assertThat(wishes.get(0).getShop().getBusinessTime().getSpecificDays().size()).isEqualTo(3);
-        assertThat(wishes.get(0).getShop().getBusinessTime().getSpecificDays().get(0).getStatus()).isEqualTo(SpecificDayType.CLOSED);
-        assertThat(wishes.get(0).getShop().getBusinessTime().getSpecificDays().get(0).getReason()).isEqualTo("설연휴");
-        assertThat(wishes.get(0).getShop().getBusinessTime().getSpecificDays().get(0).getDate()).isEqualTo(LocalDate.of(2025, 1, 28));
-        assertThat(wishes.get(0).getShop().getBusinessTime().getSpecificDays().get(0).getOpenTime()).isNull();
-        assertThat(wishes.get(0).getShop().getBusinessTime().getSpecificDays().get(0).getCloseTime()).isNull();
-
-        assertThat(wishes.get(0).getShop().getPlaceShops().size()).isEqualTo(1);
-        assertThat(wishes.get(0).getShop().getPlaceShops().get(0).getPlace().getName()).isEqualTo("비발디파크");
-        assertThat(wishes.get(0).getShop().getPlaceShops().get(0).getPlace().getOpenDate()).isEqualTo(LocalDate.of(2024, 10, 15));
-        assertThat(wishes.get(0).getShop().getPlaceShops().get(0).getPlace().getCloseDate()).isEqualTo(LocalDate.of(2025, 3, 12));
-        assertThat(wishes.get(0).getShop().getPlaceShops().get(0).getPlace().getRecLevel()).isEqualTo(PlaceLevel.LEVEL_1);
-
-        assertThat(wishes.get(0).getShop().getNaverReview().getAvgScore()).isEqualTo(3.5D);
-        assertThat(wishes.get(0).getShop().getNaverReview().getTotalReview()).isEqualTo(100L);
-
-        assertThat(wishes.get(0).getShop().getReviews().size()).isEqualTo(5);
-        assertThat(wishes.get(0).getShop().getReviews().get(0).getScore()).isEqualTo(3D);
-        assertThat(wishes.get(0).getShop().getReviews().get(0).getContent()).isEqualTo("그저 그럼");
-
-        assertThat(wishes.get(0).getShop().getItems().size()).isEqualTo(30);
-        assertThat(wishes.get(0).getShop().getItems().get(0).getLiftTicket().getStatus()).isEqualTo(LiftTicketStatus.WEEK_DAY);
-        assertThat(wishes.get(0).getShop().getItems().get(0).getLiftTicket().getName()).isEqualTo("스마트4시간권");
-        assertThat(wishes.get(0).getShop().getItems().get(0).getLiftTicket().getTicketType()).isEqualTo(LiftTicketType.SMART);
-        assertThat(wishes.get(0).getShop().getItems().get(0).getLiftTicket().getHours()).isEqualTo(4L);
-        assertThat(wishes.get(0).getShop().getItems().get(0).getLiftTicket().getStartTime()).isNull();
-        assertThat(wishes.get(0).getShop().getItems().get(0).getLiftTicket().getEndTime()).isNull();
-        assertThat(wishes.get(0).getShop().getItems().get(0).getType()).isEqualTo(PackageType.LIFT_EQUIPMENT_CLOTHES);
-        assertThat(wishes.get(0).getShop().getItems().get(0).getName()).isEqualTo("주중 스마트4시간권+장비+의류");
-        assertThat(wishes.get(0).getShop().getItems().get(0).getPrice()).isEqualTo(BigDecimal.valueOf(65000L));
-        assertThat(wishes.get(0).getShop().getItems().get(0).getUsed()).isEqualTo(true);
-
-        assertThat(wishes.get(0).getShop().getItemOptions().size()).isEqualTo(8);
-        assertThat(wishes.get(0).getShop().getItemOptions().get(0).getName()).isEqualTo(ItemOptionName.LUXURY);
-        assertThat(wishes.get(0).getShop().getItemOptions().get(0).getUsed()).isEqualTo(true);
-        assertThat(wishes.get(0).getShop().getItemOptions().get(0).getStartTime()).isEqualTo(0L);
-        assertThat(wishes.get(0).getShop().getItemOptions().get(0).getEndTime()).isEqualTo(5L);
-        assertThat(wishes.get(0).getShop().getItemOptions().get(0).getAddPrice()).isEqualTo(BigDecimal.valueOf(25000L));
+                .andExpect(jsonPath("$.pageInfo", instanceOf(LinkedHashMap.class)))
+                .andExpect(jsonPath("$.pageInfo.page", is(0)))
+                .andExpect(jsonPath("$.pageInfo.size", is(10)))
+                .andExpect(jsonPath("$.pageInfo.hasNext", is(false)))
+                .andExpect(jsonPath("$.pageInfo.totalSize", is(1)));
     }
 
     private Category createCategory() {
