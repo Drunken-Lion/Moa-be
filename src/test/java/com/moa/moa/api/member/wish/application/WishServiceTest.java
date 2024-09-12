@@ -9,6 +9,7 @@ import com.moa.moa.api.member.member.util.enumerated.MemberRole;
 import com.moa.moa.api.member.wish.application.mapstruct.WishMapstructMapper;
 import com.moa.moa.api.member.wish.application.mapstruct.WishMapstructMapperImpl;
 import com.moa.moa.api.member.wish.domain.WishProcessor;
+import com.moa.moa.api.member.wish.domain.dto.AddWishDto;
 import com.moa.moa.api.member.wish.domain.dto.FindAllWishDto;
 import com.moa.moa.api.member.wish.domain.entity.Wish;
 import com.moa.moa.api.place.liftticket.domain.entity.LiftTicket;
@@ -22,6 +23,7 @@ import com.moa.moa.api.shop.itemoption.util.enumerated.ItemOptionName;
 import com.moa.moa.api.shop.naverreview.domain.entity.NaverReview;
 import com.moa.moa.api.shop.placeshop.domain.entity.PlaceShop;
 import com.moa.moa.api.shop.review.domain.entity.Review;
+import com.moa.moa.api.shop.shop.domain.ShopProcessor;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
 import com.moa.moa.api.time.businesstime.domain.entity.BusinessTime;
 import com.moa.moa.api.time.operatingtime.domain.entity.OperatingTime;
@@ -30,7 +32,9 @@ import com.moa.moa.api.time.operatingtime.util.enumerated.OperatingType;
 import com.moa.moa.api.time.specificday.domain.entity.SpecificDay;
 import com.moa.moa.api.time.specificday.util.enumerated.SpecificDayType;
 import com.moa.moa.global.aws.s3.images.domain.entity.Image;
+import com.moa.moa.global.common.message.FailHttpMessage;
 import com.moa.moa.global.common.response.PageExternalDto;
+import com.moa.moa.global.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,9 +55,12 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -61,6 +68,8 @@ import static org.mockito.Mockito.when;
 class WishServiceTest {
     @Mock
     private WishProcessor wishProcessor;
+    @Mock
+    private ShopProcessor shopProcessor;
 
     @Mock
     private WishMapstructMapper wishMapstructMapper;
@@ -79,6 +88,7 @@ class WishServiceTest {
     private List<Wish> mockWishes;
     private List<FindAllWishDto.Response> mockAllWishResponses;
     private Member mockMember;
+    private Shop mockShop;
 
     @BeforeEach
     void beforeEach() {
@@ -129,6 +139,7 @@ class WishServiceTest {
         mockWishes = wishes;
         mockAllWishResponses = createAllWishResponse(wishes, images, createMockMoaAvgScores(), createMockMoaTotalCounts());
         mockMember = members.get(3);
+        mockShop = shops.get(0);
     }
 
     @Test
@@ -184,6 +195,80 @@ class WishServiceTest {
         assertThat(wishList.get(0).places().size()).isEqualTo(1);
         assertThat(wishList.get(0).places().get(0).id()).isEqualTo(1L);
         assertThat(wishList.get(0).places().get(0).name()).isEqualTo("비발디파크");
+    }
+
+    @Test
+    @DisplayName("렌탈샵 찜 추가 성공")
+    public void t2() {
+        // given
+        AddWishDto.Request request = AddWishDto.Request.builder()
+                .shopId(1L)
+                .build();
+
+        Wish wish = Wish.builder()
+                .id(7L)
+                .member(mockMember)
+                .shop(mockShop)
+                .build();
+
+        when(shopProcessor.findShopById(anyLong())).thenReturn(Optional.ofNullable(mockShop));
+        when(wishProcessor.findWishByShopAndMember(any(), any())).thenReturn(Optional.empty());
+        when(wishMapstructMapper.addOf(any(), any())).thenReturn(wishMapstructMapperImpl.addOf(mockShop.getId(), mockMember.getId()));
+        when(wishProcessor.addWish(any())).thenReturn(wish);
+        when(wishMapstructMapper.addOf(any())).thenReturn(wishMapstructMapperImpl.addOf(wish));
+
+        // when
+        AddWishDto.Response response = wishService.addWish(request, mockMember);
+
+        // then
+        assertThat(response.id()).isEqualTo(7L);
+    }
+
+    @Test
+    @DisplayName("렌탈샵 찜 추가 실패 - 존재하지 않는 렌탈샵")
+    public void t3() {
+        // given
+        AddWishDto.Request request = AddWishDto.Request.builder()
+                .shopId(1L)
+                .build();
+
+        when(shopProcessor.findShopById(anyLong())).thenReturn(Optional.empty());
+
+        // when
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            wishService.addWish(request, mockMember);
+        });
+
+        // then
+        assertEquals(FailHttpMessage.Shop.NOT_FOUND.getStatus(), exception.getStatus());
+        assertEquals(FailHttpMessage.Shop.NOT_FOUND.getMessage(), exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("렌탈샵 찜 추가 실패 - 이미 존재하는 렌탈샵 찜")
+    public void t4() {
+        // given
+        AddWishDto.Request request = AddWishDto.Request.builder()
+                .shopId(1L)
+                .build();
+
+        Wish wish = Wish.builder()
+                .id(7L)
+                .member(mockMember)
+                .shop(mockShop)
+                .build();
+
+        when(shopProcessor.findShopById(anyLong())).thenReturn(Optional.ofNullable(mockShop));
+        when(wishProcessor.findWishByShopAndMember(any(), any())).thenReturn(Optional.ofNullable(wish));
+
+        // when
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            wishService.addWish(request, mockMember);
+        });
+
+        // then
+        assertEquals(FailHttpMessage.Wish.CONFLICT.getStatus(), exception.getStatus());
+        assertEquals(FailHttpMessage.Wish.CONFLICT.getMessage(), exception.getMessage());
     }
 
     private Category createCategory() {

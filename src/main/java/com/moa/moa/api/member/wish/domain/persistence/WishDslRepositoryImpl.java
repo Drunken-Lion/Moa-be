@@ -34,7 +34,7 @@ import static com.moa.moa.api.time.operatingtime.domain.entity.QOperatingTime.op
 import static com.moa.moa.api.time.specificday.domain.entity.QSpecificDay.specificDay;
 
 @RequiredArgsConstructor
-public class WishDslRepositoryImpl implements WishDslRepository{
+public class WishDslRepositoryImpl implements WishDslRepository {
     private final JPAQueryFactory queryFactory;
     private final CursorPaginationUtil<Wish> cursorPaginationUtil;
 
@@ -59,6 +59,7 @@ public class WishDslRepositoryImpl implements WishDslRepository{
                 .leftJoin(wish.shop.address, address1).fetchJoin()
                 .leftJoin(wish.shop.businessTime, businessTime).fetchJoin()
                 .where(wish.member.eq(userMember)
+                        .and(cursorPaginationUtil.ltCursorId(wish.id, pageable.getPageNumber()))
                         .and(wish.deletedAt.isNull())
                         .and(shop.deletedAt.isNull())
                         .and(shop.member.deletedAt.isNull())
@@ -67,6 +68,7 @@ public class WishDslRepositoryImpl implements WishDslRepository{
                         .and(shop.businessTime.deletedAt.isNull())
                 )
                 .orderBy(wish.id.asc())
+                .limit(pageable.getPageSize() + 1)
                 .fetch();
 
         for (Wish wish : wishes) {

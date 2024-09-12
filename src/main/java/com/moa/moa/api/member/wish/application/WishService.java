@@ -3,12 +3,17 @@ package com.moa.moa.api.member.wish.application;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.member.wish.application.mapstruct.WishMapstructMapper;
 import com.moa.moa.api.member.wish.domain.WishProcessor;
+import com.moa.moa.api.member.wish.domain.dto.AddWishDto;
 import com.moa.moa.api.member.wish.domain.dto.FindAllWishDto;
 import com.moa.moa.api.member.wish.domain.entity.Wish;
 import com.moa.moa.api.place.place.domain.entity.Place;
 import com.moa.moa.api.shop.placeshop.domain.entity.PlaceShop;
 import com.moa.moa.api.shop.review.domain.entity.Review;
+import com.moa.moa.api.shop.shop.domain.ShopProcessor;
+import com.moa.moa.api.shop.shop.domain.entity.Shop;
+import com.moa.moa.global.common.message.FailHttpMessage;
 import com.moa.moa.global.common.response.PageExternalDto;
+import com.moa.moa.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -16,12 +21,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class WishService {
     private final WishProcessor wishProcessor;
+    private final ShopProcessor shopProcessor;
     private final WishMapstructMapper wishMapstructMapper;
 
     public PageExternalDto.Response<List<FindAllWishDto.Response>> findAllWish(Member member, Pageable pageable) {
@@ -52,5 +59,19 @@ public class WishService {
         }
 
         return wishMapstructMapper.of(findAllWishList, pageable, wishProcessor.countMyWish(member));
+    }
+
+    public AddWishDto.Response addWish(AddWishDto.Request request, Member member) {
+        Shop shop = shopProcessor.findShopById(request.shopId())
+                .orElseThrow(() -> new BusinessException(FailHttpMessage.Shop.NOT_FOUND));
+
+        Optional<Wish> optionalWish = wishProcessor.findWishByShopAndMember(shop, member);
+        if (optionalWish.isPresent()) {
+            throw new BusinessException(FailHttpMessage.Wish.CONFLICT);
+        }
+
+        Wish wish = wishProcessor.addWish(wishMapstructMapper.addOf(shop.getId(), member.getId()));
+
+        return wishMapstructMapper.addOf(wish);
     }
 }
