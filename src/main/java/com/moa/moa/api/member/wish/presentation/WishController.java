@@ -16,7 +16,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
 
@@ -35,7 +37,18 @@ public class WishController {
     @PostMapping
     public ResponseEntity<AddWishDto.Response> addWish(@Valid @RequestBody final AddWishDto.Request request,
                                                        @AuthenticationPrincipal UserPrincipal user) {
-        return ResponseEntity.created(null).body(null);
+        // TODO : 회원 관련 기능이 완성되면 삭제할 것
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+
+        AddWishDto.Response response = wishService.addWish(request, member);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.id())
+                .toUri();
+
+        return ResponseEntity.created(location).body(response);
     }
 
     @Operation(summary = "나의 찜 목록 조회", responses = {@ApiResponse(responseCode = GET)})

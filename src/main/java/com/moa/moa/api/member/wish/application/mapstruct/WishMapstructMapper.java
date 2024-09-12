@@ -1,6 +1,7 @@
 package com.moa.moa.api.member.wish.application.mapstruct;
 
 import com.moa.moa.api.address.address.domain.entity.Address;
+import com.moa.moa.api.member.wish.domain.dto.AddWishDto;
 import com.moa.moa.api.member.wish.domain.dto.FindAllWishDto;
 import com.moa.moa.api.member.wish.domain.entity.Wish;
 import com.moa.moa.api.place.place.domain.entity.Place;
@@ -78,4 +79,14 @@ public interface WishMapstructMapper {
     PageExternalDto.Response<List<FindAllWishDto.Response>> of(List<FindAllWishDto.Response> responses,
                                                                Pageable pageable,
                                                                Integer totalSize);
+
+    AddWishDto.Response addOf(Wish wish);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "deletedAt", ignore = true)
+    @Mapping(target = "member.id", source = "memberId")
+    @Mapping(target = "shop.id", source = "shopId")
+    Wish addOf(Long shopId, Long memberId);
 }
