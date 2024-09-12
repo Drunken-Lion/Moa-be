@@ -1,4 +1,4 @@
-package com.moa.moa.api.shop.shop.application;
+package com.moa.moa.api.member.wish.application;
 
 import com.moa.moa.api.address.address.domain.entity.Address;
 import com.moa.moa.api.category.category.domain.entity.Category;
@@ -6,7 +6,10 @@ import com.moa.moa.api.category.category.util.enumerated.CategoryType;
 import com.moa.moa.api.member.custom.util.enumerated.PackageType;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.member.member.util.enumerated.MemberRole;
+import com.moa.moa.api.member.wish.application.mapstruct.WishMapstructMapper;
+import com.moa.moa.api.member.wish.application.mapstruct.WishMapstructMapperImpl;
 import com.moa.moa.api.member.wish.domain.WishProcessor;
+import com.moa.moa.api.member.wish.domain.dto.FindAllWishDto;
 import com.moa.moa.api.member.wish.domain.entity.Wish;
 import com.moa.moa.api.place.liftticket.domain.entity.LiftTicket;
 import com.moa.moa.api.place.liftticket.util.enumerated.LiftTicketStatus;
@@ -19,11 +22,6 @@ import com.moa.moa.api.shop.itemoption.util.enumerated.ItemOptionName;
 import com.moa.moa.api.shop.naverreview.domain.entity.NaverReview;
 import com.moa.moa.api.shop.placeshop.domain.entity.PlaceShop;
 import com.moa.moa.api.shop.review.domain.entity.Review;
-import com.moa.moa.api.shop.shop.application.mapstruct.ShopMapstructMapper;
-import com.moa.moa.api.shop.shop.application.mapstruct.ShopMapstructMapperImpl;
-import com.moa.moa.api.shop.shop.domain.ShopProcessor;
-import com.moa.moa.api.shop.shop.domain.dto.FindAllShopDto;
-import com.moa.moa.api.shop.shop.domain.dto.FindShopDto;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
 import com.moa.moa.api.time.businesstime.domain.entity.BusinessTime;
 import com.moa.moa.api.time.operatingtime.domain.entity.OperatingTime;
@@ -32,9 +30,7 @@ import com.moa.moa.api.time.operatingtime.util.enumerated.OperatingType;
 import com.moa.moa.api.time.specificday.domain.entity.SpecificDay;
 import com.moa.moa.api.time.specificday.util.enumerated.SpecificDayType;
 import com.moa.moa.global.aws.s3.images.domain.entity.Image;
-import com.moa.moa.global.common.message.FailHttpMessage;
-import com.moa.moa.global.exception.BusinessException;
-import com.moa.moa.global.util.TestUtil;
+import com.moa.moa.global.common.response.PageExternalDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,6 +40,10 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -51,41 +51,38 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ShopServiceTest {
-    @Mock
-    private ShopProcessor shopProcessor;
+class WishServiceTest {
     @Mock
     private WishProcessor wishProcessor;
 
     @Mock
-    private ShopMapstructMapper shopMapstructMapper;
+    private WishMapstructMapper wishMapstructMapper;
 
-    private ShopMapstructMapperImpl shopMapstructMapperImpl;
+    private WishMapstructMapperImpl wishMapstructMapperImpl;
 
     @InjectMocks
-    private ShopService shopService;
+    private WishService wishService;
 
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
-    private List<Shop> mockShops;
+    private final int page = 0;
+    private final int size = 10;
+    private final boolean hasNext = false;
+
     private List<Wish> mockWishes;
-    private List<FindAllShopDto.Response> mockAllShopResponses;
-    private FindShopDto.Response mockShopResponse;
+    private List<FindAllWishDto.Response> mockAllWishResponses;
     private Member mockMember;
 
     @BeforeEach
     void beforeEach() {
-        shopMapstructMapperImpl = new ShopMapstructMapperImpl();
+        wishMapstructMapperImpl = new WishMapstructMapperImpl();
 
         // 카테고리 생성
         Category category = createCategory();
@@ -129,137 +126,64 @@ class ShopServiceTest {
         // TODO: Image 기능 완성 시 수정
         List<Image> images = createImage();
 
-        mockShops = shops;
-        mockWishes = createMockWishes();
-        mockAllShopResponses = createAllShopResponse(shops, mockWishes, images, createMockMoaAvgScores(), createMockMoaTotalCounts(), createMockNaverReviews());
-        mockShopResponse = createShopResponse(shops.get(0), mockWishes.get(0), images.get(0), createMockMoaAvgScores().get(0), createMockMoaTotalCounts().get(0), createMockNaverReviews().get(0));
+        mockWishes = wishes;
+        mockAllWishResponses = createAllWishResponse(wishes, images, createMockMoaAvgScores(), createMockMoaTotalCounts());
         mockMember = members.get(3);
     }
 
     @Test
-    @DisplayName("렌탈샵 목록 조회 성공")
+    @DisplayName("나의 찜 목록 조회 성공")
     public void t1() {
         // given
-        when(shopProcessor.findAllShopWithinRange(anyDouble(), anyDouble(), anyDouble(), anyDouble())).thenReturn(mockShops);
+        Slice<Wish> sliceWishes = getWishSlice(List.of(mockWishes.get(3)));
+        List<FindAllWishDto.Response> allWishResponses = List.of(mockAllWishResponses.get(3));
 
-        for (int i = 0; i < mockShops.size(); i++) {
-            when(wishProcessor.findWishByShopAndMember(
-                    eq(mockShops.get(i)),
-                    any()
-            )).thenReturn(Optional.ofNullable(mockWishes.get(i)));
+        PageExternalDto.Response<List<FindAllWishDto.Response>> pageResponse = wishMapstructMapperImpl.of(allWishResponses, PageRequest.of(page, size), 1);
 
-            when(shopMapstructMapper.ofFindAllShop(
-                    eq(mockShops.get(i)),
+        when(wishProcessor.findAllWishByMember(any(), any(Pageable.class))).thenReturn(sliceWishes);
+
+        for (int i = 0; i < sliceWishes.getContent().size(); i++) {
+            when(wishMapstructMapper.ofFindAllWish(
+                    eq(sliceWishes.getContent().get(i)),
                     any(),
                     any(),
-                    anyList(),
+                    any(),
                     anyDouble(),
                     anyLong(),
-                    any(),
                     anyList()
-            )).thenReturn(mockAllShopResponses.get(i));
+            )).thenReturn(allWishResponses.get(i));
         }
 
+        when(wishProcessor.countMyWish(mockMember)).thenReturn(1);
+
+        when(wishMapstructMapper.of(allWishResponses, PageRequest.of(page, size), 1)).thenReturn(pageResponse);
+
         // when
-        List<FindAllShopDto.Response> shops = shopService.findAllShopWithinRange(anyDouble(), anyDouble(), anyDouble(), anyDouble(), mockMember);
+        PageExternalDto.Response<List<FindAllWishDto.Response>> wishes = wishService.findAllWish(mockMember, PageRequest.of(page, size));
 
         // then
-        assertThat(shops.size()).isEqualTo(6);
+        List<FindAllWishDto.Response> wishList = wishes.data();
+        assertThat(wishList.size()).isEqualTo(1);
+        assertThat(wishList.get(0).id()).isEqualTo(4L);
 
-        FindAllShopDto.Response shopResponse = shops.get(0);
-        assertThat(shopResponse.id()).isEqualTo(1L);
-        assertThat(shopResponse.name()).isEqualTo("찐렌탈샵");
-        assertThat(shopResponse.wishId()).isEqualTo(1L);
+        assertThat(wishList.get(0).shop().id()).isEqualTo(3L);
+        assertThat(wishList.get(0).shop().name()).isEqualTo("인생렌탈샵");
 
         // TODO: image 기능 완성 시 구현 추가
-        assertThat(shopResponse.images()).isNotNull();
+        assertThat(wishList.get(0).images()).isNotNull();
 
-        assertThat(shopResponse.packages().size()).isEqualTo(30);
-        assertThat(shopResponse.packages().get(0).id()).isEqualTo(1L);
-        assertThat(shopResponse.packages().get(0).type()).isEqualTo(PackageType.LIFT_EQUIPMENT_CLOTHES);
-        assertThat(shopResponse.packages().get(0).name()).isEqualTo("주중 스마트4시간권+장비+의류");
-        assertThat(shopResponse.packages().get(0).price()).isEqualTo(BigDecimal.valueOf(67000L));
+        assertThat(wishList.get(0).address().address()).isEqualTo("강원 홍천군 서면 한서로 2137");
+        assertThat(wishList.get(0).address().addressDetail()).isEqualTo("비발디파크인생렌탈샵");
+        assertThat(wishList.get(0).address().locationX()).isEqualTo(127.671714070978);
+        assertThat(wishList.get(0).address().locationY()).isEqualTo(37.6167793731889);
+        assertThat(wishList.get(0).address().mapUrl()).isEqualTo("https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%20%ED%8C%8C%ED%81%AC%20%EB%A0%8C%ED%83%88/place/1034233118?c=12.00,0,0,0,dh&placePath=%3Fentry%253Dpll");
 
-        assertThat(shopResponse.moaReview().avgScore()).isEqualTo(2.5D);
-        assertThat(shopResponse.moaReview().totalCount()).isEqualTo(4L);
+        assertThat(wishList.get(0).moaReview().avgScore()).isEqualTo(3.0D);
+        assertThat(wishList.get(0).moaReview().totalCount()).isEqualTo(5L);
 
-        assertThat(shopResponse.naverReview().avgScore()).isEqualTo(4.5D);
-        assertThat(shopResponse.naverReview().totalCount()).isEqualTo(186L);
-
-        assertThat(shopResponse.places().size()).isEqualTo(1);
-        assertThat(shopResponse.places().get(0).id()).isEqualTo(1L);
-        assertThat(shopResponse.places().get(0).name()).isEqualTo("비발디파크");
-    }
-
-    @Test
-    @DisplayName("렌탈샵 상세 조회 성공")
-    public void t2() {
-        // given
-        when(shopProcessor.findShopById(anyLong())).thenReturn(Optional.ofNullable(mockShops.get(0)));
-
-        when(wishProcessor.findWishByShopAndMember(
-                eq(mockShops.get(0)),
-                any()
-        )).thenReturn(Optional.ofNullable(mockWishes.get(0)));
-
-        when(shopMapstructMapper.ofFindShop(
-                eq(mockShops.get(0)),
-                any(),
-                anyList(),
-                any(),
-                any(),
-                anyDouble(),
-                anyLong(),
-                any()
-        )).thenReturn(mockShopResponse);
-
-        // when
-        FindShopDto.Response shopResponse = shopService.findShop(anyLong(), mockMember);
-
-        // then
-        assertThat(shopResponse.id()).isEqualTo(1L);
-        assertThat(shopResponse.categoryId()).isEqualTo(1L);
-        assertThat(shopResponse.name()).isEqualTo("찐렌탈샵");
-        assertThat(shopResponse.pickUp()).isEqualTo(true);
-        assertThat(shopResponse.storeUrl()).isEqualTo("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9");
-        assertThat(shopResponse.wishId()).isEqualTo(1L);
-
-        assertThat(shopResponse.places().size()).isEqualTo(1);
-        assertThat(shopResponse.places().get(0).id()).isEqualTo(1L);
-        assertThat(shopResponse.places().get(0).name()).isEqualTo("비발디파크");
-        assertThat(shopResponse.places().get(0).open()).isEqualTo(LocalDate.of(2024, 10, 15).format(TestUtil.DATE_FORMATTER));
-        assertThat(shopResponse.places().get(0).close()).isEqualTo(LocalDate.of(2025, 3, 12).format(TestUtil.DATE_FORMATTER));
-
-        // TODO: image 기능 완성 시 구현 추가
-        assertThat(shopResponse.images()).isNotNull();
-
-        assertThat(shopResponse.address().address()).isEqualTo("강원 홍천군 서면 한치골길 39");
-        assertThat(shopResponse.address().addressDetail()).isEqualTo("1, 2층");
-        assertThat(shopResponse.address().locationX()).isEqualTo(127.666621133276);
-        assertThat(shopResponse.address().locationY()).isEqualTo(37.625378749786);
-        assertThat(shopResponse.address().mapUrl()).isEqualTo("https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%B0%90%EB%A0%8C%ED%83%88%EC%83%B5/place/1680503531?c=15.00,0,0,0,dh&isCorrectAnswer=true");
-
-        assertThat(shopResponse.moaReview().avgScore()).isEqualTo(2.5D);
-        assertThat(shopResponse.moaReview().totalCount()).isEqualTo(4L);
-
-        assertThat(shopResponse.naverReview().avgScore()).isEqualTo(4.5D);
-        assertThat(shopResponse.naverReview().totalCount()).isEqualTo(186L);
-    }
-
-    @Test
-    @DisplayName("렌탈샵 상세 조회 실패 - 존재하지 않는 스키장")
-    public void t3() {
-        // given
-        when(shopProcessor.findShopById(anyLong())).thenReturn(Optional.empty());
-
-        // when
-        BusinessException exception = assertThrows(BusinessException.class, () -> {
-            shopService.findShop(anyLong(), mockMember);
-        });
-
-        // then
-        assertEquals(FailHttpMessage.Shop.NOT_FOUND.getStatus(), exception.getStatus());
-        assertEquals(FailHttpMessage.Shop.NOT_FOUND.getMessage(), exception.getMessage());
+        assertThat(wishList.get(0).places().size()).isEqualTo(1);
+        assertThat(wishList.get(0).places().get(0).id()).isEqualTo(1L);
+        assertThat(wishList.get(0).places().get(0).name()).isEqualTo("비발디파크");
     }
 
     private Category createCategory() {
@@ -785,12 +709,12 @@ class ShopServiceTest {
 
     private List<Wish> createWish(List<Shop> shops, List<Member> members) {
         List<Wish> list = new ArrayList<>();
-        list.add(Wish.builder().shop(shops.get(1)).member(members.get(0)).build());
-        list.add(Wish.builder().shop(shops.get(1)).member(members.get(1)).build());
-        list.add(Wish.builder().shop(shops.get(2)).member(members.get(2)).build());
-        list.add(Wish.builder().shop(shops.get(2)).member(members.get(3)).build());
-        list.add(Wish.builder().shop(shops.get(4)).member(members.get(4)).build());
-        list.add(Wish.builder().shop(shops.get(1)).member(members.get(5)).build());
+        list.add(Wish.builder().id(1L).shop(shops.get(1)).member(members.get(0)).build());
+        list.add(Wish.builder().id(2L).shop(shops.get(1)).member(members.get(1)).build());
+        list.add(Wish.builder().id(3L).shop(shops.get(2)).member(members.get(2)).build());
+        list.add(Wish.builder().id(4L).shop(shops.get(2)).member(members.get(3)).build());
+        list.add(Wish.builder().id(5L).shop(shops.get(4)).member(members.get(4)).build());
+        list.add(Wish.builder().id(6L).shop(shops.get(1)).member(members.get(5)).build());
         return list;
     }
 
@@ -1245,23 +1169,12 @@ class ShopServiceTest {
         return list;
     }
 
-    private List<Wish> createMockWishes() {
-        List<Wish> list = new ArrayList<>();
-        list.add(Wish.builder().id(1L).build());
-        list.add(Wish.builder().id(2L).build());
-        list.add(Wish.builder().id(3L).build());
-        list.add(Wish.builder().id(4L).build());
-        list.add(Wish.builder().id(5L).build());
-        list.add(Wish.builder().id(6L).build());
-        return list;
-    }
-
     private List<Double> createMockMoaAvgScores() {
         List<Double> list = new ArrayList<>();
-        list.add(2.5D);
         list.add(3.0D);
         list.add(3.0D);
-        list.add(2.5D);
+        list.add(3.0D);
+        list.add(3.0D);
         list.add(4.0D);
         list.add(3.0D);
         return list;
@@ -1269,89 +1182,54 @@ class ShopServiceTest {
 
     private List<Long> createMockMoaTotalCounts() {
         List<Long> list = new ArrayList<>();
-        list.add(4L);
         list.add(5L);
         list.add(5L);
-        list.add(4L);
+        list.add(5L);
+        list.add(5L);
         list.add(4L);
         list.add(5L);
         return list;
     }
 
-    private List<NaverReview> createMockNaverReviews() {
-        List<NaverReview> list = new ArrayList<>();
-        list.add(NaverReview.builder().avgScore(4.5D).totalReview(186L).build());
-        list.add(NaverReview.builder().avgScore(4.0D).totalReview(299L).build());
-        list.add(NaverReview.builder().avgScore(3.5D).totalReview(100L).build());
-        list.add(NaverReview.builder().avgScore(5.0D).totalReview(50L).build());
-        list.add(NaverReview.builder().avgScore(4.8D).totalReview(177L).build());
-        list.add(NaverReview.builder().avgScore(4.3D).totalReview(80L).build());
-        return list;
-    }
-
-    private List<FindAllShopDto.Response> createAllShopResponse(List<Shop> shops,
-                                                                List<Wish> wishes,
+    private List<FindAllWishDto.Response> createAllWishResponse(List<Wish> wishes,
                                                                 List<Image> images,
                                                                 List<Double> moaAvgScores,
-                                                                List<Long> moaTotalCounts,
-                                                                List<NaverReview> naverReviews) {
-        List<FindAllShopDto.Response> responseList = new ArrayList<>();
+                                                                List<Long> moaTotalCounts) {
+        List<FindAllWishDto.Response> responseList = new ArrayList<>();
 
-        for (int i = 0; i < shops.size(); i++) {
-            Shop shop = shops.get(i);
+        for (int i = 0; i < wishes.size(); i++) {
             Wish wish = wishes.get(i);
             Image image = images.get(i);
-            Double moaAvgScore = moaAvgScores.get(0);
-            Long moaTotalCount = moaTotalCounts.get(0);
-            NaverReview naverReview = naverReviews.get(0);
+            Double moaAvgScore = moaAvgScores.get(i);
+            Long moaTotalCount = moaTotalCounts.get(i);
 
-            responseList.add(createAllResponseFromShop(shop, wish, image, moaAvgScore, moaTotalCount, naverReview));
+            responseList.add(createAllResponseFromWish(wish, image, moaAvgScore, moaTotalCount));
         }
 
         return responseList;
     }
 
-    private FindAllShopDto.Response createAllResponseFromShop(Shop shop,
-                                                              Wish wish,
+    private FindAllWishDto.Response createAllResponseFromWish(Wish wish,
                                                               Image image,
                                                               Double moaAvgScore,
-                                                              Long moaTotalCount,
-                                                              NaverReview naverReview) {
-        List<Place> places = shop.getPlaceShops().stream()
+                                                              Long moaTotalCount) {
+        List<Place> places = wish.getShop().getPlaceShops().stream()
                 .map(PlaceShop::getPlace)
                 .collect(Collectors.toList());
 
-        return shopMapstructMapperImpl.ofFindAllShop(
-                shop,
+        return wishMapstructMapperImpl.ofFindAllWish(
                 wish,
+                wish.getShop(),
                 image,
-                shop.getItems(),
+                wish.getShop().getAddress(),
                 moaAvgScore,
                 moaTotalCount,
-                naverReview,
                 places
         );
     }
 
-    private FindShopDto.Response createShopResponse(Shop shop,
-                                                    Wish wish,
-                                                    Image image,
-                                                    Double moaAvgScore,
-                                                    Long moaTotalCount,
-                                                    NaverReview naverReview) {
-        List<Place> places = shop.getPlaceShops().stream()
-                .map(PlaceShop::getPlace)
-                .collect(Collectors.toList());
-
-        return shopMapstructMapperImpl.ofFindShop(
-                shop,
-                wish,
-                places,
-                image,
-                shop.getAddress(),
-                moaAvgScore,
-                moaTotalCount,
-                naverReview
-        );
+    private Slice<Wish> getWishSlice(List<Wish> wishes) {
+        Pageable pageable = PageRequest.of(page, size);
+        return new SliceImpl<>(wishes, pageable, hasNext);
     }
 }
