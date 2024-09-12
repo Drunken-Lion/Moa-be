@@ -221,11 +221,11 @@ class WishControllerTest {
     @Test
     @DisplayName("렌탈샵 찜 추가 성공")
     void t2() throws Exception {
-        Shop shop = shopRepository.findShopById(1L).get();
+        Shop shop = shopRepository.findAll().get(0);
         Member member = memberRepository.findByEmail("three@moa.com").get();
 
         AddWishDto.Request request = AddWishDto.Request.builder()
-                .shopId(1L)
+                .shopId(shop.getId())
                 .build();
 
         ResultActions actions = mvc
