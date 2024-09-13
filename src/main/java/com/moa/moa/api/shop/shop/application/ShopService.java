@@ -101,7 +101,6 @@ public class ShopService {
 
         // 1-3. place에 맞는 shop_id 가져오기
         List<PlaceShop> shopsRelatedToPlace = placeShopProcessor.findAllShopRelatedToPlace(place);
-        System.out.println(shopsRelatedToPlace);
 
         if (shopsRelatedToPlace.isEmpty()) throw new BusinessException(FailHttpMessage.Shop.NOT_FOUND_SHOP_RELATED_TO_PLACE);
 
@@ -111,20 +110,15 @@ public class ShopService {
          List<Custom> customByIdAndEquip = customProcessor.findCustomByIdAndEquip(request.custom().get(0).equipmentType());
          */
         List<FindLowPriceCustomDto> customs = new ArrayList<>();
-        System.out.println("요기요");
         for (int i=0;i<request.custom().size();i++) {
-            System.out.println("요기요1");
             FindAllShopLowPriceDto.CustomRequest customRequest = request.custom().get(i);
 
             // itemName -> "주중 스마트4시간권+장비+의류" 이름으로 조합해야 함 [visitDate, liftType, liftTime] 필요
             String itemName = ShopUtil.mix.getItemName(request.place().visitDate(), customRequest.liftType(),
                                                         customRequest.liftTime(), customRequest.packageType());
-            System.out.println("itemName = " + itemName);
 
             // clotesType이랑 equipmentType을 보고 ItemOptionName을 추가해야 함
             List<ItemOptionName> itemOptionNames = ShopUtil.match.getItemOptionNames(customRequest.clothesType(), customRequest.equipmentType());
-            System.out.println("itemOptionNames size = "+ itemOptionNames.size());
-            System.out.println("itemOptionNames = " + itemOptionNames.get(0));
 
             FindLowPriceCustomDto custom = FindLowPriceCustomDto.builder()
                     .gender(customRequest.gender())
@@ -135,28 +129,21 @@ public class ShopService {
                     .packageType(customRequest.packageType())
                     .clothesType(customRequest.clothesType())
                     .equipmentType(customRequest.equipmentType())
-                    .itemOptionNames(itemOptionNames)
+                    .itemOptionNames(itemOptionNames.isEmpty() ? null : itemOptionNames)
                     .build();
 
             customs.add(custom);
         }
-        System.out.println("customs.size() = " + customs.size());
-        System.out.println("customs = " + customs);
 
         // 2-2. 1번에서 받은 shop_id로 조회
         List<FindLowPriceShopDto> shopLowPriceDtos = new ArrayList<>();
         for (int i = 0; i < shopsRelatedToPlace.size(); i++) {
-            System.out.println("제발 들어와라");
             Long shopId = shopsRelatedToPlace.get(i).getShop().getId();
 
             FindLowPriceShopDto shopLowPrice = shopProcessor.findShopWithCustomForSearch(shopId, customs, request.shop().pickUp());
-            System.out.println("제발 들어와라2");
 
             shopLowPriceDtos.add(shopLowPrice);
-
-            System.out.println("제발 들어와라3");
         }
-        System.out.println("shopLowPriceDtos = " + shopLowPriceDtos);
         
         // 3. member와 맞는 wish 가져오기, shop과 관련된 address, image, wish 가져오기
 

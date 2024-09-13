@@ -3,6 +3,7 @@ package com.moa.moa.api.shop.shop.domain.persistence;
 import com.moa.moa.api.member.custom.domain.dto.FindLowPriceCustomDto;
 import com.moa.moa.api.shop.item.domain.entity.Item;
 import com.moa.moa.api.shop.itemoption.domain.entity.ItemOption;
+import com.moa.moa.api.shop.itemoption.util.enumerated.ItemOptionName;
 import com.moa.moa.api.shop.naverreview.domain.entity.NaverReview;
 import com.moa.moa.api.shop.placeshop.domain.entity.PlaceShop;
 import com.moa.moa.api.shop.review.domain.entity.Review;
@@ -10,14 +11,18 @@ import com.moa.moa.api.shop.shop.domain.dto.FindLowPriceShopDto;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
 import com.moa.moa.api.time.operatingtime.domain.entity.OperatingTime;
 import com.moa.moa.api.time.specificday.domain.entity.SpecificDay;
-import com.querydsl.core.types.Projections;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
 
 import static com.moa.moa.api.address.address.domain.entity.QAddress.address1;
 import static com.moa.moa.api.category.category.domain.entity.QCategory.category;
@@ -112,33 +117,79 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
 
     @Override
     public FindLowPriceShopDto findShopWithCustomForSearch(Long shopId,
-                                                                           List<FindLowPriceCustomDto> customs,
-                                                                           Boolean pickUp) {
+                                                           List<FindLowPriceCustomDto> customs,
+                                                           Boolean pickUp) {
 
-        // TODO custom 별 item, itemOption 조회 서브쿼리
-        System.out.println("11111111111111");
+        List<Expression<?>> selectFields = new ArrayList<>(); // select 동적으로 생성
+        
+        // 기본 필드 추가
+        selectFields.add(shop.id.as("shopId"));
+        selectFields.add(shop.name);
+        selectFields.add(shop.pickUp);
+        selectFields.add(shop.url.as("storeUrl"));
+
+        // custom 별 item, itemOption 조회 서브쿼리
+        for (int i = 0; i < customs.size(); i++) {
+            FindLowPriceCustomDto customDto = customs.get(i);
+
+            JPAQuery<BigDecimal> customPriceQuery = getCustomPrice(shopId, customDto.getItemName(),
+                                                                    customDto.getItemOptionNames(), customDto.getLiftTime());
+
+            Expression<BigDecimal> customPrice = ExpressionUtils.as(customPriceQuery, customDto.getNickname());
+
+            selectFields.add(customPrice);
+        }
+
+        // 리뷰 관련 필드 추가
+        selectFields.add(getReviewAvgScore());
+        selectFields.add(getReviewTotalCount());
+        selectFields.add(naverReview.avgScore.as("nrAvgScore"));
+        selectFields.add(naverReview.totalReview.as("nrTotalCount"));
 
         // 메인 쿼리
-        FindLowPriceShopDto findLowPriceShopDto = queryFactory.select(Projections.constructor(FindLowPriceShopDto.class,
-                        shop.id,
-                        shop.name,
-                        shop.pickUp,
-                        shop.url.as("storeUrl"),
-                        getReviewAvgScore(),
-                        getReviewTotalCount(),
-                        naverReview.avgScore.as("nrAvgScore"),
-                        naverReview.totalReview.as("nrTotalCount")
-                ))
+        // TODO tuple이 값이 없는 null 일 경우 고려하기
+        Tuple tuple = queryFactory.select(selectFields.toArray(new Expression<?>[0]))
                 .from(shop)
                 .leftJoin(naverReview).on(shop.id.eq(naverReview.shop.id))
                 .where(shop.id.eq(shopId)
                         .and(shop.pickUp.eq(pickUp)))
                 .fetchOne();
-        System.out.println("findLowPriceShopDto = " + findLowPriceShopDto);
-        System.out.println("findLowPriceShopDto.getShopId() = " + findLowPriceShopDto.getShopId());
-        System.out.println("findLowPriceShopDto.getAvgScore() = " + findLowPriceShopDto.getAvgScore());
 
-        return null;
+        // tuple에 있는 값을 매칭 시키기 위해 배열로 변경
+        Object[] array = tuple.toArray();
+        String[] customArray = new String[array.length];
+
+        // Object 배열을 String 배열로 변환
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] != null) {
+                customArray[i] = array[i].toString(); // Object를 String으로 변환
+            } else {
+                customArray[i] = null;
+            }
+        }
+
+        Map<String, BigDecimal> customPrices = new HashMap<>();
+        BigDecimal totalPrice = BigDecimal.ZERO;
+        for (int i = 4; i < customArray.length - 4; i++) {
+            BigDecimal price = BigDecimal.valueOf(Double.parseDouble(customArray[i]));
+            customPrices.put(customs.get(i - 4).getNickname(), price);
+            totalPrice = totalPrice.add(price);
+        }
+
+        FindLowPriceShopDto findLowPriceShopDto = FindLowPriceShopDto.builder()
+                .shopId(Long.parseLong(customArray[0]))
+                .name(customArray[1])
+                .pickUp(Boolean.valueOf(customArray[2]))
+                .storeUrl(customArray[3])
+                .customPrices(customPrices)
+                .totalPrice(totalPrice)
+                .avgScore(Double.valueOf(customArray[customArray.length - 4]))
+                .totalCount(Long.parseLong(customArray[customArray.length - 3]))
+                .nrAvgScore(Double.valueOf(customArray[customArray.length - 2]))
+                .nrTotalCount(Long.parseLong(customArray[customArray.length - 1]))
+                .build();
+
+        return findLowPriceShopDto;
     }
 
     private JPAQuery<Double> getReviewAvgScore() {
@@ -155,5 +206,50 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
                 .from(review)
                 .where(review.shop.id.eq(shop.id))
                 .groupBy(review.shop.id);
+    }
+
+    private JPAQuery<BigDecimal> getCustomPrice(Long shopId, String itemName, List<ItemOptionName> itemOptionNames, String liftTime) {
+        return queryFactory
+                .select(selectItemPriceOrItemOption(itemOptionNames))
+                .from(item)
+                .leftJoin(itemOption).on(item.shop.id.eq(itemOption.shop.id))
+                .where(item.shop.id.eq(shopId)
+                        .and(item.name.eq(itemName))
+                        .and(inItemOptionNames(itemOptionNames))
+                        .and(loeStartTime(itemOptionNames, liftTime))
+                        .and(goeEndTime(itemOptionNames, liftTime)))
+                .groupBy(item.shop.id, item.price);
+    }
+
+    private BooleanExpression inItemOptionNames(List<ItemOptionName> itemOptionNames) {
+        if (itemOptionNames == null || itemOptionNames.isEmpty()) {
+            return null; // 조건에서 제외하기 위해 null 반환
+        }
+
+        return itemOption.name.in(itemOptionNames); // 조건 추가
+    }
+
+    private NumberExpression<BigDecimal> selectItemPriceOrItemOption(List<ItemOptionName> itemOptionNames) {
+        if (itemOptionNames == null || itemOptionNames.isEmpty()) {
+            return item.price; // 조건에서 제외하기 위해 null 반환
+        }
+
+        return item.price.add(itemOption.addPrice.sum()); // 조건 추가
+    }
+
+    private BooleanExpression loeStartTime(List<ItemOptionName> itemOptionNames, String liftTime) {
+        if (itemOptionNames == null || itemOptionNames.isEmpty()) {
+            return null; // 조건에서 제외하기 위해 null 반환
+        }
+
+        return itemOption.startTime.loe(Integer.parseInt(liftTime)); // 조건 추가
+    }
+
+    private BooleanExpression goeEndTime(List<ItemOptionName> itemOptionNames, String liftTime) {
+        if (itemOptionNames == null || itemOptionNames.isEmpty()) {
+            return null; // 조건에서 제외하기 위해 null 반환
+        }
+
+        return itemOption.endTime.goe(Integer.parseInt(liftTime)); // 조건 추가
     }
 }

@@ -76,11 +76,8 @@ public class ShopUtil {
             List<ItemOptionName> itemOptionNames = new ArrayList<>();
 
             for (ItemOptionName itemOptionName : ItemOptionName.values()) {
-                System.out.println("들어오나?");
-                System.out.println("itemOptionName.name() = "+itemOptionName.name());
                 if (itemOptionName.name().equals(clothesType.name())
                         || itemOptionName.name().equals(equipmentType.name())) {
-                    System.out.println("itemOptionName = " + itemOptionName);
                     itemOptionNames.add(itemOptionName);
                 }
             }
