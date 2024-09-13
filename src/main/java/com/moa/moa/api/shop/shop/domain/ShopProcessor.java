@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -18,7 +19,7 @@ public class ShopProcessor {
         return shopRepository.findAllShopWithinRange(leftTopX, leftTopY, rightBottomX, rightBottomY);
     }
 
-    public FindLowPriceShopDto findShopWithCustomForSearch(Long shopId, List<FindLowPriceCustomDto> customs, Boolean pickUp) {
+    public Optional<FindLowPriceShopDto> findShopWithCustomForSearch(Long shopId, List<FindLowPriceCustomDto> customs, Boolean pickUp) {
         return shopRepository.findShopWithCustomForSearch(shopId, customs, pickUp);
     }
 }

@@ -116,11 +116,11 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
     }
 
     @Override
-    public FindLowPriceShopDto findShopWithCustomForSearch(Long shopId,
+    public Optional<FindLowPriceShopDto> findShopWithCustomForSearch(Long shopId,
                                                            List<FindLowPriceCustomDto> customs,
                                                            Boolean pickUp) {
-
-        List<Expression<?>> selectFields = new ArrayList<>(); // select 동적으로 생성
+        // select 동적으로 생성
+        List<Expression<?>> selectFields = new ArrayList<>();
         
         // 기본 필드 추가
         selectFields.add(shop.id.as("shopId"));
@@ -147,16 +147,23 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
         selectFields.add(naverReview.totalReview.as("nrTotalCount"));
 
         // 메인 쿼리
-        // TODO tuple이 값이 없는 null 일 경우 고려하기
-        Tuple tuple = queryFactory.select(selectFields.toArray(new Expression<?>[0]))
+        Optional<Tuple> tuple = Optional.ofNullable(queryFactory.select(selectFields.toArray(new Expression<?>[0]))
                 .from(shop)
                 .leftJoin(naverReview).on(shop.id.eq(naverReview.shop.id))
                 .where(shop.id.eq(shopId)
                         .and(shop.pickUp.eq(pickUp)))
-                .fetchOne();
+                .fetchOne());
+
+        // TODO tuple이 값이 없는 null 일 경우 고려하기
+        // tuple은 null이어도 잡히지 않는다.
+        // tuple은 size가 0 이어도 잡히지 않는다.
+        if (tuple.isEmpty()) {
+            System.out.println("tuple에 값이 하나도 없다.");
+            return Optional.empty();
+        }
 
         // tuple에 있는 값을 매칭 시키기 위해 배열로 변경
-        Object[] array = tuple.toArray();
+        Object[] array = tuple.get().toArray();
         String[] customArray = new String[array.length];
 
         // Object 배열을 String 배열로 변환
@@ -189,7 +196,7 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
                 .nrTotalCount(Long.parseLong(customArray[customArray.length - 1]))
                 .build();
 
-        return findLowPriceShopDto;
+        return Optional.ofNullable(findLowPriceShopDto);
     }
 
     private JPAQuery<Double> getReviewAvgScore() {

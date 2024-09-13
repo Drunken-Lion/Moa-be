@@ -140,7 +140,8 @@ public class ShopService {
         for (int i = 0; i < shopsRelatedToPlace.size(); i++) {
             Long shopId = shopsRelatedToPlace.get(i).getShop().getId();
 
-            FindLowPriceShopDto shopLowPrice = shopProcessor.findShopWithCustomForSearch(shopId, customs, request.shop().pickUp());
+            FindLowPriceShopDto shopLowPrice = shopProcessor.findShopWithCustomForSearch(shopId, customs, request.shop().pickUp())
+                                                            .orElse(null);
 
             shopLowPriceDtos.add(shopLowPrice);
         }
