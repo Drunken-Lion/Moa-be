@@ -177,30 +177,6 @@ class PlaceRepositoryTest {
         assertThat(places.size()).isEqualTo(0);
     }
 
-    private List<Place> createPlace(Category category, List<Address> addresses, List<BusinessTime> businessTimes) {
-        List<Place> list = new ArrayList<>();
-        Place place_1 = createPlace(category, addresses.get(0), businessTimes.get(0), "비발디파크", LocalDate.of(2024, 10, 15),
-                LocalDate.of(2025, 3, 12), PlaceLevel.LEVEL_1);
-
-        Place place_2 = createPlace(category, addresses.get(3), businessTimes.get(3), "하이원리조트", LocalDate.of(2024, 10, 16),
-                LocalDate.of(2025, 3, 12), PlaceLevel.LEVEL_2);
-
-        Place place_3 = createPlace(category, addresses.get(4), businessTimes.get(4), "엘리시안", LocalDate.of(2024, 10, 17),
-                LocalDate.of(2025, 3, 12), PlaceLevel.LEVEL_4);
-
-        Place place_4 = createPlace(category, addresses.get(8), businessTimes.get(8), "지산리조트", LocalDate.of(2024, 10, 18),
-                LocalDate.of(2025, 3, 15), PlaceLevel.LEVEL_4, true); // 삭제
-
-        list.add(place_1);
-        list.add(place_2);
-        list.add(place_3);
-        list.add(place_4);
-
-        placeRepository.saveAll(list);
-
-        return list;
-    }
-
     @Test
     @DisplayName("스키장 상세 조회 성공")
     public void t3() {
@@ -251,6 +227,30 @@ class PlaceRepositoryTest {
         assertThat(place.getAmenities().size()).isEqualTo(4);
         assertThat(place.getAmenities().get(0).getUsed()).isEqualTo(true);
         assertThat(place.getAmenities().get(0).getAmenity().getType()).isEqualTo(AmenityType.HOTEL);
+    }
+
+    private List<Place> createPlace(Category category, List<Address> addresses, List<BusinessTime> businessTimes) {
+        List<Place> list = new ArrayList<>();
+        Place place_1 = createPlace(category, addresses.get(0), businessTimes.get(0), "비발디파크", LocalDate.of(2024, 10, 15),
+                LocalDate.of(2025, 3, 12), PlaceLevel.LEVEL_1);
+
+        Place place_2 = createPlace(category, addresses.get(3), businessTimes.get(3), "하이원리조트", LocalDate.of(2024, 10, 16),
+                LocalDate.of(2025, 3, 12), PlaceLevel.LEVEL_2);
+
+        Place place_3 = createPlace(category, addresses.get(4), businessTimes.get(4), "엘리시안", LocalDate.of(2024, 10, 17),
+                LocalDate.of(2025, 3, 12), PlaceLevel.LEVEL_4);
+
+        Place place_4 = createPlace(category, addresses.get(8), businessTimes.get(8), "지산리조트", LocalDate.of(2024, 10, 18),
+                LocalDate.of(2025, 3, 15), PlaceLevel.LEVEL_4, true); // 삭제
+
+        list.add(place_1);
+        list.add(place_2);
+        list.add(place_3);
+        list.add(place_4);
+
+        placeRepository.saveAll(list);
+
+        return list;
     }
 
     private Category createCategory() {

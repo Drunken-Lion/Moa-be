@@ -1,15 +1,15 @@
-package com.moa.moa.api.shop.shop.presentation.dto;
+package com.moa.moa.api.shop.shop.domain.dto;
 
 import lombok.Builder;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-public record FindAllShopReviewExternalDto() {
+public record FindAllShopReviewDto() {
     @Builder
     public record Response(
             Boolean isPhoto,
-            List<FindAllShopReviewExternalDto.ReviewResponse> reviews
+            List<FindAllShopReviewDto.ReviewResponse> reviews
     ) {}
 
     @Builder
@@ -19,7 +19,7 @@ public record FindAllShopReviewExternalDto() {
             String content,
             String writer,
             LocalDateTime createdAt,
-            FindAllShopReviewExternalDto.ImageResponse image
+            FindAllShopReviewDto.ImageResponse image
     ) {}
 
     @Builder
