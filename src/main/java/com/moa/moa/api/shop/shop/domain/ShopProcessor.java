@@ -27,4 +27,8 @@ public class ShopProcessor {
     public Optional<Map<Long, Long>> findShopBusinessTimeId(List<Long> shopIds) {
         return shopRepository.findShopBusinessTimeId(shopIds);
     }
+
+    public Optional<Shop> findShopById(Long shopId) {
+        return shopRepository.findShopById(shopId);
+    }
 }

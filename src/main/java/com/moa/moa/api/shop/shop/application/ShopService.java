@@ -27,10 +27,7 @@ import com.moa.moa.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -160,19 +157,28 @@ public class ShopService {
             customs.add(custom);
         }
 
-        // 2-2. 1번에서 받은 shop_id로 조회
+        // 2-2. 1번에서 받은 shop_id로 조회 TODO 추후에 image 추가해야함
         List<FindLowPriceShopDto> shopLowPriceDtos = new ArrayList<>();
-        for (int i = 0; i < shopsInOperation.size(); i++) {
-            Long shopId = shopsInOperation.get(i);
-
+        Map<Long, Address> shopsAddress = new HashMap<>();
+        Map<Long, Wish> wishShopsForMember = new HashMap<>();
+        for (Long shopId : shopsInOperation) {
+            // 커스텀에 맞는 가격 찾기
             FindLowPriceShopDto shopLowPrice =
                     shopProcessor.findShopWithCustomForSearch(shopId, customs, request.shop().pickUp()).orElse(null);
-
             shopLowPriceDtos.add(shopLowPrice);
-        }
-        
-        // 3. member와 맞는 wish 가져오기, shop과 관련된 address, image, wish 가져오기 TODO 추후에 image 추가해야함
 
+            // shop에 맞는 주소 찾기
+            Shop shop = shopProcessor.findShopById(shopId)
+                    .orElseThrow(() -> new BusinessException(FailHttpMessage.Shop.NOT_FOUND));
+            Address shopAddress = addressProcessor.findAddressById(shop.getAddress().getId()).orElse(null);
+            shopsAddress.put(shopId, shopAddress);
+
+            // 3. member와 맞는 wish 가져오기
+            if (member != null) {
+                Wish wish = wishProcessor.findWishByShopAndMember(shop, member).orElse(null);
+                wishShopsForMember.put(shopId, wish);
+            }
+        }
 
         return shopMapstructMapper.ofFindAllLowestShops(
                 request.place().visitDate(),
@@ -182,8 +188,8 @@ public class ShopService {
                 shopLowPriceDtos,
                 null, // shop의 image
                 request.custom(),
-                null, // shop의 address
-                null // member가 좋아하는 shop의 wish
+                shopsAddress, // shop의 address
+                wishShopsForMember.isEmpty() ? null : wishShopsForMember // member가 좋아하는 shop의 wish
         );
     }
 }

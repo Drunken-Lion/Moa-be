@@ -15,7 +15,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Mapper(
@@ -84,8 +86,8 @@ public interface ShopMapstructMapper {
                                                                  List<FindLowPriceShopDto> shopsData,
                                                                  List<Image> shopImage,
                                                                  List<FindAllShopLowPriceDto.CustomRequest> customs,
-                                                                 List<Address> shopAddress,
-                                                                 List<Wish> memberWish) {
+                                                                 Map<Long, Address> shopsAddress,
+                                                                 Map<Long, Wish> memberWish) {
         // place 반환값 만들기
         // TODO: image 기능 완성 시 구현 추가
         FindAllShopLowPriceDto.ImageResponse placeImageResponse = FindAllShopLowPriceDto.ImageResponse.builder()
@@ -97,6 +99,7 @@ public interface ShopMapstructMapper {
         FindAllShopLowPriceDto.AddressResponse placeAddressResponse = null;
         if (placeAddress != null) {
             placeAddressResponse = FindAllShopLowPriceDto.AddressResponse.builder()
+                    .id(placeAddress.getId())
                     .address(placeAddress.getAddress())
                     .addressDetail(placeAddress.getAddressDetail())
                     .locationX(placeAddress.getLocation().getX())
@@ -116,8 +119,70 @@ public interface ShopMapstructMapper {
                 .build();
 
         // shop 반환값 만들기
+        List<FindAllShopLowPriceDto.ShopResponse> shopResponses = new ArrayList<>();
+        for (int i = 0; i < shopsData.size(); i++) {
+            FindLowPriceShopDto shopDto = shopsData.get(i);
+
+            if (shopDto == null) continue; // place에 속하는 렌탈샵이지만 커스텀에 맞는 가격이 없음
+            
+            Long shopId = shopsData.get(i).getShopId();
+
+            // moaReview
+            FindAllShopLowPriceDto.MoaReviewResponse moaReviewResponse = FindAllShopLowPriceDto.MoaReviewResponse.builder()
+                    .avgScore(shopDto.getAvgScore())
+                    .totalCount(shopDto.getTotalCount())
+                    .build();
+
+            // naverReview
+            FindAllShopLowPriceDto.NaverReviewResponse naverReviewResponse = FindAllShopLowPriceDto.NaverReviewResponse.builder()
+                    .avgScore(shopDto.getNrAvgScore())
+                    .totalCount(shopDto.getNrTotalCount())
+                    .build();
+
+            // address
+            Address findShopAddress = shopsAddress.get(shopId);
+            FindAllShopLowPriceDto.AddressResponse shopAddress = null;
+            if (findShopAddress != null) {
+                shopAddress = FindAllShopLowPriceDto.AddressResponse.builder()
+                        .id(findShopAddress.getId())
+                        .address(findShopAddress.getAddress())
+                        .addressDetail(findShopAddress.getAddressDetail())
+                        .locationX(findShopAddress.getLocation().getX())
+                        .locationY(findShopAddress.getLocation().getY())
+                        .mapUrl(findShopAddress.getUrl())
+                        .build();
+            }
+
+            // image
+            FindAllShopLowPriceDto.ImageResponse shopImageResponse = FindAllShopLowPriceDto.ImageResponse.builder()
+                    .id(null)
+                    .keyName(null)
+                    .createdAt(null)
+                    .build();
+
+            FindAllShopLowPriceDto.ShopResponse shopResponse = FindAllShopLowPriceDto.ShopResponse.builder()
+                    .id(shopId)
+                    .wishId(memberWish.get(shopId) == null ? null : memberWish.get(shopId).getId())
+                    .totalPrice(shopDto.getTotalPrice())
+                    .memberName(null)
+                    .name(shopDto.getName())
+                    .pickUp(shopDto.getPickUp())
+                    .storeUrl(shopDto.getStoreUrl())
+                    .moaReview(moaReviewResponse)
+                    .naverReview(naverReviewResponse)
+                    .address(shopAddress)
+                    .image(shopImageResponse)
+                    .customs(null)
+                    .build();
+
+            shopResponses.add(shopResponse);
+        }
 
 
-        return null;
+        return FindAllShopLowPriceDto.Response.builder()
+                .visitDate(visitDate)
+                .place(placeResponse)
+                .shop(shopResponses)
+                .build();
     }
 }

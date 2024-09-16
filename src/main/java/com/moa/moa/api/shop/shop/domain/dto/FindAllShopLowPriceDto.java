@@ -73,7 +73,7 @@ public record FindAllShopLowPriceDto() {
             Long id,
             Long wishId,
             BigDecimal totalPrice,
-            String memberName,
+            String memberName, // TODO 추가해야 함
             String name,
             Boolean pickUp,
             String storeUrl,
@@ -81,7 +81,7 @@ public record FindAllShopLowPriceDto() {
             FindAllShopLowPriceDto.NaverReviewResponse naverReview,
             FindAllShopLowPriceDto.AddressResponse address,
             FindAllShopLowPriceDto.ImageResponse image,
-            List<FindAllShopLowPriceDto.CustomResponse> custom
+            List<FindAllShopLowPriceDto.CustomResponse> customs
     ) {}
 
     @Builder

@@ -362,7 +362,7 @@ public enum FailHttpMessage implements HttpMessage {
         DEACTIVATE_USER(HttpStatus.FORBIDDEN, "비활성화 상태 계정입니다."),
 
         // 404
-        NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 리소스입니다."),
+        NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 렌탈샵입니다."),
         NOT_FOUND_DESC(HttpStatus.NOT_FOUND, "존재하지 않는 타입입니다."),
         NOT_FOUND_CODE(HttpStatus.NOT_FOUND, "존재하지 않는 타입 코드입니다."),
         NOT_FOUND_SHOP_RELATED_TO_PLACE(HttpStatus.NOT_FOUND, "스키장과 관련된 샵(들)이 없습니다."),
