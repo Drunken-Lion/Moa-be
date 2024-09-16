@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -21,5 +22,9 @@ public class ShopProcessor {
 
     public Optional<FindLowPriceShopDto> findShopWithCustomForSearch(Long shopId, List<FindLowPriceCustomDto> customs, Boolean pickUp) {
         return shopRepository.findShopWithCustomForSearch(shopId, customs, pickUp);
+    }
+
+    public Optional<Map<Long, Long>> findShopBusinessTimeId(List<Long> shopIds) {
+        return shopRepository.findShopBusinessTimeId(shopIds);
     }
 }

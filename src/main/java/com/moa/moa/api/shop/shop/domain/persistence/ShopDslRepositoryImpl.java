@@ -8,12 +8,14 @@ import com.moa.moa.api.shop.naverreview.domain.entity.NaverReview;
 import com.moa.moa.api.shop.placeshop.domain.entity.PlaceShop;
 import com.moa.moa.api.shop.review.domain.entity.Review;
 import com.moa.moa.api.shop.shop.domain.dto.FindLowPriceShopDto;
+import com.moa.moa.api.shop.shop.domain.dto.FindShopBusinessIdDto;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
 import com.moa.moa.api.time.operatingtime.domain.entity.OperatingTime;
 import com.moa.moa.api.time.specificday.domain.entity.SpecificDay;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -154,11 +156,8 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
                         .and(shop.pickUp.eq(pickUp)))
                 .fetchOne());
 
-        // TODO tuple이 값이 없는 null 일 경우 고려하기
-        // tuple은 null이어도 잡히지 않는다.
-        // tuple은 size가 0 이어도 잡히지 않는다.
+        // tuple에 값이 없는 경우
         if (tuple.isEmpty()) {
-            System.out.println("tuple에 값이 하나도 없다.");
             return Optional.empty();
         }
 
@@ -258,5 +257,25 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
         }
 
         return itemOption.endTime.goe(Integer.parseInt(liftTime)); // 조건 추가
+    }
+
+    // shop에 맞는 business_time_id 가져오기
+    @Override
+    public Optional<Map<Long, Long>> findShopBusinessTimeId(List<Long> shopIds) {
+        List<FindShopBusinessIdDto> findShopBusinessIds = queryFactory.select(Projections.constructor(FindShopBusinessIdDto.class,
+                        shop.id,
+                        shop.businessTime.id))
+                .from(shop)
+                .where(shop.id.in(shopIds))
+                .fetch();
+
+        if (findShopBusinessIds.isEmpty()) return Optional.empty();
+
+        Map<Long, Long> shopBusinessIds = new HashMap<>();
+        for (FindShopBusinessIdDto findShopBusinessIdDto : findShopBusinessIds) {
+            shopBusinessIds.put(findShopBusinessIdDto.getShopId(), findShopBusinessIdDto.getBusinessId());
+        }
+
+        return Optional.of(shopBusinessIds);
     }
 }

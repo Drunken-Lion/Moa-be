@@ -4,6 +4,7 @@ import com.moa.moa.api.member.custom.util.enumerated.ClothesType;
 import com.moa.moa.api.member.custom.util.enumerated.EquipmentType;
 import com.moa.moa.api.member.custom.util.enumerated.PackageType;
 import com.moa.moa.api.shop.itemoption.util.enumerated.ItemOptionName;
+import com.moa.moa.api.time.operatingtime.util.enumerated.DayType;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -28,6 +29,17 @@ public class ShopUtil {
             } else {
                 return "주중";
             }
+        }
+
+        public static DayType getDayType(LocalDate visitDate) {
+            // 날짜의 요일 확인
+            DayOfWeek dayOfWeek = visitDate.getDayOfWeek(); // dayOfWeek = TUESDAY
+
+            // TUESDAY -> TUE
+            String dayShort = String.valueOf(dayOfWeek).substring(0, 3);
+
+            // DayType enum에서 dayShort와 매칭되는 값 반환
+            return DayType.valueOf(dayShort);
         }
     }
 

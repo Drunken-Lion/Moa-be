@@ -4,6 +4,7 @@ import com.moa.moa.api.member.custom.util.enumerated.ClothesType;
 import com.moa.moa.api.member.custom.util.enumerated.EquipmentType;
 import com.moa.moa.api.member.custom.util.enumerated.Gender;
 import com.moa.moa.api.member.custom.util.enumerated.PackageType;
+import com.moa.moa.api.place.place.util.enumerated.PlaceLevel;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
@@ -64,7 +65,7 @@ public record FindAllShopLowPriceDto() {
             LocalDate close,
             FindAllShopLowPriceDto.AddressResponse address,
             FindAllShopLowPriceDto.ImageResponse images,
-            String recLevel
+            PlaceLevel recLevel
     ) {}
 
     @Builder
