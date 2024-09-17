@@ -278,4 +278,14 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
 
         return Optional.of(shopBusinessIds);
     }
+
+    // shopId로 memberId 조회
+    public Optional<Long> findMemberIdOfShopById(Long shopId) {
+        Long memberId = queryFactory.select(shop.member.id)
+                .from(shop)
+                .where(shop.id.eq(shopId))
+                .fetchOne();
+
+        return Optional.ofNullable(memberId);
+    }
 }

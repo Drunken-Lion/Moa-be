@@ -3,6 +3,7 @@ package com.moa.moa.api.shop.shop.application;
 import com.moa.moa.api.address.address.AddressProcessor;
 import com.moa.moa.api.address.address.domain.entity.Address;
 import com.moa.moa.api.member.custom.domain.dto.FindLowPriceCustomDto;
+import com.moa.moa.api.member.member.domain.MemberProcessor;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.member.wish.domain.WishProcessor;
 import com.moa.moa.api.member.wish.domain.entity.Wish;
@@ -40,6 +41,7 @@ public class ShopService {
     private final PlaceShopProcessor placeShopProcessor;
     private final AddressProcessor addressProcessor;
     private final BusinessTimeProcessor businessTimeProcessor;
+    private final MemberProcessor memberProcessor;
 
     public List<FindAllShopDto.Response> findAllShopWithinRange(Double leftTopX,
                                                                 Double leftTopY,
@@ -161,6 +163,7 @@ public class ShopService {
         List<FindLowPriceShopDto> shopLowPriceDtos = new ArrayList<>();
         Map<Long, Address> shopsAddress = new HashMap<>();
         Map<Long, Wish> wishShopsForMember = new HashMap<>();
+        Map<Long, Member> shopOwner = new HashMap<>();
         for (Long shopId : shopsInOperation) {
             // 커스텀에 맞는 가격 찾기
             FindLowPriceShopDto shopLowPrice =
@@ -173,11 +176,16 @@ public class ShopService {
             Address shopAddress = addressProcessor.findAddressById(shop.getAddress().getId()).orElse(null);
             shopsAddress.put(shopId, shopAddress);
 
-            // 3. member와 맞는 wish 가져오기
+            // member와 맞는 wish 가져오기
             if (member != null) {
                 Wish wish = wishProcessor.findWishByShopAndMember(shop, member).orElse(null);
                 wishShopsForMember.put(shopId, wish);
             }
+
+            // shop의 사장 이름 찾기
+            Long memberId = shopProcessor.findMemberIdOfShopById(shopId).orElse(null);
+            Member ownerMember = memberProcessor.findMemberByIdAndDeletedAtIsNull(memberId).orElse(null);
+            shopOwner.put(shopId, ownerMember);
         }
 
         return shopMapstructMapper.ofFindAllLowestShops(
@@ -188,8 +196,9 @@ public class ShopService {
                 shopLowPriceDtos,
                 null, // shop의 image
                 request.custom(),
-                shopsAddress, // shop의 address
-                wishShopsForMember.isEmpty() ? null : wishShopsForMember // member가 좋아하는 shop의 wish
+                shopsAddress,
+                wishShopsForMember.isEmpty() ? null : wishShopsForMember, // member가 좋아하는 shop의 wish
+                shopOwner
         );
     }
 }

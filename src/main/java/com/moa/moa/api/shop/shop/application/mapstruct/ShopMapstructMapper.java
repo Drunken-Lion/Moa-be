@@ -1,6 +1,7 @@
 package com.moa.moa.api.shop.shop.application.mapstruct;
 
 import com.moa.moa.api.address.address.domain.entity.Address;
+import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.member.wish.domain.entity.Wish;
 import com.moa.moa.api.place.place.domain.entity.Place;
 import com.moa.moa.api.shop.item.domain.entity.Item;
@@ -88,7 +89,8 @@ public interface ShopMapstructMapper {
                                                                  List<Image> shopImage,
                                                                  List<FindAllShopLowPriceDto.CustomRequest> customs,
                                                                  Map<Long, Address> shopsAddress,
-                                                                 Map<Long, Wish> memberWish) {
+                                                                 Map<Long, Wish> memberWish,
+                                                                 Map<Long, Member> shopOwner) {
         // place 반환값 만들기
         // TODO: image 기능 완성 시 구현 추가
         FindAllShopLowPriceDto.ImageResponse placeImageResponse = FindAllShopLowPriceDto.ImageResponse.builder()
@@ -187,7 +189,7 @@ public interface ShopMapstructMapper {
                     .id(shopId)
                     .wishId(memberWish.get(shopId) == null ? null : memberWish.get(shopId).getId())
                     .totalPrice(shopDto.getTotalPrice())
-                    .memberName(null)
+                    .memberName(shopOwner.get(shopId) == null ? null : shopOwner.get(shopId).getNickname())
                     .name(shopDto.getName())
                     .pickUp(shopDto.getPickUp())
                     .storeUrl(shopDto.getStoreUrl())

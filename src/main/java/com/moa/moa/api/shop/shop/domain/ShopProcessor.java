@@ -31,4 +31,8 @@ public class ShopProcessor {
     public Optional<Shop> findShopById(Long shopId) {
         return shopRepository.findShopById(shopId);
     }
+
+    public Optional<Long> findMemberIdOfShopById(Long shopId) {
+        return shopRepository.findMemberIdOfShopById(shopId);
+    }
 }
