@@ -16,6 +16,7 @@ import org.mapstruct.ReportingPolicy;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -200,6 +201,8 @@ public interface ShopMapstructMapper {
             shopResponses.add(shopResponse);
         }
 
+        // shopResponses를 totalPrice로 오름차순 정렬
+        shopResponses.sort(Comparator.comparing(FindAllShopLowPriceDto.ShopResponse::totalPrice));
 
         return FindAllShopLowPriceDto.Response.builder()
                 .visitDate(visitDate)
