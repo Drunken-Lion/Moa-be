@@ -93,7 +93,6 @@ public record FindAllShopLowPriceDto() {
 
     @Builder
     public record CustomResponse(
-            Long id,
             Gender gender,
             String nickname,
             PackageType packageType,

@@ -160,6 +160,28 @@ public interface ShopMapstructMapper {
                     .createdAt(null)
                     .build();
 
+            // customs
+            List<FindAllShopLowPriceDto.CustomResponse> customResponses = new ArrayList<>();
+            for (int j = 0; j < customs.size(); j++) {
+                FindAllShopLowPriceDto.CustomResponse createCustom = null;
+
+                if (customs.get(j) == null) {
+                    customResponses.add(createCustom);
+                    continue;
+                }
+
+                createCustom = FindAllShopLowPriceDto.CustomResponse.builder()
+                        .gender(customs.get(j).gender())
+                        .nickname(customs.get(j).nickname())
+                        .packageType(customs.get(j).packageType())
+                        .clothesType(customs.get(j).clothesType())
+                        .equipmentType(customs.get(j).equipmentType())
+                        .price(shopDto.getCustomPrices().get(customs.get(j).nickname()))
+                        .build();
+
+                customResponses.add(createCustom);
+            }
+
             FindAllShopLowPriceDto.ShopResponse shopResponse = FindAllShopLowPriceDto.ShopResponse.builder()
                     .id(shopId)
                     .wishId(memberWish.get(shopId) == null ? null : memberWish.get(shopId).getId())
@@ -172,7 +194,7 @@ public interface ShopMapstructMapper {
                     .naverReview(naverReviewResponse)
                     .address(shopAddress)
                     .image(shopImageResponse)
-                    .customs(null)
+                    .customs(customResponses)
                     .build();
 
             shopResponses.add(shopResponse);
