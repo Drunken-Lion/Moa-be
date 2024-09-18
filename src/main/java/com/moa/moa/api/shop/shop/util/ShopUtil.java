@@ -12,12 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ShopUtil {
-
-    // "주중 스마트4시간권+장비+의류"
-    // visitDate 보고 주중/주말인지 확인
-    // liftType 보고 스마트권/시간지정권[오전,오후] 확인
-    // liftTime 보고 숫자 시간 확인 [4,5,6]
-    // packageType 보고 리프트 + 장비 + 의류, 리프트 + 의류, 리프트 + 장비 인지 확인
     public static class date {
         public static String getWeekString(LocalDate visitDate) {
             // 날짜의 요일 확인
@@ -71,9 +65,10 @@ public class ShopUtil {
                                          String liftType,
                                          String liftTime,
                                          PackageType packageType) {
-            String weekString = date.getWeekString(visitDate);
-            String liftTypeExt = extraction.getLiftType(liftType);
-            String packageTypeExt = extraction.getPackageType(packageType);
+            // liftTime 시간 확인 (4, 5, 6)
+            String weekString = date.getWeekString(visitDate); // 주중/주말 확인
+            String liftTypeExt = extraction.getLiftType(liftType); // 스마트권/시간지정권[오전,오후] 확인
+            String packageTypeExt = extraction.getPackageType(packageType); // '리프트 + 장비 + 의류'/'리프트 + 장비'/'리프트 + 의류' 확인
 
             if (liftTypeExt.equals("스마트")) {
                 return weekString + " 스마트" + liftTime + "시간권" + packageTypeExt;

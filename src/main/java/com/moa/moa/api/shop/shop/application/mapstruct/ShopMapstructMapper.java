@@ -92,7 +92,7 @@ public interface ShopMapstructMapper {
                                                                  Map<Long, Wish> memberWish,
                                                                  Map<Long, Member> shopOwner) {
         // place 반환값 만들기
-        // TODO: image 기능 완성 시 구현 추가
+        // TODO: image 기능 완성 시 구현 추가 (place)
         FindAllShopLowPriceDto.ImageResponse placeImageResponse = FindAllShopLowPriceDto.ImageResponse.builder()
                 .id(null)
                 .keyName(null)
@@ -123,12 +123,10 @@ public interface ShopMapstructMapper {
 
         // shop 반환값 만들기
         List<FindAllShopLowPriceDto.ShopResponse> shopResponses = new ArrayList<>();
-        for (int i = 0; i < shopsData.size(); i++) {
-            FindLowPriceShopDto shopDto = shopsData.get(i);
-
+        for (FindLowPriceShopDto shopDto : shopsData) {
             if (shopDto == null) continue; // place에 속하는 렌탈샵이지만 커스텀에 맞는 가격이 없음
-            
-            Long shopId = shopsData.get(i).getShopId();
+
+            Long shopId = shopDto.getShopId();
 
             // moaReview
             FindAllShopLowPriceDto.MoaReviewResponse moaReviewResponse = FindAllShopLowPriceDto.MoaReviewResponse.builder()
@@ -156,7 +154,7 @@ public interface ShopMapstructMapper {
                         .build();
             }
 
-            // image
+            // image TODO: image 기능 완성 시 구현 추가 (shop)
             FindAllShopLowPriceDto.ImageResponse shopImageResponse = FindAllShopLowPriceDto.ImageResponse.builder()
                     .id(null)
                     .keyName(null)
@@ -165,21 +163,21 @@ public interface ShopMapstructMapper {
 
             // customs
             List<FindAllShopLowPriceDto.CustomResponse> customResponses = new ArrayList<>();
-            for (int j = 0; j < customs.size(); j++) {
+            for (FindAllShopLowPriceDto.CustomRequest custom : customs) {
                 FindAllShopLowPriceDto.CustomResponse createCustom = null;
 
-                if (customs.get(j) == null) {
+                if (custom == null) {
                     customResponses.add(createCustom);
                     continue;
                 }
 
                 createCustom = FindAllShopLowPriceDto.CustomResponse.builder()
-                        .gender(customs.get(j).gender())
-                        .nickname(customs.get(j).nickname())
-                        .packageType(customs.get(j).packageType())
-                        .clothesType(customs.get(j).clothesType())
-                        .equipmentType(customs.get(j).equipmentType())
-                        .price(shopDto.getCustomPrices().get(customs.get(j).nickname()))
+                        .gender(custom.gender())
+                        .nickname(custom.nickname())
+                        .packageType(custom.packageType())
+                        .clothesType(custom.clothesType())
+                        .equipmentType(custom.equipmentType())
+                        .price(shopDto.getCustomPrices().get(custom.nickname()))
                         .build();
 
                 customResponses.add(createCustom);

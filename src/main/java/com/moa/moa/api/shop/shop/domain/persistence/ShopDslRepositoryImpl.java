@@ -142,9 +142,7 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
         selectFields.add(naverReview.totalReview.as("nrTotalCount"));
 
         // custom 별 item, itemOption 조회 서브쿼리
-        for (int i = 0; i < customs.size(); i++) {
-            FindLowPriceCustomDto customDto = customs.get(i);
-
+        for (FindLowPriceCustomDto customDto : customs) {
             JPAQuery<BigDecimal> customPriceQuery = getCustomPrice(shopId, customDto.getItemName(),
                                                                     customDto.getItemOptionNames(), customDto.getLiftTime());
 
@@ -169,9 +167,9 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
 
         // tuple에 있는 값을 매칭 시키기 위해 배열로 변경
         Object[] array = tuple.get().toArray();
-        String[] customArray = new String[array.length];
 
         // Object 배열을 String 배열로 변환
+        String[] customArray = new String[array.length];
         for (int i = 0; i < array.length; i++) {
             if (array[i] != null) {
                 customArray[i] = array[i].toString(); // Object를 String으로 변환
@@ -180,9 +178,10 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
             }
         }
 
+        // custom 닉네임과 price 매칭
         Map<String, BigDecimal> customPrices = new HashMap<>();
-        BigDecimal totalPrice = BigDecimal.ZERO;
-        for (int i = 8; i < customArray.length; i++) {
+        BigDecimal totalPrice = BigDecimal.ZERO; // custom 들의 price 총합
+        for (int i = 8; i < customArray.length; i++) { // 유동 적인 값인 custom 은 배열 8번째 부터 시작
             BigDecimal price = BigDecimal.valueOf(Double.parseDouble(customArray[i]));
             customPrices.put(customs.get(i - 8).getNickname(), price);
             totalPrice = totalPrice.add(price);
@@ -204,6 +203,7 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
         return Optional.ofNullable(findLowPriceShopDto);
     }
 
+    // 샵의 모아 리뷰 평점
     private JPAQuery<Double> getReviewAvgScore() {
         BooleanBuilder deletedAtIsNullBuilder = new BooleanBuilder();
         deletedAtIsNullBuilder.and(review.deletedAt.isNull());
@@ -216,6 +216,7 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
                 .groupBy(review.shop.id);
     }
 
+    // 샵의 모아 리뷰 개수
     private JPAQuery<Long> getReviewTotalCount() {
         BooleanBuilder deletedAtIsNullBuilder = new BooleanBuilder();
         deletedAtIsNullBuilder.and(review.deletedAt.isNull());
@@ -233,54 +234,36 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
         deletedAtIsNullBuilder.and(item.deletedAt.isNull());
         deletedAtIsNullBuilder.and(itemOption.deletedAt.isNull());
 
+        // itemOption 없이 기본 조건일 경우
+        BooleanBuilder includeItemOptionNames = new BooleanBuilder();
+        if (itemOptionNames != null && !itemOptionNames.isEmpty()) {
+            includeItemOptionNames.and(itemOption.name.in(itemOptionNames));
+            includeItemOptionNames.and(itemOption.startTime.loe(Integer.parseInt(liftTime)));
+            includeItemOptionNames.and(itemOption.endTime.goe(Integer.parseInt(liftTime)));
+        }
+
         return queryFactory
                 .select(selectItemPriceOrItemOption(itemOptionNames))
                 .from(item)
                 .leftJoin(itemOption).on(item.shop.id.eq(itemOption.shop.id))
                 .where(item.shop.id.eq(shopId)
                         .and(item.name.eq(itemName))
-                        .and(inItemOptionNames(itemOptionNames))
-                        .and(loeStartTime(itemOptionNames, liftTime))
-                        .and(goeEndTime(itemOptionNames, liftTime))
+                        .and(includeItemOptionNames)
                         .and(deletedAtIsNullBuilder))
                 .groupBy(item.shop.id, item.price);
     }
 
-    private BooleanExpression inItemOptionNames(List<ItemOptionName> itemOptionNames) {
-        if (itemOptionNames == null || itemOptionNames.isEmpty()) {
-            return null; // 조건에서 제외하기 위해 null 반환
-        }
-
-        return itemOption.name.in(itemOptionNames); // 조건 추가
-    }
-
     private NumberExpression<BigDecimal> selectItemPriceOrItemOption(List<ItemOptionName> itemOptionNames) {
         if (itemOptionNames == null || itemOptionNames.isEmpty()) {
-            return item.price; // 조건에서 제외하기 위해 null 반환
+            return item.price; // itemOption 없이 기본 조건일 경우
         }
 
         return item.price.add(itemOption.addPrice.sum()); // 조건 추가
     }
 
-    private BooleanExpression loeStartTime(List<ItemOptionName> itemOptionNames, String liftTime) {
-        if (itemOptionNames == null || itemOptionNames.isEmpty()) {
-            return null; // 조건에서 제외하기 위해 null 반환
-        }
-
-        return itemOption.startTime.loe(Integer.parseInt(liftTime)); // 조건 추가
-    }
-
-    private BooleanExpression goeEndTime(List<ItemOptionName> itemOptionNames, String liftTime) {
-        if (itemOptionNames == null || itemOptionNames.isEmpty()) {
-            return null; // 조건에서 제외하기 위해 null 반환
-        }
-
-        return itemOption.endTime.goe(Integer.parseInt(liftTime)); // 조건 추가
-    }
-
     // shop에 맞는 business_time_id 가져오기
     @Override
-    public Optional<Map<Long, Long>> findShopBusinessTimeId(List<Long> shopIds) {
+    public Optional<Map<Long, Long>> findBusinessTimeIdOfShops(List<Long> shopIds) {
         BooleanBuilder deletedAtIsNullBuilder = new BooleanBuilder();
         deletedAtIsNullBuilder.and(shop.deletedAt.isNull());
 

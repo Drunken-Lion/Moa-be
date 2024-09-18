@@ -73,7 +73,7 @@ public record FindAllShopLowPriceDto() {
             Long id,
             Long wishId,
             BigDecimal totalPrice,
-            String memberName, // TODO 추가해야 함
+            String memberName,
             String name,
             Boolean pickUp,
             String storeUrl,

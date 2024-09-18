@@ -13,7 +13,7 @@ public interface ShopDslRepository {
 
     Optional<FindLowPriceShopDto> findShopWithCustomForSearch(Long shopId, List<FindLowPriceCustomDto> customs, Boolean pickUp);
 
-    Optional<Map<Long, Long>> findShopBusinessTimeId(List<Long> shopIds);
+    Optional<Map<Long, Long>> findBusinessTimeIdOfShops(List<Long> shopIds);
 
     Optional<Long> findMemberIdOfShopById(Long shopId);
 }

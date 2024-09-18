@@ -93,56 +93,54 @@ public class ShopService {
     public FindAllShopLowPriceDto.Response findAllShopSearchForTheLowestPrice(FindAllShopLowPriceDto.Request request,
                                                                               Member member) {
 
-        // 1. place 정보 및 place에 맞는 shop_id 쿼리 만들기
+        // 1-1. place 정보
         Place place = placeProcessor.findPlaceByIdAndDeletedAtIsNull(request.place().id())
                 .orElseThrow(() -> new BusinessException(FailHttpMessage.Place.NOT_FOUND));
 
-        // 1-2. place에 맞는 address도 가져오기 TODO 추후에 image 추가해야함
+        // 1-2. place에 맞는 address 정보
         Address placeAddress = addressProcessor.findAddressByIdAndDeletedAtIsNull(place.getAddress().getId()).orElse(null);
 
-        // 1-3. place에 맞는 shop_id 가져오기
+        // 1-3. TODO image 기능 완성 시 구현 추가
+
+        // 1-4. place에 맞는 shop_id 조회
         List<PlaceShop> shopsRelatedToPlace = placeShopProcessor.findAllShopRelatedToPlace(place);
 
         if (shopsRelatedToPlace.isEmpty()) throw new BusinessException(FailHttpMessage.Shop.NOT_FOUND_SHOP_RELATED_TO_PLACE);
 
-        // 1-3-1. 비즈니스타임 한꺼번에 조회할 시 shopId 를 List에 넣기
+        // 1-4-1. shopId List 생성
         List<Long> shopIds = new ArrayList<>();
         for (int i = 0; i < shopsRelatedToPlace.size(); i++) {
             shopIds.add(shopsRelatedToPlace.get(i).getShop().getId());
         }
 
-        Map<Long, Long> shopBusinessTimeIds = shopProcessor.findShopBusinessTimeId(shopIds)
+        // 1-5. shop에서 businessTimeId 조회
+        Map<Long, Long> shopBusinessTimeIds = shopProcessor.findBusinessTimeIdOfShops(shopIds)
                 .orElseThrow(() -> new BusinessException(FailHttpMessage.Shop.NOT_FOUND_SHOP_IN_OPERATION));
 
-        // 1-3-2. shop_id와 visitDate를 확인해서 해당 날짜에 렌탈샵 운영하는지 확인하기
-        // - shop에서 business_time_id를 list로 가져와서 businessTimeProcessor에서 코드 다시 짜기
+        // 1-6. shop_id와 visitDate를 확인해서 해당 날짜에 렌탈샵 운영하는지 확인
         List<Long> shopsInOperation = new ArrayList<>();
         for (Long shopId : shopBusinessTimeIds.keySet()) {
             Long businessTimeId = shopBusinessTimeIds.get(shopId);
-            // 해당 요일, visitDate
-            DayType day = ShopUtil.date.getDayType(request.place().visitDate());
+
+            DayType day = ShopUtil.date.getDayType(request.place().visitDate()); // 요일 확인 후 enum으로 변환
 
             Boolean operating = businessTimeProcessor.isShopInOperation(businessTimeId, request.place().visitDate(), day);
 
-            if (operating) shopsInOperation.add(shopId);
+            if (operating) shopsInOperation.add(shopId); // 운영하는 샵만 추가
         }
 
         if (shopsInOperation.isEmpty()) throw new BusinessException(FailHttpMessage.Shop.NOT_FOUND_SHOP_IN_OPERATION);
 
-        // 2-1. 본격적으로 shop 조회하기 전에 요청시에 리프트권, 의류, 장비 정보를 받아와야 한다. customDto에 담기
-        /*
-         enum 데이터들을 문자열에서 숫자로 바꿔서 저장해야 함 - 자동변환이 되서 바꿀 필요없구나 코드에서 확인함
-         List<Custom> customByIdAndEquip = customProcessor.findCustomByIdAndEquip(request.custom().get(0).equipmentType());
-         */
+        // 2. 조회 하기 편하게 요청 시에 받은 리프트권, 의류, 장비 정보 가공 후 customDto에 담기
         List<FindLowPriceCustomDto> customs = new ArrayList<>();
         for (int i=0;i<request.custom().size();i++) {
             FindAllShopLowPriceDto.CustomRequest customRequest = request.custom().get(i);
 
-            // itemName -> "주중 스마트4시간권+장비+의류" 이름으로 조합해야 함 [visitDate, liftType, liftTime] 필요
+            // itemName -> "주중 스마트4시간권+장비+의류" 이름으로 조합
             String itemName = ShopUtil.mix.getItemName(request.place().visitDate(), customRequest.liftType(),
                                                         customRequest.liftTime(), customRequest.packageType());
 
-            // clotesType이랑 equipmentType을 보고 ItemOptionName을 추가해야 함
+            // clotesType이랑 equipmentType을 보고 ItemOptionName으로 변경
             List<ItemOptionName> itemOptionNames = ShopUtil.match.getItemOptionNames(customRequest.clothesType(), customRequest.equipmentType());
 
             FindLowPriceCustomDto custom = FindLowPriceCustomDto.builder()
@@ -160,22 +158,22 @@ public class ShopService {
             customs.add(custom);
         }
 
-        // 2-2. 1번에서 받은 shop_id로 조회 TODO 추후에 image 추가해야함
+        // 3. 1번에서 받은 운영 중인 shop_id로 조회 TODO image 기능 완성 시 구현 추가
         List<FindLowPriceShopDto> shopLowPriceDtos = new ArrayList<>();
         Map<Long, Address> shopsAddress = new HashMap<>();
         Map<Long, Wish> wishShopsForMember = new HashMap<>();
-        Map<Long, Member> shopOwner = new HashMap<>();
+        Map<Long, Member> shopsOwner = new HashMap<>();
         for (Long shopId : shopsInOperation) {
-            // 커스텀에 맞는 가격 찾기
+            // 커스텀에 맞는 가격 조회
             FindLowPriceShopDto shopLowPrice =
                     shopProcessor.findShopWithCustomForSearch(shopId, customs, request.shop().pickUp()).orElse(null);
 
             if (shopLowPrice == null) {
-                // shop 조회로 데이터를 가져오지 못하면 shopLowPriceDtos에 넣지 않는다.
+                // shop 조회로 데이터를 가져오지 못하면 shopLowPriceDtos 에 추가 하지 않음
                 continue;
             }
 
-            // 만약 커스텀 price에 하나라도 0원이 있으면 shopLowPriceDtos에 넣지 않는다.
+            // 만약 커스텀 price에 하나라도 0원이 있으면 shopLowPriceDtos에 추가 하지 않고 다음 로직을 수행하지 않음
             boolean shopLowPriceDtoAdd = true;
             for (String key : shopLowPrice.getCustomPrices().keySet()) {
                 BigDecimal customPrice = shopLowPrice.getCustomPrices().get(key);
@@ -185,10 +183,11 @@ public class ShopService {
                     break;
                 }
             }
+            if (!shopLowPriceDtoAdd) continue;
 
-            if (shopLowPriceDtoAdd) shopLowPriceDtos.add(shopLowPrice);
+            shopLowPriceDtos.add(shopLowPrice);
 
-            // shop에 맞는 주소 찾기
+            // shop에 맞는 주소 조회
             Shop shop = shopProcessor.findShopByIdAndDeletedAtIsNull(shopId)
                     .orElseThrow(() -> new BusinessException(FailHttpMessage.Shop.NOT_FOUND));
             Address shopAddress = addressProcessor.findAddressByIdAndDeletedAtIsNull(shop.getAddress().getId()).orElse(null);
@@ -203,10 +202,10 @@ public class ShopService {
             // shop의 사장 이름 찾기
             Long memberId = shopProcessor.findMemberIdOfShopById(shopId).orElse(null);
             Member ownerMember = memberProcessor.findMemberByIdAndDeletedAtIsNull(memberId).orElse(null);
-            shopOwner.put(shopId, ownerMember);
+            shopsOwner.put(shopId, ownerMember);
         }
 
-        // shopLowPriceDtos가 아예 값이 없으면 커스텀이 일치하는 게 없다는 뜻으로 아무것도 반환되지 않아야 한다.
+        // shopLowPriceDtos에 값이 없을 경우 '커스텀이 일치하는 게 없다'는 뜻으로 에러 발생
         if (shopLowPriceDtos.isEmpty()) throw new BusinessException(FailHttpMessage.Shop.NOT_FOUND_MATCHING_SHOP);
 
         return shopMapstructMapper.ofFindAllLowestShops(
@@ -218,8 +217,8 @@ public class ShopService {
                 null, // shop의 image
                 request.custom(),
                 shopsAddress,
-                wishShopsForMember.isEmpty() ? null : wishShopsForMember, // member가 좋아하는 shop의 wish
-                shopOwner
+                wishShopsForMember.isEmpty() ? null : wishShopsForMember,
+                shopsOwner
         );
     }
 }

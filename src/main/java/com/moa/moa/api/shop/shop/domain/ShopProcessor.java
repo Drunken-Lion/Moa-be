@@ -24,8 +24,8 @@ public class ShopProcessor {
         return shopRepository.findShopWithCustomForSearch(shopId, customs, pickUp);
     }
 
-    public Optional<Map<Long, Long>> findShopBusinessTimeId(List<Long> shopIds) {
-        return shopRepository.findShopBusinessTimeId(shopIds);
+    public Optional<Map<Long, Long>> findBusinessTimeIdOfShops(List<Long> shopIds) {
+        return shopRepository.findBusinessTimeIdOfShops(shopIds);
     }
 
     public Optional<Shop> findShopByIdAndDeletedAtIsNull(Long shopId) {

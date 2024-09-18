@@ -38,7 +38,7 @@ public class BusinessTimeDslRepositoryImpl implements BusinessTimeDslRepository 
                                 .or(operatingTime.status.eq(OperatingType.CLOSED)
                                         .and(specificDay.status.in(SpecificDayType.OPEN_WEEK_DAYS, SpecificDayType.WEEKEND_OPEN)))
                         )
-                        .and(operatingTime.day.eq(day))
+                        .and(operatingTime.day.eq(day)) // 요일 확인
                         .and(deletedAtIsNullBuilder))
                 .fetch();
 
