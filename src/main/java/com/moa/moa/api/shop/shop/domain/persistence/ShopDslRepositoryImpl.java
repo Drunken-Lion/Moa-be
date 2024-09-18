@@ -135,6 +135,12 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
         selectFields.add(shop.pickUp);
         selectFields.add(shop.url.as("storeUrl"));
 
+        // 리뷰 관련 필드 추가
+        selectFields.add(getReviewAvgScore());
+        selectFields.add(getReviewTotalCount());
+        selectFields.add(naverReview.avgScore.as("nrAvgScore"));
+        selectFields.add(naverReview.totalReview.as("nrTotalCount"));
+
         // custom 별 item, itemOption 조회 서브쿼리
         for (int i = 0; i < customs.size(); i++) {
             FindLowPriceCustomDto customDto = customs.get(i);
@@ -146,12 +152,6 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
 
             selectFields.add(customPrice);
         }
-
-        // 리뷰 관련 필드 추가
-        selectFields.add(getReviewAvgScore());
-        selectFields.add(getReviewTotalCount());
-        selectFields.add(naverReview.avgScore.as("nrAvgScore"));
-        selectFields.add(naverReview.totalReview.as("nrTotalCount"));
 
         // 메인 쿼리
         Optional<Tuple> tuple = Optional.ofNullable(queryFactory.select(selectFields.toArray(new Expression<?>[0]))
@@ -182,9 +182,9 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
 
         Map<String, BigDecimal> customPrices = new HashMap<>();
         BigDecimal totalPrice = BigDecimal.ZERO;
-        for (int i = 4; i < customArray.length - 4; i++) {
+        for (int i = 8; i < customArray.length; i++) {
             BigDecimal price = BigDecimal.valueOf(Double.parseDouble(customArray[i]));
-            customPrices.put(customs.get(i - 4).getNickname(), price);
+            customPrices.put(customs.get(i - 8).getNickname(), price);
             totalPrice = totalPrice.add(price);
         }
 
@@ -195,10 +195,10 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
                 .storeUrl(customArray[3])
                 .customPrices(customPrices)
                 .totalPrice(totalPrice)
-                .avgScore(Double.valueOf(customArray[customArray.length - 4]))
-                .totalCount(Long.parseLong(customArray[customArray.length - 3]))
-                .nrAvgScore(Double.valueOf(customArray[customArray.length - 2]))
-                .nrTotalCount(Long.parseLong(customArray[customArray.length - 1]))
+                .avgScore(Double.valueOf(customArray[4]))
+                .totalCount(Long.parseLong(customArray[5]))
+                .nrAvgScore(Double.valueOf(customArray[6]))
+                .nrTotalCount(Long.parseLong(customArray[7]))
                 .build();
 
         return Optional.ofNullable(findLowPriceShopDto);
