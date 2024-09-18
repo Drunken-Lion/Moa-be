@@ -12,6 +12,7 @@ import com.moa.moa.api.shop.shop.domain.dto.FindShopBusinessIdDto;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
 import com.moa.moa.api.time.operatingtime.domain.entity.OperatingTime;
 import com.moa.moa.api.time.specificday.domain.entity.SpecificDay;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.ExpressionUtils;
@@ -121,6 +122,10 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
     public Optional<FindLowPriceShopDto> findShopWithCustomForSearch(Long shopId,
                                                            List<FindLowPriceCustomDto> customs,
                                                            Boolean pickUp) {
+        BooleanBuilder deletedAtIsNullBuilder = new BooleanBuilder();
+        deletedAtIsNullBuilder.and(shop.deletedAt.isNull());
+        deletedAtIsNullBuilder.and(naverReview.deletedAt.isNull());
+
         // select 동적으로 생성
         List<Expression<?>> selectFields = new ArrayList<>();
         
@@ -153,7 +158,8 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
                 .from(shop)
                 .leftJoin(naverReview).on(shop.id.eq(naverReview.shop.id))
                 .where(shop.id.eq(shopId)
-                        .and(shop.pickUp.eq(pickUp)))
+                        .and(shop.pickUp.eq(pickUp))
+                        .and(deletedAtIsNullBuilder))
                 .fetchOne());
 
         // tuple에 값이 없는 경우
@@ -199,22 +205,34 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
     }
 
     private JPAQuery<Double> getReviewAvgScore() {
+        BooleanBuilder deletedAtIsNullBuilder = new BooleanBuilder();
+        deletedAtIsNullBuilder.and(review.deletedAt.isNull());
+
         return queryFactory
                 .select(review.score.avg())
                 .from(review)
-                .where(review.shop.id.eq(shop.id))
+                .where(review.shop.id.eq(shop.id)
+                        .and(deletedAtIsNullBuilder))
                 .groupBy(review.shop.id);
     }
 
     private JPAQuery<Long> getReviewTotalCount() {
+        BooleanBuilder deletedAtIsNullBuilder = new BooleanBuilder();
+        deletedAtIsNullBuilder.and(review.deletedAt.isNull());
+
         return queryFactory
                 .select(review.count())
                 .from(review)
-                .where(review.shop.id.eq(shop.id))
+                .where(review.shop.id.eq(shop.id)
+                        .and(deletedAtIsNullBuilder))
                 .groupBy(review.shop.id);
     }
 
     private JPAQuery<BigDecimal> getCustomPrice(Long shopId, String itemName, List<ItemOptionName> itemOptionNames, String liftTime) {
+        BooleanBuilder deletedAtIsNullBuilder = new BooleanBuilder();
+        deletedAtIsNullBuilder.and(item.deletedAt.isNull());
+        deletedAtIsNullBuilder.and(itemOption.deletedAt.isNull());
+
         return queryFactory
                 .select(selectItemPriceOrItemOption(itemOptionNames))
                 .from(item)
@@ -223,7 +241,8 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
                         .and(item.name.eq(itemName))
                         .and(inItemOptionNames(itemOptionNames))
                         .and(loeStartTime(itemOptionNames, liftTime))
-                        .and(goeEndTime(itemOptionNames, liftTime)))
+                        .and(goeEndTime(itemOptionNames, liftTime))
+                        .and(deletedAtIsNullBuilder))
                 .groupBy(item.shop.id, item.price);
     }
 
@@ -262,11 +281,15 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
     // shop에 맞는 business_time_id 가져오기
     @Override
     public Optional<Map<Long, Long>> findShopBusinessTimeId(List<Long> shopIds) {
+        BooleanBuilder deletedAtIsNullBuilder = new BooleanBuilder();
+        deletedAtIsNullBuilder.and(shop.deletedAt.isNull());
+
         List<FindShopBusinessIdDto> findShopBusinessIds = queryFactory.select(Projections.constructor(FindShopBusinessIdDto.class,
                         shop.id,
                         shop.businessTime.id))
                 .from(shop)
-                .where(shop.id.in(shopIds))
+                .where(shop.id.in(shopIds)
+                        .and(deletedAtIsNullBuilder))
                 .fetch();
 
         if (findShopBusinessIds.isEmpty()) return Optional.empty();
@@ -281,9 +304,13 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
 
     // shopId로 memberId 조회
     public Optional<Long> findMemberIdOfShopById(Long shopId) {
+        BooleanBuilder deletedAtIsNullBuilder = new BooleanBuilder();
+        deletedAtIsNullBuilder.and(shop.deletedAt.isNull());
+
         Long memberId = queryFactory.select(shop.member.id)
                 .from(shop)
-                .where(shop.id.eq(shopId))
+                .where(shop.id.eq(shopId)
+                        .and(deletedAtIsNullBuilder))
                 .fetchOne();
 
         return Optional.ofNullable(memberId);

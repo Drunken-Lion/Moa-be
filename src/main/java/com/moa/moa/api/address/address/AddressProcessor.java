@@ -12,7 +12,7 @@ import java.util.Optional;
 public class AddressProcessor {
     private final AddressRepository addressRepository;
 
-    public Optional<Address> findAddressById(Long id) {
-        return addressRepository.findAddressById(id);
+    public Optional<Address> findAddressByIdAndDeletedAtIsNull(Long id) {
+        return addressRepository.findAddressByIdAndDeletedAtIsNull(id);
     }
 }

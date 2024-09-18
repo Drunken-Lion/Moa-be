@@ -28,8 +28,8 @@ public class ShopProcessor {
         return shopRepository.findShopBusinessTimeId(shopIds);
     }
 
-    public Optional<Shop> findShopById(Long shopId) {
-        return shopRepository.findShopById(shopId);
+    public Optional<Shop> findShopByIdAndDeletedAtIsNull(Long shopId) {
+        return shopRepository.findShopByIdAndDeletedAtIsNull(shopId);
     }
 
     public Optional<Long> findMemberIdOfShopById(Long shopId) {

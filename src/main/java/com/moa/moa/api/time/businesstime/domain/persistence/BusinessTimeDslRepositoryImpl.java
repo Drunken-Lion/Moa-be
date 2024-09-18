@@ -4,6 +4,7 @@ import com.moa.moa.api.time.businesstime.domain.entity.BusinessTime;
 import com.moa.moa.api.time.operatingtime.util.enumerated.DayType;
 import com.moa.moa.api.time.operatingtime.util.enumerated.OperatingType;
 import com.moa.moa.api.time.specificday.util.enumerated.SpecificDayType;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -20,6 +21,10 @@ public class BusinessTimeDslRepositoryImpl implements BusinessTimeDslRepository 
 
     @Override
     public Boolean isShopInOperation(Long businessTimeId, LocalDate visitDate, DayType day) {
+        BooleanBuilder deletedAtIsNullBuilder = new BooleanBuilder();
+        deletedAtIsNullBuilder.and(businessTime.deletedAt.isNull());
+        deletedAtIsNullBuilder.and(operatingTime.deletedAt.isNull());
+        deletedAtIsNullBuilder.and(specificDay.deletedAt.isNull());
 
         List<BusinessTime> shopsInOperation = queryFactory.selectFrom(businessTime)
                 .leftJoin(operatingTime).on(businessTime.id.eq(operatingTime.businessTime.id))
@@ -27,13 +32,14 @@ public class BusinessTimeDslRepositoryImpl implements BusinessTimeDslRepository 
                         .and(specificDay.date.eq(LocalDate.of(visitDate.getYear(), visitDate.getMonth(), visitDate.getDayOfMonth()))))
                 .where(businessTime.id.eq(businessTimeId)
                         .and(
-                                operatingTime.status.eq(OperatingType.OPEN).and(
-                                                specificDay.status.notIn(SpecificDayType.CLOSED, SpecificDayType.HOLIDAY)
-                                                        .or(specificDay.status.isNull())
-                                        )
-                                        .or(operatingTime.status.eq(OperatingType.CLOSED).and(specificDay.status.in(SpecificDayType.OPEN_WEEK_DAYS, SpecificDayType.WEEKEND_OPEN)))
+                                operatingTime.status.eq(OperatingType.OPEN)
+                                        .and(specificDay.status.notIn(SpecificDayType.CLOSED, SpecificDayType.HOLIDAY)
+                                                        .or(specificDay.status.isNull()))
+                                .or(operatingTime.status.eq(OperatingType.CLOSED)
+                                        .and(specificDay.status.in(SpecificDayType.OPEN_WEEK_DAYS, SpecificDayType.WEEKEND_OPEN)))
                         )
-                        .and(operatingTime.day.eq(day)))
+                        .and(operatingTime.day.eq(day))
+                        .and(deletedAtIsNullBuilder))
                 .fetch();
 
         return !shopsInOperation.isEmpty();

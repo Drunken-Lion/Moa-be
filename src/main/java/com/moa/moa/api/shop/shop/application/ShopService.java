@@ -98,7 +98,7 @@ public class ShopService {
                 .orElseThrow(() -> new BusinessException(FailHttpMessage.Place.NOT_FOUND));
 
         // 1-2. place에 맞는 address도 가져오기 TODO 추후에 image 추가해야함
-        Address placeAddress = addressProcessor.findAddressById(place.getAddress().getId()).orElse(null);
+        Address placeAddress = addressProcessor.findAddressByIdAndDeletedAtIsNull(place.getAddress().getId()).orElse(null);
 
         // 1-3. place에 맞는 shop_id 가져오기
         List<PlaceShop> shopsRelatedToPlace = placeShopProcessor.findAllShopRelatedToPlace(place);
@@ -189,9 +189,9 @@ public class ShopService {
             if (shopLowPriceDtoAdd) shopLowPriceDtos.add(shopLowPrice);
 
             // shop에 맞는 주소 찾기
-            Shop shop = shopProcessor.findShopById(shopId)
+            Shop shop = shopProcessor.findShopByIdAndDeletedAtIsNull(shopId)
                     .orElseThrow(() -> new BusinessException(FailHttpMessage.Shop.NOT_FOUND));
-            Address shopAddress = addressProcessor.findAddressById(shop.getAddress().getId()).orElse(null);
+            Address shopAddress = addressProcessor.findAddressByIdAndDeletedAtIsNull(shop.getAddress().getId()).orElse(null);
             shopsAddress.put(shopId, shopAddress);
 
             // member와 맞는 wish 가져오기
