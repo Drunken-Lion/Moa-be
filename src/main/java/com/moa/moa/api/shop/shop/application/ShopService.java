@@ -28,6 +28,7 @@ import com.moa.moa.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -168,7 +169,24 @@ public class ShopService {
             // 커스텀에 맞는 가격 찾기
             FindLowPriceShopDto shopLowPrice =
                     shopProcessor.findShopWithCustomForSearch(shopId, customs, request.shop().pickUp()).orElse(null);
-            shopLowPriceDtos.add(shopLowPrice);
+
+            if (shopLowPrice == null) {
+                // shop 조회로 데이터를 가져오지 못하면 shopLowPriceDtos에 넣지 않는다.
+                continue;
+            }
+
+            // 만약 커스텀 price에 하나라도 0원이 있으면 shopLowPriceDtos에 넣지 않는다.
+            boolean shopLowPriceDtoAdd = true;
+            for (String key : shopLowPrice.getCustomPrices().keySet()) {
+                BigDecimal customPrice = shopLowPrice.getCustomPrices().get(key);
+
+                if (customPrice.equals(BigDecimal.ZERO) || customPrice.equals(BigDecimal.valueOf(0.0))) {
+                    shopLowPriceDtoAdd = false;
+                    break;
+                }
+            }
+
+            if (shopLowPriceDtoAdd) shopLowPriceDtos.add(shopLowPrice);
 
             // shop에 맞는 주소 찾기
             Shop shop = shopProcessor.findShopById(shopId)
@@ -187,6 +205,9 @@ public class ShopService {
             Member ownerMember = memberProcessor.findMemberByIdAndDeletedAtIsNull(memberId).orElse(null);
             shopOwner.put(shopId, ownerMember);
         }
+
+        // shopLowPriceDtos가 아예 값이 없으면 커스텀이 일치하는 게 없다는 뜻으로 아무것도 반환되지 않아야 한다.
+        if (shopLowPriceDtos.isEmpty()) throw new BusinessException(FailHttpMessage.Shop.NOT_FOUND_MATCHING_SHOP);
 
         return shopMapstructMapper.ofFindAllLowestShops(
                 request.place().visitDate(),
