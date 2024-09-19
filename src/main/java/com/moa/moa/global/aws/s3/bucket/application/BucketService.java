@@ -43,8 +43,6 @@ public class BucketService {
     private String uploadS3(MultipartFile file) {
         String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd_HH:mm:ss"));
 
-        log.info("Bucket Service init time :: " + time);
-
         String keyName = time + "_" + UUID.randomUUID() + "_" + file.getOriginalFilename();
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(file.getSize());
@@ -54,15 +52,11 @@ public class BucketService {
             amazonS3Client.putObject(
                     new PutObjectRequest(bucketConfig.getBucket(), keyName, inputStream, objectMetadata)
             );
-
         } catch (SdkClientException e) {
-            log.info("BucketService uploadS3 SdkClientException");
             throw new SdkClientException(e);
         } catch (IOException e) {
-            log.info("BucketService uploadS3 IOException");
             throw new RuntimeException(e);
         }
-        log.info("Bucket Service uploadFileName : " + keyName);
 
         return keyName;
     }
