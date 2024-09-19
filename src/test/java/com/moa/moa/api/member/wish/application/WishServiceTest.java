@@ -152,7 +152,7 @@ class WishServiceTest {
         Slice<Wish> sliceWishes = getWishSlice(List.of(mockWishes.get(3)));
         List<FindAllWishDto.Response> allWishResponses = List.of(mockAllWishResponses.get(3));
 
-        PageExternalDto.Response<List<FindAllWishDto.Response>> pageResponse = wishMapstructMapperImpl.of(allWishResponses, PageRequest.of(page, size), sliceWishes.hasNext(), 1);
+        PageExternalDto.Response<List<FindAllWishDto.Response>> pageResponse = wishMapstructMapperImpl.of(allWishResponses, PageRequest.of(page, size), hasNext, 1);
 
         when(wishProcessor.findAllWishByMember(any(), any(Pageable.class))).thenReturn(sliceWishes);
 
@@ -170,7 +170,7 @@ class WishServiceTest {
 
         when(wishProcessor.countMyWish(mockMembers.get(3))).thenReturn(1);
 
-        when(wishMapstructMapper.of(allWishResponses, PageRequest.of(page, size), sliceWishes.hasNext(), 1)).thenReturn(pageResponse);
+        when(wishMapstructMapper.of(allWishResponses, PageRequest.of(page, size), hasNext, 1)).thenReturn(pageResponse);
 
         // when
         PageExternalDto.Response<List<FindAllWishDto.Response>> wishes = wishService.findAllWish(mockMembers.get(3), PageRequest.of(page, size));
