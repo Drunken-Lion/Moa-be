@@ -58,7 +58,7 @@ public class WishService {
             ));
         }
 
-        return wishMapstructMapper.of(findAllWishList, pageable, wishProcessor.countMyWish(member));
+        return wishMapstructMapper.of(findAllWishList, pageable, wishes.hasNext(), wishProcessor.countMyWish(member));
     }
 
     public AddWishDto.Response addWish(AddWishDto.Request request, Member member) {

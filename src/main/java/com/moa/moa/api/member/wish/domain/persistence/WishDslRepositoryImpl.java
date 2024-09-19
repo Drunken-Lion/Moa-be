@@ -59,7 +59,7 @@ public class WishDslRepositoryImpl implements WishDslRepository {
                 .leftJoin(wish.shop.address, address1).fetchJoin()
                 .leftJoin(wish.shop.businessTime, businessTime).fetchJoin()
                 .where(wish.member.eq(userMember)
-                        .and(cursorPaginationUtil.ltCursorId(wish.id, pageable.getPageNumber()))
+                        .and(cursorPaginationUtil.gtCursorId(wish.id, pageable.getPageNumber()))
                         .and(wish.deletedAt.isNull())
                         .and(shop.deletedAt.isNull())
                         .and(shop.member.deletedAt.isNull())
