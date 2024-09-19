@@ -35,12 +35,14 @@ import com.moa.moa.global.aws.s3.images.domain.entity.Image;
 import com.moa.moa.global.common.message.FailHttpMessage;
 import com.moa.moa.global.common.response.PageExternalDto;
 import com.moa.moa.global.exception.BusinessException;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -62,6 +64,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -87,7 +90,7 @@ class WishServiceTest {
 
     private List<Wish> mockWishes;
     private List<FindAllWishDto.Response> mockAllWishResponses;
-    private Member mockMember;
+    private List<Member> mockMembers;
     private Shop mockShop;
 
     @BeforeEach
@@ -138,7 +141,7 @@ class WishServiceTest {
 
         mockWishes = wishes;
         mockAllWishResponses = createAllWishResponse(wishes, images, createMockMoaAvgScores(), createMockMoaTotalCounts());
-        mockMember = members.get(3);
+        mockMembers = members;
         mockShop = shops.get(0);
     }
 
@@ -165,12 +168,12 @@ class WishServiceTest {
             )).thenReturn(allWishResponses.get(i));
         }
 
-        when(wishProcessor.countMyWish(mockMember)).thenReturn(1);
+        when(wishProcessor.countMyWish(mockMembers.get(3))).thenReturn(1);
 
         when(wishMapstructMapper.of(allWishResponses, PageRequest.of(page, size), sliceWishes.hasNext(), 1)).thenReturn(pageResponse);
 
         // when
-        PageExternalDto.Response<List<FindAllWishDto.Response>> wishes = wishService.findAllWish(mockMember, PageRequest.of(page, size));
+        PageExternalDto.Response<List<FindAllWishDto.Response>> wishes = wishService.findAllWish(mockMembers.get(3), PageRequest.of(page, size));
 
         // then
         List<FindAllWishDto.Response> wishList = wishes.data();
@@ -207,18 +210,18 @@ class WishServiceTest {
 
         Wish wish = Wish.builder()
                 .id(7L)
-                .member(mockMember)
+                .member(mockMembers.get(3))
                 .shop(mockShop)
                 .build();
 
         when(shopProcessor.findShopById(anyLong())).thenReturn(Optional.ofNullable(mockShop));
         when(wishProcessor.findWishByShopAndMember(any(), any())).thenReturn(Optional.empty());
-        when(wishMapstructMapper.addOf(any(), any())).thenReturn(wishMapstructMapperImpl.addOf(mockShop.getId(), mockMember.getId()));
+        when(wishMapstructMapper.addOf(any(), any())).thenReturn(wishMapstructMapperImpl.addOf(mockShop.getId(), mockMembers.get(3).getId()));
         when(wishProcessor.addWish(any())).thenReturn(wish);
         when(wishMapstructMapper.addOf(any())).thenReturn(wishMapstructMapperImpl.addOf(wish));
 
         // when
-        AddWishDto.Response response = wishService.addWish(request, mockMember);
+        AddWishDto.Response response = wishService.addWish(request, mockMembers.get(3));
 
         // then
         assertThat(response.id()).isEqualTo(7L);
@@ -236,7 +239,7 @@ class WishServiceTest {
 
         // when
         BusinessException exception = assertThrows(BusinessException.class, () -> {
-            wishService.addWish(request, mockMember);
+            wishService.addWish(request, mockMembers.get(3));
         });
 
         // then
@@ -254,7 +257,7 @@ class WishServiceTest {
 
         Wish wish = Wish.builder()
                 .id(7L)
-                .member(mockMember)
+                .member(mockMembers.get(3))
                 .shop(mockShop)
                 .build();
 
@@ -263,12 +266,72 @@ class WishServiceTest {
 
         // when
         BusinessException exception = assertThrows(BusinessException.class, () -> {
-            wishService.addWish(request, mockMember);
+            wishService.addWish(request, mockMembers.get(3));
         });
 
         // then
         assertEquals(FailHttpMessage.Wish.CONFLICT.getStatus(), exception.getStatus());
         assertEquals(FailHttpMessage.Wish.CONFLICT.getMessage(), exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("내 찜 항목 삭제 성공")
+    public void t5() {
+        // given
+        Wish preWish = Wish.builder()
+                .id(10L)
+                .member(mockMembers.get(3))
+                .shop(mockShop)
+                .build();
+
+        when(wishProcessor.findWishById(anyLong())).thenReturn(Optional.of(preWish));
+        ArgumentCaptor<Wish> wishCaptor = ArgumentCaptor.forClass(Wish.class);
+
+        // when
+        wishService.delWish(10L, mockMembers.get(3));
+
+        // then
+        verify(wishProcessor).delWish(wishCaptor.capture());
+        Wish savedWish = wishCaptor.getValue();
+        Assertions.assertThat(savedWish.getDeletedAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("내 찜 항목 삭제 실패 - 존재하지 않는 찜")
+    public void t6() {
+        // given
+        when(wishProcessor.findWishById(anyLong())).thenReturn(Optional.empty());
+
+        // when
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            wishService.delWish(10L, mockMembers.get(3));
+        });
+
+        // then
+        assertEquals(FailHttpMessage.Wish.NOT_FOUND.getStatus(), exception.getStatus());
+        assertEquals(FailHttpMessage.Wish.NOT_FOUND.getMessage(), exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("내 찜 항목 삭제 실패 - 권한이 없는 사용자")
+    public void t7() {
+        // given
+        Wish preWish = Wish.builder()
+                .id(10L)
+                .member(mockMembers.get(2))
+                .shop(mockShop)
+                .build();
+
+        when(wishProcessor.findWishById(anyLong())).thenReturn(Optional.of(preWish));
+
+        // when
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            wishService.delWish(10L, mockMembers.get(3));
+        });
+
+        // then
+        assertEquals(FailHttpMessage.Wish.FORBIDDEN.getStatus(), exception.getStatus());
+        assertEquals(FailHttpMessage.Wish.FORBIDDEN.getMessage(), exception.getMessage());
     }
 
     private Category createCategory() {
@@ -737,12 +800,12 @@ class WishServiceTest {
 
     private List<Member> createMember() {
         List<Member> list = new ArrayList<>();
-        list.add(Member.builder().email("admin@moa.com").nickname("admin").role(MemberRole.ADMIN).build());
-        list.add(Member.builder().email("one@moa.com").nickname("one").role(MemberRole.MEMBER).build());
-        list.add(Member.builder().email("two@moa.com").nickname("two").role(MemberRole.MEMBER).build());
-        list.add(Member.builder().email("three@moa.com").nickname("three").role(MemberRole.MEMBER).build());
-        list.add(Member.builder().email("four@moa.com").nickname("four").role(MemberRole.MEMBER).build());
-        list.add(Member.builder().email("five@moa.com").nickname("five").role(MemberRole.MEMBER).build());
+        list.add(Member.builder().id(1L).email("admin@moa.com").nickname("admin").role(MemberRole.ADMIN).build());
+        list.add(Member.builder().id(2L).email("one@moa.com").nickname("one").role(MemberRole.MEMBER).build());
+        list.add(Member.builder().id(3L).email("two@moa.com").nickname("two").role(MemberRole.MEMBER).build());
+        list.add(Member.builder().id(4L).email("three@moa.com").nickname("three").role(MemberRole.MEMBER).build());
+        list.add(Member.builder().id(5L).email("four@moa.com").nickname("four").role(MemberRole.MEMBER).build());
+        list.add(Member.builder().id(6L).email("five@moa.com").nickname("five").role(MemberRole.MEMBER).build());
         return list;
     }
 
