@@ -118,4 +118,14 @@ public class WishDslRepositoryImpl implements WishDslRepository {
 
         return cursorPaginationUtil.checkLastPage(wishes, pageable);
     }
+
+    @Override
+    public Optional<Wish> findWishById(Long id) {
+        Wish wishOne = queryFactory.selectFrom(wish)
+                .where(wish.id.eq(id)
+                        .and(wish.deletedAt.isNull()))
+                .fetchOne();
+
+        return Optional.ofNullable(wishOne);
+    }
 }
