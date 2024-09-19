@@ -63,9 +63,9 @@ public record FindAllShopLowPriceDto() {
             String name,
             LocalDate open,
             LocalDate close,
+            PlaceLevel recLevel,
             FindAllShopLowPriceDto.AddressResponse address,
-            FindAllShopLowPriceDto.ImageResponse images,
-            PlaceLevel recLevel
+            FindAllShopLowPriceDto.ImageResponse images
     ) {}
 
     @Builder
@@ -80,7 +80,7 @@ public record FindAllShopLowPriceDto() {
             FindAllShopLowPriceDto.MoaReviewResponse moaReview,
             FindAllShopLowPriceDto.NaverReviewResponse naverReview,
             FindAllShopLowPriceDto.AddressResponse address,
-            FindAllShopLowPriceDto.ImageResponse image,
+            FindAllShopLowPriceDto.ImageResponse images,
             List<FindAllShopLowPriceDto.CustomResponse> customs
     ) {}
 
@@ -93,11 +93,11 @@ public record FindAllShopLowPriceDto() {
 
     @Builder
     public record CustomResponse(
-            Gender gender,
+            String gender,
             String nickname,
-            PackageType packageType,
-            ClothesType clothesType,
-            EquipmentType equipmentType,
+            String packageType,
+            String clothesType,
+            String equipmentType,
             BigDecimal price
     ) {}
 

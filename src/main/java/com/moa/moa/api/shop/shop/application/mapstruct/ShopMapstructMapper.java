@@ -116,9 +116,9 @@ public interface ShopMapstructMapper {
                 .name(place.getName())
                 .open(place.getOpenDate())
                 .close(place.getCloseDate())
+                .recLevel(place.getRecLevel())
                 .address(placeAddressResponse)
                 .images(placeImageResponse)
-                .recLevel(place.getRecLevel())
                 .build();
 
         // shop 반환값 만들기
@@ -172,11 +172,11 @@ public interface ShopMapstructMapper {
                 }
 
                 createCustom = FindAllShopLowPriceDto.CustomResponse.builder()
-                        .gender(custom.gender())
+                        .gender(custom.gender().getDesc())
                         .nickname(custom.nickname())
-                        .packageType(custom.packageType())
-                        .clothesType(custom.clothesType())
-                        .equipmentType(custom.equipmentType())
+                        .packageType(custom.packageType().getDesc())
+                        .clothesType(custom.clothesType().getDesc())
+                        .equipmentType(custom.equipmentType().getDesc())
                         .price(shopDto.getCustomPrices().get(custom.nickname()))
                         .build();
 
@@ -194,7 +194,7 @@ public interface ShopMapstructMapper {
                     .moaReview(moaReviewResponse)
                     .naverReview(naverReviewResponse)
                     .address(shopAddress)
-                    .image(shopImageResponse)
+                    .images(shopImageResponse)
                     .customs(customResponses)
                     .build();
 
