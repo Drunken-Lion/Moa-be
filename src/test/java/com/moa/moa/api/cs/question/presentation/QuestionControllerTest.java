@@ -1,5 +1,6 @@
 package com.moa.moa.api.cs.question.presentation;
 
+import com.moa.moa.api.cs.question.domain.dto.AddQuestionDto;
 import com.moa.moa.api.cs.question.domain.entity.Question;
 import com.moa.moa.api.cs.question.domain.persistence.QuestionRepository;
 import com.moa.moa.api.cs.question.util.enumerated.QuestionStatus;
@@ -7,6 +8,7 @@ import com.moa.moa.api.cs.question.util.enumerated.QuestionType;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.member.member.domain.persistence.MemberRepository;
 import com.moa.moa.api.member.member.util.enumerated.MemberRole;
+import com.moa.moa.global.common.util.JsonConvertor;
 import com.moa.moa.global.util.TestUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -24,8 +27,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -135,6 +140,34 @@ public class QuestionControllerTest {
 
                 .andExpect(jsonPath("$.images", instanceOf(List.class)))
                 .andExpect(jsonPath("$.answers", instanceOf(List.class)));
+    }
+
+    @Test
+    @DisplayName("문의 작성")
+    void addQuestionTest() throws Exception {
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+
+        AddQuestionDto.Request request = AddQuestionDto.Request.builder()
+                .type(QuestionType.COMMON)
+                .title("문의 작성 테스트 제목")
+                .content("문의 작성 테스트 내용")
+                .build();
+
+        ResultActions actions = mvc
+                .perform(post("/v1/questions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonConvertor.build(request))
+                )
+                .andDo(print());
+
+        Question addQuestion = questionRepository.findAll().getLast();
+
+        actions.andExpect(status().isCreated())
+                .andExpect(handler().handlerType(QuestionController.class))
+                .andExpect(handler().methodName("addQuestion"))
+                .andExpect(jsonPath("$.id", instanceOf(Number.class)));
+
+        assertThat(addQuestion.getId()).isEqualTo(addQuestion.getId());
     }
 
     private Member createMember(String email, MemberRole role) {

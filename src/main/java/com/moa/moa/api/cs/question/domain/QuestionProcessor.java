@@ -2,6 +2,7 @@ package com.moa.moa.api.cs.question.domain;
 
 import com.moa.moa.api.cs.question.domain.entity.Question;
 import com.moa.moa.api.cs.question.domain.persistence.QuestionRepository;
+import com.moa.moa.api.cs.question.util.enumerated.QuestionStatus;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -25,5 +26,9 @@ public class QuestionProcessor {
 
     public Optional<Question> findQuestionById(Long id) {
         return questionRepository.findQuestionById(id);
+    }
+
+    public Question addQuestion(Question question, Member member, QuestionStatus status) {
+        return questionRepository.save(question.toBuilder().member(member).status(status).build());
     }
 }
