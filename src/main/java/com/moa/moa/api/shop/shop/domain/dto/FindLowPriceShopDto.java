@@ -7,8 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -28,8 +28,8 @@ public class FindLowPriceShopDto {
     @Schema(description = "렌탈샵 url", example = "https://smartstore.naver.com/jjinrental/products/605289690b")
     String storeUrl;
 
-    @Schema(description = "렌탈샵에 따른 커스텀들의 가격", example = "키-닉네임, 값-87000.000")
-    private Map<String, BigDecimal> customPrices = new HashMap<>();
+    @Schema(description = "렌탈샵에 따른 커스텀들의 가격", example = "87000.000")
+    private List<BigDecimal> customPrices = new ArrayList<>();
 
     @Schema(description = "렌탈샵에서 조회한 커스텀들 총 가격", example = "200000.000")
     private BigDecimal totalPrice;

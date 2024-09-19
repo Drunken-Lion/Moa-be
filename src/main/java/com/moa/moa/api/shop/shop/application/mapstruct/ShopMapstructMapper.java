@@ -163,7 +163,9 @@ public interface ShopMapstructMapper {
 
             // customs
             List<FindAllShopLowPriceDto.CustomResponse> customResponses = new ArrayList<>();
-            for (FindAllShopLowPriceDto.CustomRequest custom : customs) {
+            for (int i = 0; i < customs.size(); i++) {
+                FindAllShopLowPriceDto.CustomRequest custom = customs.get(i);
+
                 FindAllShopLowPriceDto.CustomResponse createCustom = null;
 
                 if (custom == null) {
@@ -177,7 +179,7 @@ public interface ShopMapstructMapper {
                         .packageType(custom.packageType().getDesc())
                         .clothesType(custom.clothesType().getDesc())
                         .equipmentType(custom.equipmentType().getDesc())
-                        .price(shopDto.getCustomPrices().get(custom.nickname()))
+                        .price(shopDto.getCustomPrices().get(i))
                         .build();
 
                 customResponses.add(createCustom);

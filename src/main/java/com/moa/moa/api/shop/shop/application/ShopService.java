@@ -175,10 +175,8 @@ public class ShopService {
 
             // 만약 커스텀 price에 하나라도 0원이 있으면 shopLowPriceDtos에 추가 하지 않고 다음 로직을 수행하지 않음
             boolean shopLowPriceDtoAdd = true;
-            for (String key : shopLowPrice.getCustomPrices().keySet()) {
-                BigDecimal customPrice = shopLowPrice.getCustomPrices().get(key);
-
-                if (customPrice.equals(BigDecimal.ZERO) || customPrice.equals(BigDecimal.valueOf(0.0))) {
+            for (BigDecimal price : shopLowPrice.getCustomPrices()) {
+                if (price.equals(BigDecimal.ZERO) || price.equals(BigDecimal.valueOf(0.0))) {
                     shopLowPriceDtoAdd = false;
                     break;
                 }
