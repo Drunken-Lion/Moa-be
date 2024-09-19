@@ -27,6 +27,6 @@ public class Image extends BaseEntity {
     private Long entityId;
 
     @Comment("원본 이미지 URL")
-    @Column(name = "key", columnDefinition = "VARCHAR(2048)")
-    private String key;
+    @Column(name = "key_name", columnDefinition = "VARCHAR(2048)")
+    private String keyName;
 }
