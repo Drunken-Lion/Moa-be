@@ -5,6 +5,10 @@ import com.moa.moa.api.address.address.domain.persistence.AddressRepository;
 import com.moa.moa.api.category.category.domain.entity.Category;
 import com.moa.moa.api.category.category.domain.persistence.CategoryRepository;
 import com.moa.moa.api.category.category.util.enumerated.CategoryType;
+import com.moa.moa.api.member.custom.domain.dto.FindLowPriceCustomDto;
+import com.moa.moa.api.member.custom.util.enumerated.ClothesType;
+import com.moa.moa.api.member.custom.util.enumerated.EquipmentType;
+import com.moa.moa.api.member.custom.util.enumerated.Gender;
 import com.moa.moa.api.member.custom.util.enumerated.PackageType;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.member.member.domain.persistence.MemberRepository;
@@ -29,7 +33,9 @@ import com.moa.moa.api.shop.placeshop.domain.entity.PlaceShop;
 import com.moa.moa.api.shop.placeshop.domain.persistence.PlaceShopRepository;
 import com.moa.moa.api.shop.review.domain.entity.Review;
 import com.moa.moa.api.shop.review.domain.persistence.ReviewRepository;
+import com.moa.moa.api.shop.shop.domain.dto.FindLowPriceShopDto;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
+import com.moa.moa.api.shop.shop.util.ShopUtil;
 import com.moa.moa.api.time.businesstime.domain.entity.BusinessTime;
 import com.moa.moa.api.time.businesstime.domain.persistence.BusinessTimeRepository;
 import com.moa.moa.api.time.operatingtime.domain.entity.OperatingTime;
@@ -236,6 +242,80 @@ class ShopRepositoryTest {
 
         //then
         assertThat(shops.size()).isEqualTo(0);
+    }
+
+    // 최저가 렌탈샵 검색 고정값
+    private final LocalDate visitDate = LocalDate.of(2024, 7, 30);
+
+    // 커스텀 1의 정보
+    private final Gender custom1Gender = Gender.MALE;
+    private final String custom1Nickname = "커스텀1";
+    private final String custom1LiftType= "스마트권";
+    private final String custom1LiftTime= "4";
+    private final PackageType custom1PackageType = PackageType.LIFT_EQUIPMENT_CLOTHES;
+    private final ClothesType custom1ClothesType = ClothesType.LUXURY;
+    private final EquipmentType custom1equipmentType = EquipmentType.SHORT_SKI;
+    private final String custom1ItemName = ShopUtil.mix.getItemName(visitDate, custom1LiftType, custom1LiftTime, custom1PackageType);
+    private final List<ItemOptionName> custom1ItemOptionNames = ShopUtil.match.getItemOptionNames(custom1ClothesType, custom1equipmentType);
+
+    // 커스텀 1의 정보
+    private final Gender custom2Gender = Gender.FEMALE;
+    private final String custom2Nickname = "커스텀2";
+    private final String custom2LiftType= "시간지정권-오후권";
+    private final String custom2LiftTime= "4";
+    private final PackageType custom2PackageType = PackageType.LIFT_EQUIPMENT_CLOTHES;
+    private final ClothesType custom2ClothesType = ClothesType.STANDARD;
+    private final EquipmentType custom2equipmentType = EquipmentType.SKI;
+    private final String custom2ItemName = ShopUtil.mix.getItemName(visitDate, custom2LiftType, custom2LiftTime, custom2PackageType);
+    private final List<ItemOptionName> custom2ItemOptionNames = ShopUtil.match.getItemOptionNames(custom2ClothesType, custom2equipmentType);
+
+    @Test
+    @DisplayName("샵 정보에 일치하는 커스텀 가격 조회 (최저가 렌탈샵 검색) - 성공")
+    public void findShopWithCustomForSearch_success() {
+        // given
+        List<FindLowPriceCustomDto> customs = new ArrayList<>();
+        FindLowPriceCustomDto custom1 = FindLowPriceCustomDto.builder()
+                .gender(custom1Gender)
+                .nickname(custom1Nickname)
+                .liftType(custom1LiftType)
+                .liftTime(custom1LiftTime)
+                .itemName(custom1ItemName)
+                .packageType(custom1PackageType)
+                .clothesType(custom1ClothesType)
+                .equipmentType(custom1equipmentType)
+                .itemOptionNames(custom1ItemOptionNames)
+                .build();
+
+        FindLowPriceCustomDto custom2 = FindLowPriceCustomDto.builder()
+                .gender(custom2Gender)
+                .nickname(custom2Nickname)
+                .liftType(custom2LiftType)
+                .liftTime(custom2LiftTime)
+                .itemName(custom2ItemName)
+                .packageType(custom2PackageType)
+                .clothesType(custom2ClothesType)
+                .equipmentType(custom2equipmentType)
+                .itemOptionNames(custom2ItemOptionNames)
+                .build();
+
+        customs.add(custom1);
+        customs.add(custom2);
+
+        // when
+        FindLowPriceShopDto shopWithCustom = shopRepository.findShopWithCustomForSearch(1L, customs, true).get();
+
+        //then
+        assertThat(shopWithCustom.getShopId()).isEqualTo(1L);
+        assertThat(shopWithCustom.getName()).isEqualTo("찐렌탈샵");
+        assertThat(shopWithCustom.getStoreUrl()).isEqualTo("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9");
+        assertThat(shopWithCustom.getCustomPrices().size()).isEqualTo(2);
+        assertThat(shopWithCustom.getCustomPrices().get(0)).isEqualTo(BigDecimal.valueOf(87000.0));
+        assertThat(shopWithCustom.getCustomPrices().get(1)).isEqualTo(BigDecimal.valueOf(76000.0));
+        assertThat(shopWithCustom.getTotalPrice()).isEqualTo(BigDecimal.valueOf(163000.0));
+        assertThat(shopWithCustom.getAvgScore()).isEqualTo(2.5);
+        assertThat(shopWithCustom.getTotalCount()).isEqualTo(4);
+        assertThat(shopWithCustom.getNrAvgScore()).isEqualTo(4.5);
+        assertThat(shopWithCustom.getNrTotalCount()).isEqualTo(186);
     }
 
     private Category createCategory() {
