@@ -54,6 +54,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,6 +66,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
@@ -246,6 +249,7 @@ class ShopRepositoryTest {
 
     // 최저가 렌탈샵 검색 고정값
     private final LocalDate visitDate = LocalDate.of(2024, 7, 30);
+    private final LocalDate visitDateNotInOperation = LocalDate.of(2025, 1, 28);
 
     // 커스텀 1의 정보
     private final Gender custom1Gender = Gender.MALE;
@@ -270,7 +274,7 @@ class ShopRepositoryTest {
     private final List<ItemOptionName> custom2ItemOptionNames = ShopUtil.match.getItemOptionNames(custom2ClothesType, custom2equipmentType);
 
     @Test
-    @DisplayName("샵 정보에 일치하는 커스텀 가격 조회 (최저가 렌탈샵 검색) - 성공")
+    @DisplayName("[성공] 샵 정보에 일치하는 커스텀 가격 조회 (최저가 렌탈샵 검색)")
     public void findShopWithCustomForSearch_success() {
         // given
         List<FindLowPriceCustomDto> customs = new ArrayList<>();
@@ -316,6 +320,47 @@ class ShopRepositoryTest {
         assertThat(shopWithCustom.getTotalCount()).isEqualTo(4);
         assertThat(shopWithCustom.getNrAvgScore()).isEqualTo(4.5);
         assertThat(shopWithCustom.getNrTotalCount()).isEqualTo(186);
+    }
+
+    @Test
+    @DisplayName("[실패] 샵 정보에 일치하는 커스텀 가격 조회 (최저가 렌탈샵 검색) - 쿼리 조건 itemName에 null이 들어갈 경우")
+    public void findShopWithCustomForSearch_fail() {
+        // given
+        List<FindLowPriceCustomDto> customs = new ArrayList<>();
+        FindLowPriceCustomDto custom1 = FindLowPriceCustomDto.builder()
+                .gender(custom1Gender)
+                .nickname(custom1Nickname)
+                .liftType(custom1LiftType)
+                .liftTime(custom1LiftTime)
+                .itemName(null)
+                .packageType(custom1PackageType)
+                .clothesType(custom1ClothesType)
+                .equipmentType(custom1equipmentType)
+                .itemOptionNames(custom1ItemOptionNames)
+                .build();
+
+        FindLowPriceCustomDto custom2 = FindLowPriceCustomDto.builder()
+                .gender(custom2Gender)
+                .nickname(custom2Nickname)
+                .liftType(custom2LiftType)
+                .liftTime(custom2LiftTime)
+                .itemName(null)
+                .packageType(custom2PackageType)
+                .clothesType(custom2ClothesType)
+                .equipmentType(custom2equipmentType)
+                .itemOptionNames(custom2ItemOptionNames)
+                .build();
+
+        customs.add(custom1);
+        customs.add(custom2);
+
+        // when
+        InvalidDataAccessApiUsageException exception = assertThrows(InvalidDataAccessApiUsageException.class, () -> {
+            shopRepository.findShopWithCustomForSearch(1L, customs, true).get();
+        });
+
+        // then
+        assertTrue(exception.getMessage().contains("eq(null) is not allowed. Use isNull() instead"));
     }
 
     private Category createCategory() {
