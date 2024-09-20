@@ -209,7 +209,7 @@ public interface ShopMapstructMapper {
         return FindAllShopLowPriceDto.Response.builder()
                 .visitDate(visitDate)
                 .place(placeResponse)
-                .shop(shopResponses)
+                .shops(shopResponses)
                 .build();
     }
 }

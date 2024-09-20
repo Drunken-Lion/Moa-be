@@ -18,9 +18,10 @@ public record FindAllShopLowPriceDto() {
     public record Request(
             FindAllShopLowPriceDto.PlaceRequest place,
             FindAllShopLowPriceDto.ShopRequest shop,
-            List<FindAllShopLowPriceDto.CustomRequest> custom
+            List<FindAllShopLowPriceDto.CustomRequest> customs
     ) {}
 
+    @Builder
     public record PlaceRequest(
             @NotNull
             Long id,
@@ -28,11 +29,13 @@ public record FindAllShopLowPriceDto() {
             LocalDate visitDate
     ) {}
 
+    @Builder
     public record ShopRequest(
             @NotNull
             Boolean pickUp
     ) {}
 
+    @Builder
     public record CustomRequest(
             @NotNull
             Gender gender,
@@ -54,7 +57,7 @@ public record FindAllShopLowPriceDto() {
     public record Response(
             LocalDate visitDate,
             FindAllShopLowPriceDto.PlaceResponse place,
-            List<FindAllShopLowPriceDto.ShopResponse> shop
+            List<FindAllShopLowPriceDto.ShopResponse> shops
     ) {}
 
     @Builder

@@ -133,8 +133,8 @@ public class ShopService {
 
         // 2. 조회 하기 편하게 요청 시에 받은 리프트권, 의류, 장비 정보 가공 후 customDto에 담기
         List<FindLowPriceCustomDto> customs = new ArrayList<>();
-        for (int i=0;i<request.custom().size();i++) {
-            FindAllShopLowPriceDto.CustomRequest customRequest = request.custom().get(i);
+        for (int i = 0; i<request.customs().size(); i++) {
+            FindAllShopLowPriceDto.CustomRequest customRequest = request.customs().get(i);
 
             // itemName -> "주중 스마트4시간권+장비+의류" 이름으로 조합
             String itemName = ShopUtil.mix.getItemName(request.place().visitDate(), customRequest.liftType(),
@@ -213,7 +213,7 @@ public class ShopService {
                 null, // place의 image
                 shopLowPriceDtos,
                 null, // shop의 image
-                request.custom(),
+                request.customs(),
                 shopsAddress,
                 wishShopsForMember.isEmpty() ? null : wishShopsForMember,
                 shopsOwner

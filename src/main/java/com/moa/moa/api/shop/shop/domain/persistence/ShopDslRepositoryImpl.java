@@ -141,7 +141,7 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
         selectFields.add(naverReview.avgScore.as("nrAvgScore"));
         selectFields.add(naverReview.totalReview.as("nrTotalCount"));
 
-        // custom 별 item, itemOption 조회 서브쿼리
+        // customs 별 item, itemOption 조회 서브쿼리
         for (FindLowPriceCustomDto customDto : customs) {
             JPAQuery<BigDecimal> customPriceQuery = getCustomPrice(shopId, customDto.getItemName(),
                                                                     customDto.getItemOptionNames(), customDto.getLiftTime());
@@ -178,10 +178,10 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
             }
         }
 
-        // custom 닉네임과 price 매칭
+        // customs 닉네임과 price 매칭
         List<BigDecimal> customPrices = new ArrayList<>();
-        BigDecimal totalPrice = BigDecimal.ZERO; // custom 들의 price 총합
-        for (int i = 8; i < customArray.length; i++) { // 유동 적인 값인 custom 은 배열 8번째 부터 시작
+        BigDecimal totalPrice = BigDecimal.ZERO; // customs 들의 price 총합
+        for (int i = 8; i < customArray.length; i++) { // 동적인 값인 customs 은 배열 8번째 부터 시작
             BigDecimal price = BigDecimal.valueOf(Double.parseDouble(customArray[i]));
             customPrices.add(price);
             totalPrice = totalPrice.add(price);

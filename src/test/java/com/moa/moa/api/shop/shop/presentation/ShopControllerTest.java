@@ -5,6 +5,9 @@ import com.moa.moa.api.address.address.domain.persistence.AddressRepository;
 import com.moa.moa.api.category.category.domain.entity.Category;
 import com.moa.moa.api.category.category.domain.persistence.CategoryRepository;
 import com.moa.moa.api.category.category.util.enumerated.CategoryType;
+import com.moa.moa.api.member.custom.util.enumerated.ClothesType;
+import com.moa.moa.api.member.custom.util.enumerated.EquipmentType;
+import com.moa.moa.api.member.custom.util.enumerated.Gender;
 import com.moa.moa.api.member.custom.util.enumerated.PackageType;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.member.member.domain.persistence.MemberRepository;
@@ -29,6 +32,7 @@ import com.moa.moa.api.shop.placeshop.domain.entity.PlaceShop;
 import com.moa.moa.api.shop.placeshop.domain.persistence.PlaceShopRepository;
 import com.moa.moa.api.shop.review.domain.entity.Review;
 import com.moa.moa.api.shop.review.domain.persistence.ReviewRepository;
+import com.moa.moa.api.shop.shop.domain.dto.FindAllShopLowPriceDto;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
 import com.moa.moa.api.shop.shop.domain.persistence.ShopRepository;
 import com.moa.moa.api.time.businesstime.domain.entity.BusinessTime;
@@ -40,6 +44,7 @@ import com.moa.moa.api.time.operatingtime.util.enumerated.OperatingType;
 import com.moa.moa.api.time.specificday.domain.entity.SpecificDay;
 import com.moa.moa.api.time.specificday.domain.persistence.SpecificDayRepository;
 import com.moa.moa.api.time.specificday.util.enumerated.SpecificDayType;
+import com.moa.moa.global.common.util.JsonConvertor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,6 +54,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -63,6 +69,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -223,6 +230,111 @@ class ShopControllerTest {
                 .andExpect(handler().handlerType(ShopController.class))
                 .andExpect(handler().methodName("findAllShopWithinRange"))
                 .andExpect(jsonPath("$.length()", is(0)));
+    }
+
+    @Test
+    @DisplayName("[성공] 최저가 렌탈샵 검색 조회")
+    void findAllShopSearchForTheLowestPrice() throws Exception {
+        // 요청 정보
+        FindAllShopLowPriceDto.PlaceRequest placeRequest = FindAllShopLowPriceDto.PlaceRequest.builder()
+                .id(1L)
+                .visitDate(LocalDate.of(2024, 7, 30))
+                .build();
+
+        FindAllShopLowPriceDto.ShopRequest shopRequest = FindAllShopLowPriceDto.ShopRequest.builder()
+                .pickUp(true)
+                .build();
+
+        List<FindAllShopLowPriceDto.CustomRequest> customRequests = new ArrayList<>();
+        FindAllShopLowPriceDto.CustomRequest custom1 = FindAllShopLowPriceDto.CustomRequest.builder()
+                .gender(Gender.MALE)
+                .nickname("커스텀1")
+                .liftType("스마트권")
+                .liftTime("4")
+                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
+                .clothesType(ClothesType.LUXURY)
+                .equipmentType(EquipmentType.SHORT_SKI)
+                .build();
+
+        FindAllShopLowPriceDto.CustomRequest custom2 = FindAllShopLowPriceDto.CustomRequest.builder()
+                .gender(Gender.FEMALE)
+                .nickname("커스텀2")
+                .liftType("시간지정권-오후권")
+                .liftTime("4")
+                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
+                .clothesType(ClothesType.STANDARD)
+                .equipmentType(EquipmentType.SKI)
+                .build();
+
+        customRequests.add(custom1);
+        customRequests.add(custom2);
+
+        FindAllShopLowPriceDto.Request request = FindAllShopLowPriceDto.Request.builder()
+                .place(placeRequest)
+                .shop(shopRequest)
+                .customs(customRequests)
+                .build();
+
+        ResultActions actions = mvc
+                .perform(put("/v1/shops/search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(JsonConvertor.build(request))) // Jackson 라이브러리를 사용하여 자바 객체를 JSON 문자열로 변환하는 과정
+                .andDo(print());
+
+        actions
+                .andExpect(status().isOk())
+                .andExpect(handler().handlerType(ShopController.class))
+                .andExpect(handler().methodName("findAllShopSearchForTheLowestPrice"))
+                .andExpect(jsonPath("$.length()", is(3))) // 객체 필드 수
+
+                .andExpect(jsonPath("$.visitDate").value(LocalDate.of(2024, 7, 30).toString()))
+
+                .andExpect(jsonPath("$.place.id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.place.name").value("비발디파크"))
+                .andExpect(jsonPath("$.place.open").value(LocalDate.of(2024, 10, 15).toString()))
+                .andExpect(jsonPath("$.place.close").value(LocalDate.of(2025, 3, 12).toString()))
+                .andExpect(jsonPath("$.place.recLevel").value("LEVEL_1"))
+
+                .andExpect(jsonPath("$.place.address.id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.place.address.address").value("강원도 홍천군 서면 한치골길 262"))
+                .andExpect(jsonPath("$.place.address.addressDetail", anyOf(nullValue(), instanceOf(String.class))))
+                .andExpect(jsonPath("$.place.address.locationX").value(127.687106349987))
+                .andExpect(jsonPath("$.place.address.locationY").value(37.6521031526954))
+                .andExpect(jsonPath("$.place.address.mapUrl").value("https://map.naver.com/p/entry/place/13139708?c=15.00,0,0,0,dh"))
+
+                .andExpect(jsonPath("$.place.images", notNullValue())) // null값이 아님을 검증 {"id":null,"keyName":null,"createdAt":null}}
+
+                .andExpect(jsonPath("$.shops.length()", is(1))) // 배열의 길이
+                .andExpect(jsonPath("$.shops[0].id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.shops[0].wishId", anyOf(nullValue(), instanceOf(Number.class)))) // null 또는 wishId가 올 수 있음
+                .andExpect(jsonPath("$.shops[0].totalPrice").value(BigDecimal.valueOf(163000.0)))
+                .andExpect(jsonPath("$.shops[0].memberName", anyOf(nullValue(), instanceOf(String.class))))
+                .andExpect(jsonPath("$.shops[0].name").value("찐렌탈샵"))
+                .andExpect(jsonPath("$.shops[0].pickUp").value(true))
+                .andExpect(jsonPath("$.shops[0].storeUrl").value("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9"))
+
+                .andExpect(jsonPath("$.shops[0].moaReview.avgScore").value(2.5))
+                .andExpect(jsonPath("$.shops[0].moaReview.totalCount").value(4))
+                .andExpect(jsonPath("$.shops[0].naverReview.avgScore").value(4.5))
+                .andExpect(jsonPath("$.shops[0].naverReview.totalCount").value(186))
+
+                .andExpect(jsonPath("$.shops[0].address.id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.shops[0].address.address").value("강원 홍천군 서면 한치골길 39"))
+                .andExpect(jsonPath("$.shops[0].address.addressDetail", anyOf(nullValue(), instanceOf(String.class))))
+                .andExpect(jsonPath("$.shops[0].address.locationX").value(127.666621133276))
+                .andExpect(jsonPath("$.shops[0].address.locationY").value(37.625378749786))
+                .andExpect(jsonPath("$.shops[0].address.mapUrl").value("https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%B0%90%EB%A0%8C%ED%83%88%EC%83%B5/place/1680503531?c=15.00,0,0,0,dh&isCorrectAnswer=true"))
+
+                .andExpect(jsonPath("$.shops[0].images", notNullValue()))
+
+                .andExpect(jsonPath("$.shops[0].customs.length()", is(2))) // 배열의 길이
+                .andExpect(jsonPath("$.shops[0].customs[0].gender").value(Gender.MALE.getDesc()))
+                .andExpect(jsonPath("$.shops[0].customs[0].nickname").value("커스텀1"))
+                .andExpect(jsonPath("$.shops[0].customs[0].packageType").value(PackageType.LIFT_EQUIPMENT_CLOTHES.getDesc()))
+                .andExpect(jsonPath("$.shops[0].customs[0].clothesType").value(ClothesType.LUXURY.getDesc()))
+                .andExpect(jsonPath("$.shops[0].customs[0].equipmentType").value(EquipmentType.SHORT_SKI.getDesc()))
+                .andExpect(jsonPath("$.shops[0].customs[0].price").value(BigDecimal.valueOf(87000.0)));
     }
 
     private Category createCategory() {
