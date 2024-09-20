@@ -64,6 +64,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -361,6 +363,40 @@ class ShopRepositoryTest {
 
         // then
         assertTrue(exception.getMessage().contains("eq(null) is not allowed. Use isNull() instead"));
+    }
+
+    @Test
+    @DisplayName("[성공] 샵 정보에 일치하는 businessTimeId 조회 (최저가 렌탈샵 검색)")
+    public void findBusinessTimeIdOfShops_success() {
+        // given
+        List<Long> shopIds = new ArrayList<>();
+        shopIds.add(1L);
+        shopIds.add(2L);
+        shopIds.add(3L);
+
+        // when
+        Map<Long, Long> businessTimeIdOfShops = shopRepository.findBusinessTimeIdOfShops(shopIds).get();
+
+        // then
+        assertThat(businessTimeIdOfShops.size()).isEqualTo(3);
+        assertThat(businessTimeIdOfShops.get(shopIds.get(0))).isEqualTo(2L);
+        assertThat(businessTimeIdOfShops.get(shopIds.get(1))).isEqualTo(3L);
+        assertThat(businessTimeIdOfShops.get(shopIds.get(2))).isEqualTo(6L);
+    }
+
+    @Test
+    @DisplayName("[성공-Optional.empty() 반환] 샵 정보에 일치하는 businessTimeId 조회 (최저가 렌탈샵 검색)")
+    public void findBusinessTimeIdOfShops_success_noExistShop() {
+        // given
+        List<Long> shopIds = new ArrayList<>();
+        shopIds.add(8L); // 존재하지 않는 샵
+
+        // when
+        Optional<Map<Long, Long>> businessTimeIdOfShops = shopRepository.findBusinessTimeIdOfShops(shopIds);
+
+        // then
+        assertThat(businessTimeIdOfShops.isEmpty()).isEqualTo(true);
+        assertThat(businessTimeIdOfShops).isEqualTo(Optional.empty());
     }
 
     private Category createCategory() {
