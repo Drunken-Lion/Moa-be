@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface ShopRepository extends JpaRepository<Shop, Long>, ShopDslRepository {
     Optional<Shop> findShopByIdAndDeletedAtIsNull(Long shopId);
+
+    Optional<Shop> findShopByNameAndDeletedAtIsNull(String shopName);
 }

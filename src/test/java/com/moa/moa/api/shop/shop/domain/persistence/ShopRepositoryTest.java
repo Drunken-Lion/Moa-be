@@ -369,27 +369,32 @@ class ShopRepositoryTest {
     @DisplayName("[성공] 샵 정보에 일치하는 businessTimeId 조회 (최저가 렌탈샵 검색)")
     public void findBusinessTimeIdOfShops_success() {
         // given
+        // shopId가 db에서 추가되고 삭제 됨에 따라 동적으로 변할 수 있다.
+        Shop shop1 = shopRepository.findShopByNameAndDeletedAtIsNull("찐렌탈샵").get();
+        Shop shop2 = shopRepository.findShopByNameAndDeletedAtIsNull("아지트").get();
+        Shop shop3 = shopRepository.findShopByNameAndDeletedAtIsNull("인생렌탈샵").get();
+
         List<Long> shopIds = new ArrayList<>();
-        shopIds.add(1L);
-        shopIds.add(2L);
-        shopIds.add(3L);
+        shopIds.add(shop1.getId());
+        shopIds.add(shop2.getId());
+        shopIds.add(shop3.getId());
 
         // when
         Map<Long, Long> businessTimeIdOfShops = shopRepository.findBusinessTimeIdOfShops(shopIds).get();
 
         // then
         assertThat(businessTimeIdOfShops.size()).isEqualTo(3);
-        assertThat(businessTimeIdOfShops.get(shopIds.get(0))).isEqualTo(2L);
-        assertThat(businessTimeIdOfShops.get(shopIds.get(1))).isEqualTo(3L);
-        assertThat(businessTimeIdOfShops.get(shopIds.get(2))).isEqualTo(6L);
+        assertThat(businessTimeIdOfShops.get(shopIds.get(0))).isEqualTo(shop1.getBusinessTime().getId());
+        assertThat(businessTimeIdOfShops.get(shopIds.get(1))).isEqualTo(shop2.getBusinessTime().getId());
+        assertThat(businessTimeIdOfShops.get(shopIds.get(2))).isEqualTo(shop3.getBusinessTime().getId());
     }
 
     @Test
-    @DisplayName("[성공-Optional.empty() 반환] 샵 정보에 일치하는 businessTimeId 조회 (최저가 렌탈샵 검색)")
+    @DisplayName("[성공-Optional.empty() 반환] 존재하지 않는 샵 businessTimeId 조회 (최저가 렌탈샵 검색)")
     public void findBusinessTimeIdOfShops_success_noExistShop() {
         // given
         List<Long> shopIds = new ArrayList<>();
-        shopIds.add(8L); // 존재하지 않는 샵
+        shopIds.add(1000L); // 존재하지 않는 샵
 
         // when
         Optional<Map<Long, Long>> businessTimeIdOfShops = shopRepository.findBusinessTimeIdOfShops(shopIds);
@@ -397,6 +402,31 @@ class ShopRepositoryTest {
         // then
         assertThat(businessTimeIdOfShops.isEmpty()).isEqualTo(true);
         assertThat(businessTimeIdOfShops).isEqualTo(Optional.empty());
+    }
+
+    @Test
+    @DisplayName("[성공] 샵 정보에 일치하는 ownerMemberId 조회 (최저가 렌탈샵 검색)")
+    public void findMemberIdOfShopById_success() {
+        // given
+        // shopId가 db에서 추가되고 삭제 됨에 따라 동적으로 변할 수 있다.
+        Shop shop = shopRepository.findShopByNameAndDeletedAtIsNull("아지트").get();
+
+        // when
+        Long ownerMemberIdOfShop = shopRepository.findMemberIdOfShopById(shop.getId()).get();
+
+        // then
+        assertThat(ownerMemberIdOfShop).isEqualTo(shop.getMember().getId());
+    }
+
+    @Test
+    @DisplayName("[성공-Optional.empty() 반환] 존재하지 않는 샵 ownerMemberId 조회 (최저가 렌탈샵 검색)")
+    public void findMemberIdOfShopById_success_noExistShop() {
+        // when
+        Optional<Long> ownerMemberIdOfShop = shopRepository.findMemberIdOfShopById(1000L);
+
+        // then
+        assertThat(ownerMemberIdOfShop.isEmpty()).isEqualTo(true);
+        assertThat(ownerMemberIdOfShop).isEqualTo(Optional.empty());
     }
 
     private Category createCategory() {
