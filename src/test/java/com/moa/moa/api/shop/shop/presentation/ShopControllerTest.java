@@ -232,13 +232,11 @@ class ShopControllerTest {
                 .andExpect(jsonPath("$.length()", is(0)));
     }
 
-    @Test
-    @DisplayName("[성공] 최저가 렌탈샵 검색")
-    void findAllShopSearchForTheLowestPrice_success() throws Exception {
-        // 요청 정보
+    // 최저가 렌탈샵 검색 요청 정보
+    private static FindAllShopLowPriceDto.Request getLowPriceRequest(int year, int month, int dayOfMonth) {
         FindAllShopLowPriceDto.PlaceRequest placeRequest = FindAllShopLowPriceDto.PlaceRequest.builder()
                 .id(1L)
-                .visitDate(LocalDate.of(2024, 7, 30))
+                .visitDate(LocalDate.of(year, month, dayOfMonth))
                 .build();
 
         FindAllShopLowPriceDto.ShopRequest shopRequest = FindAllShopLowPriceDto.ShopRequest.builder()
@@ -269,11 +267,18 @@ class ShopControllerTest {
         customRequests.add(custom1);
         customRequests.add(custom2);
 
-        FindAllShopLowPriceDto.Request request = FindAllShopLowPriceDto.Request.builder()
+        return FindAllShopLowPriceDto.Request.builder()
                 .place(placeRequest)
                 .shop(shopRequest)
                 .customs(customRequests)
                 .build();
+    }
+
+    @Test
+    @DisplayName("[성공] 최저가 렌탈샵 검색")
+    void findAllShopSearchForTheLowestPrice_success() throws Exception {
+        // 요청 정보
+        FindAllShopLowPriceDto.Request request = getLowPriceRequest(2024, 7, 30);
 
         ResultActions actions = mvc
                 .perform(put("/v1/shops/search")
@@ -341,44 +346,7 @@ class ShopControllerTest {
     @DisplayName("[실패] 최저가 렌탈샵 검색 - 희망하는 날짜에 운영하는 샵(들)이 없음")
     void findAllShopSearchForTheLowestPrice_fail() throws Exception {
         // 요청 정보
-        FindAllShopLowPriceDto.PlaceRequest placeRequest = FindAllShopLowPriceDto.PlaceRequest.builder()
-                .id(1L)
-                .visitDate(LocalDate.of(2025, 1, 28))
-                .build();
-
-        FindAllShopLowPriceDto.ShopRequest shopRequest = FindAllShopLowPriceDto.ShopRequest.builder()
-                .pickUp(true)
-                .build();
-
-        List<FindAllShopLowPriceDto.CustomRequest> customRequests = new ArrayList<>();
-        FindAllShopLowPriceDto.CustomRequest custom1 = FindAllShopLowPriceDto.CustomRequest.builder()
-                .gender(Gender.MALE)
-                .nickname("커스텀1")
-                .liftType("스마트권")
-                .liftTime("4")
-                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
-                .clothesType(ClothesType.LUXURY)
-                .equipmentType(EquipmentType.SHORT_SKI)
-                .build();
-
-        FindAllShopLowPriceDto.CustomRequest custom2 = FindAllShopLowPriceDto.CustomRequest.builder()
-                .gender(Gender.FEMALE)
-                .nickname("커스텀2")
-                .liftType("시간지정권-오후권")
-                .liftTime("4")
-                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
-                .clothesType(ClothesType.STANDARD)
-                .equipmentType(EquipmentType.SKI)
-                .build();
-
-        customRequests.add(custom1);
-        customRequests.add(custom2);
-
-        FindAllShopLowPriceDto.Request request = FindAllShopLowPriceDto.Request.builder()
-                .place(placeRequest)
-                .shop(shopRequest)
-                .customs(customRequests)
-                .build();
+        FindAllShopLowPriceDto.Request request = getLowPriceRequest(2025, 1, 28);
 
         ResultActions actions = mvc
                 .perform(put("/v1/shops/search")
