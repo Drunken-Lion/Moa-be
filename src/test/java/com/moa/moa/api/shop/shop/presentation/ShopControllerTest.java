@@ -233,8 +233,8 @@ class ShopControllerTest {
     }
 
     @Test
-    @DisplayName("[성공] 최저가 렌탈샵 검색 조회")
-    void findAllShopSearchForTheLowestPrice() throws Exception {
+    @DisplayName("[성공] 최저가 렌탈샵 검색")
+    void findAllShopSearchForTheLowestPrice_success() throws Exception {
         // 요청 정보
         FindAllShopLowPriceDto.PlaceRequest placeRequest = FindAllShopLowPriceDto.PlaceRequest.builder()
                 .id(1L)
@@ -335,6 +335,63 @@ class ShopControllerTest {
                 .andExpect(jsonPath("$.shops[0].customs[0].clothesType").value(ClothesType.LUXURY.getDesc()))
                 .andExpect(jsonPath("$.shops[0].customs[0].equipmentType").value(EquipmentType.SHORT_SKI.getDesc()))
                 .andExpect(jsonPath("$.shops[0].customs[0].price").value(BigDecimal.valueOf(87000.0)));
+    }
+
+    @Test
+    @DisplayName("[실패] 최저가 렌탈샵 검색 - 희망하는 날짜에 운영하는 샵(들)이 없음")
+    void findAllShopSearchForTheLowestPrice_fail() throws Exception {
+        // 요청 정보
+        FindAllShopLowPriceDto.PlaceRequest placeRequest = FindAllShopLowPriceDto.PlaceRequest.builder()
+                .id(1L)
+                .visitDate(LocalDate.of(2025, 1, 28))
+                .build();
+
+        FindAllShopLowPriceDto.ShopRequest shopRequest = FindAllShopLowPriceDto.ShopRequest.builder()
+                .pickUp(true)
+                .build();
+
+        List<FindAllShopLowPriceDto.CustomRequest> customRequests = new ArrayList<>();
+        FindAllShopLowPriceDto.CustomRequest custom1 = FindAllShopLowPriceDto.CustomRequest.builder()
+                .gender(Gender.MALE)
+                .nickname("커스텀1")
+                .liftType("스마트권")
+                .liftTime("4")
+                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
+                .clothesType(ClothesType.LUXURY)
+                .equipmentType(EquipmentType.SHORT_SKI)
+                .build();
+
+        FindAllShopLowPriceDto.CustomRequest custom2 = FindAllShopLowPriceDto.CustomRequest.builder()
+                .gender(Gender.FEMALE)
+                .nickname("커스텀2")
+                .liftType("시간지정권-오후권")
+                .liftTime("4")
+                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
+                .clothesType(ClothesType.STANDARD)
+                .equipmentType(EquipmentType.SKI)
+                .build();
+
+        customRequests.add(custom1);
+        customRequests.add(custom2);
+
+        FindAllShopLowPriceDto.Request request = FindAllShopLowPriceDto.Request.builder()
+                .place(placeRequest)
+                .shop(shopRequest)
+                .customs(customRequests)
+                .build();
+
+        ResultActions actions = mvc
+                .perform(put("/v1/shops/search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(JsonConvertor.build(request))) // Jackson 라이브러리를 사용하여 자바 객체를 JSON 문자열로 변환하는 과정
+                .andDo(print());
+
+        actions
+                .andExpect(status().is4xxClientError())
+                .andExpect(handler().handlerType(ShopController.class))
+                .andExpect(handler().methodName("findAllShopSearchForTheLowestPrice"))
+                .andExpect(jsonPath("$.message").value("희망하는 날짜에 운영하는 샵(들)이 없습니다."));
     }
 
     private Category createCategory() {
