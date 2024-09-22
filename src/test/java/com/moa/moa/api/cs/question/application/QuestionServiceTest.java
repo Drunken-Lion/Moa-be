@@ -159,11 +159,11 @@ public class QuestionServiceTest {
                 .content(questionContent)
                 .build();
 
-        Question requestQuestion = questionMapstructMapperImpl.addOf(request);
+        Question requestQuestion = questionMapstructMapperImpl.addOf(request, getMember(), QuestionStatus.INCOMPLETE);
         AddQuestionDto.Response response = questionMapstructMapperImpl.addOf(getQuestion());
 
-        when(questionProcessor.addQuestion(requestQuestion, getMember(), QuestionStatus.INCOMPLETE)).thenReturn(getQuestion());
-        when(questionMapstructMapper.addOf(any(AddQuestionDto.Request.class))).thenReturn(requestQuestion);
+        when(questionProcessor.addQuestion(requestQuestion)).thenReturn(getQuestion());
+        when(questionMapstructMapper.addOf(any(AddQuestionDto.Request.class), any(Member.class), any())).thenReturn(requestQuestion);
         when(questionMapstructMapper.addOf(any(Question.class))).thenReturn(response);
 
         // when

@@ -56,8 +56,7 @@ public class QuestionService {
     @Transactional
     public AddQuestionDto.Response addQuestion(AddQuestionDto.Request request, Member member) {
         Question question = questionProcessor.addQuestion(
-                questionMapstructMapper.addOf(request), member, QuestionStatus.INCOMPLETE);
-
+                questionMapstructMapper.addOf(request, member, QuestionStatus.INCOMPLETE));
 
         // TODO : 이미지 기능이 완료되면 수정
 
