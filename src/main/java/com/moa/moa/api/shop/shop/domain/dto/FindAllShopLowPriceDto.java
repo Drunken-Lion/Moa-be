@@ -5,6 +5,8 @@ import com.moa.moa.api.member.custom.util.enumerated.EquipmentType;
 import com.moa.moa.api.member.custom.util.enumerated.Gender;
 import com.moa.moa.api.member.custom.util.enumerated.PackageType;
 import com.moa.moa.api.place.place.util.enumerated.PlaceLevel;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
@@ -16,9 +18,9 @@ import java.util.List;
 public record FindAllShopLowPriceDto() {
     @Builder
     public record Request(
-            FindAllShopLowPriceDto.PlaceRequest place,
-            FindAllShopLowPriceDto.ShopRequest shop,
-            List<FindAllShopLowPriceDto.CustomRequest> customs
+            @Valid FindAllShopLowPriceDto.PlaceRequest place,
+            @Valid FindAllShopLowPriceDto.ShopRequest shop,
+            @Valid List<FindAllShopLowPriceDto.CustomRequest> customs
     ) {}
 
     @Builder
@@ -39,17 +41,15 @@ public record FindAllShopLowPriceDto() {
     public record CustomRequest(
             @NotNull
             Gender gender,
-            @NotNull
+            @NotBlank
             String nickname,
-            @NotNull
+            @NotBlank
             String liftType,
-            @NotNull
+            @NotBlank
             String liftTime,
             @NotNull
             PackageType packageType,
-            @NotNull
             ClothesType clothesType,
-            @NotNull
             EquipmentType equipmentType
     ) {}
 

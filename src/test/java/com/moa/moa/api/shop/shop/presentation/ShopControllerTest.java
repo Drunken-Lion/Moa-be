@@ -233,9 +233,11 @@ class ShopControllerTest {
     }
 
     // 최저가 렌탈샵 검색 요청 정보
-    private static FindAllShopLowPriceDto.Request getLowPriceRequest(int year, int month, int dayOfMonth) {
+    private FindAllShopLowPriceDto.Request getLowPriceRequest(int year, int month, int dayOfMonth) {
+        Place place1 = placeRepository.findPlaceByNameAndDeletedAtIsNull("비발디파크").get();
+
         FindAllShopLowPriceDto.PlaceRequest placeRequest = FindAllShopLowPriceDto.PlaceRequest.builder()
-                .id(1L)
+                .id(place1.getId())
                 .visitDate(LocalDate.of(year, month, dayOfMonth))
                 .build();
 
@@ -344,7 +346,7 @@ class ShopControllerTest {
 
     @Test
     @DisplayName("[실패] 최저가 렌탈샵 검색 - 희망하는 날짜에 운영하는 샵(들)이 없음")
-    void findAllShopSearchForTheLowestPrice_fail() throws Exception {
+    void findAllShopSearchForTheLowestPrice_notOperationShop_fail() throws Exception {
         // 요청 정보
         FindAllShopLowPriceDto.Request request = getLowPriceRequest(2025, 1, 28);
 
@@ -360,6 +362,65 @@ class ShopControllerTest {
                 .andExpect(handler().handlerType(ShopController.class))
                 .andExpect(handler().methodName("findAllShopSearchForTheLowestPrice"))
                 .andExpect(jsonPath("$.message").value("희망하는 날짜에 운영하는 샵(들)이 없습니다."));
+    }
+
+    @Test
+    @DisplayName("[실패] 최저가 렌탈샵 검색 - 요청 정보가 잘못 온 경우")
+    void findAllShopSearchForTheLowestPrice_incorrectRequest_fail() throws Exception {
+        Place place1 = placeRepository.findPlaceByNameAndDeletedAtIsNull("비발디파크").get();
+
+        // 요청 정보
+        FindAllShopLowPriceDto.PlaceRequest placeRequest = FindAllShopLowPriceDto.PlaceRequest.builder()
+                .id(place1.getId())
+                .visitDate(LocalDate.of(2024,7,30))
+                .build();
+
+        FindAllShopLowPriceDto.ShopRequest shopRequest = FindAllShopLowPriceDto.ShopRequest.builder()
+                .pickUp(true)
+                .build();
+
+        List<FindAllShopLowPriceDto.CustomRequest> customRequests = new ArrayList<>();
+        FindAllShopLowPriceDto.CustomRequest custom1 = FindAllShopLowPriceDto.CustomRequest.builder()
+                .gender(Gender.MALE)
+                .nickname("커스텀1")
+                .liftType(null) // 잘못된 요청
+                .liftTime("4")
+                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
+                .clothesType(ClothesType.LUXURY)
+                .equipmentType(EquipmentType.SHORT_SKI)
+                .build();
+
+        FindAllShopLowPriceDto.CustomRequest custom2 = FindAllShopLowPriceDto.CustomRequest.builder()
+                .gender(Gender.FEMALE)
+                .nickname("커스텀2")
+                .liftType(null) // 잘못된 요청
+                .liftTime("4")
+                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
+                .clothesType(ClothesType.STANDARD)
+                .equipmentType(EquipmentType.SKI)
+                .build();
+
+        customRequests.add(custom1);
+        customRequests.add(custom2);
+
+        FindAllShopLowPriceDto.Request request = FindAllShopLowPriceDto.Request.builder()
+                .place(placeRequest)
+                .shop(shopRequest)
+                .customs(customRequests)
+                .build();
+
+        ResultActions actions = mvc
+                .perform(put("/v1/shops/search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(JsonConvertor.build(request))) // Jackson 라이브러리를 사용하여 자바 객체를 JSON 문자열로 변환하는 과정
+                .andDo(print());
+
+        actions
+                .andExpect(status().is4xxClientError())
+                .andExpect(handler().handlerType(ShopController.class))
+                .andExpect(handler().methodName("findAllShopSearchForTheLowestPrice"))
+                .andExpect(jsonPath("$.message").value("must not be blank,must not be blank"));
     }
 
     private Category createCategory() {
