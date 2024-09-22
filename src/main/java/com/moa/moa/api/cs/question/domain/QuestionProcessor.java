@@ -29,6 +29,15 @@ public class QuestionProcessor {
     }
 
     public Question addQuestion(Question question, Member member, QuestionStatus status) {
-        return questionRepository.save(question.toBuilder().member(member).status(status).build());
+        question = question.toBuilder()
+                .member(member)
+                .status(status)
+                .build();
+
+        return questionRepository.save(question);
+    }
+
+    public Question modQuestion(Question question) {
+        return questionRepository.save(question);
     }
 }

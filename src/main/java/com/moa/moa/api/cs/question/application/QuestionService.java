@@ -5,6 +5,7 @@ import com.moa.moa.api.cs.question.domain.QuestionProcessor;
 import com.moa.moa.api.cs.question.domain.dto.AddQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.FindAllQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.FindQuestionDto;
+import com.moa.moa.api.cs.question.domain.dto.ModQuestionDto;
 import com.moa.moa.api.cs.question.domain.entity.Question;
 import com.moa.moa.api.cs.question.util.enumerated.QuestionStatus;
 import com.moa.moa.api.member.member.domain.entity.Member;
@@ -16,11 +17,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class QuestionService {
     private final QuestionProcessor questionProcessor;
     private final QuestionMapstructMapper questionMapstructMapper;
@@ -50,13 +53,29 @@ public class QuestionService {
         return questionMapstructMapper.of(question, memberResponse, List.of(imageResponse), answerResponses);
     }
 
+    @Transactional
     public AddQuestionDto.Response addQuestion(AddQuestionDto.Request request, Member member) {
         Question question = questionProcessor.addQuestion(
                 questionMapstructMapper.addOf(request), member, QuestionStatus.INCOMPLETE);
 
 
         // TODO : 이미지 기능이 완료되면 수정
-        
+
         return questionMapstructMapper.addOf(question);
+    }
+
+    @Transactional
+    public ModQuestionDto.Response modQuestion(Long id, ModQuestionDto.Request request, Member member) {
+        Question originalQuestion = questionProcessor.findQuestionById(id)
+                .orElseThrow(() -> new BusinessException(FailHttpMessage.Question.QUESTION_NOT_FOUND));
+
+        if (!originalQuestion.getMember().equals(member))
+            throw new BusinessException(FailHttpMessage.Question.QUESTION_FORBIDDEN);
+
+        // TODO : 이미지 기능이 완료되면 수정
+
+        Question modQuestion = questionMapstructMapper.modOf(originalQuestion, request);
+
+        return questionMapstructMapper.modOf(questionProcessor.modQuestion(modQuestion));
     }
 }

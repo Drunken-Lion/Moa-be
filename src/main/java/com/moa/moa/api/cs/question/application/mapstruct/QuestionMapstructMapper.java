@@ -4,6 +4,7 @@ import com.moa.moa.api.cs.answer.domain.entity.Answer;
 import com.moa.moa.api.cs.question.domain.dto.AddQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.FindAllQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.FindQuestionDto;
+import com.moa.moa.api.cs.question.domain.dto.ModQuestionDto;
 import com.moa.moa.api.cs.question.domain.entity.Question;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.global.aws.s3.images.domain.entity.Image;
@@ -53,4 +54,11 @@ public interface QuestionMapstructMapper {
     Question addOf(AddQuestionDto.Request request);
 
     AddQuestionDto.Response addOf(Question question);
+
+    @Mapping(target = "type", source = "request.type")
+    @Mapping(target = "title", source = "request.title")
+    @Mapping(target = "content", source = "request.content")
+    Question modOf(Question question, ModQuestionDto.Request request);
+
+    ModQuestionDto.Response modOf(Question question);
 }
