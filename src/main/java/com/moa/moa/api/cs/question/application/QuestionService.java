@@ -69,6 +69,7 @@ public class QuestionService {
                 .orElseThrow(() -> new BusinessException(FailHttpMessage.Question.QUESTION_NOT_FOUND));
 
         QuestionValidator.validatePermission(originalQuestion, member);
+        QuestionValidator.validateStatus(originalQuestion);
 
         // TODO : 이미지 기능이 완료되면 수정
 
