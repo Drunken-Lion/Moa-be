@@ -2,10 +2,12 @@ package com.moa.moa.api.cs.question.domain.dto;
 
 import com.moa.moa.api.cs.question.util.enumerated.QuestionType;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 
 import java.util.List;
 
 public record ModQuestionDto() {
+    @Builder
     public record Request(
             QuestionType type,
             @NotNull
