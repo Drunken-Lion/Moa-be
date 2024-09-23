@@ -7,6 +7,7 @@ import com.moa.moa.api.cs.question.domain.dto.FindAllQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.FindQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.ModQuestionDto;
 import com.moa.moa.api.cs.question.domain.entity.Question;
+import com.moa.moa.api.cs.question.domain.vaildation.QuestionValidator;
 import com.moa.moa.api.cs.question.util.enumerated.QuestionStatus;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.global.aws.s3.images.domain.entity.Image;
@@ -41,8 +42,7 @@ public class QuestionService {
         Question question = questionProcessor.findQuestionById(id)
                 .orElseThrow(() -> new BusinessException(FailHttpMessage.Question.QUESTION_NOT_FOUND));
 
-        if (!question.getMember().equals(member))
-            throw new BusinessException(FailHttpMessage.Question.QUESTION_FORBIDDEN);
+        QuestionValidator.validatePermission(question, member);
 
         FindQuestionDto.MemberResponse memberResponse = questionMapstructMapper.of(question.getMember());
         FindQuestionDto.ImageResponse imageResponse = questionMapstructMapper.of(Image.builder().build());
@@ -68,8 +68,7 @@ public class QuestionService {
         Question originalQuestion = questionProcessor.findQuestionById(id)
                 .orElseThrow(() -> new BusinessException(FailHttpMessage.Question.QUESTION_NOT_FOUND));
 
-        if (!originalQuestion.getMember().equals(member))
-            throw new BusinessException(FailHttpMessage.Question.QUESTION_FORBIDDEN);
+        QuestionValidator.validatePermission(originalQuestion, member);
 
         // TODO : 이미지 기능이 완료되면 수정
 
