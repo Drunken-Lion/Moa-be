@@ -4,6 +4,7 @@ import com.moa.moa.api.cs.answer.domain.entity.Answer;
 import com.moa.moa.api.cs.question.application.mapstruct.QuestionMapstructMapper;
 import com.moa.moa.api.cs.question.application.mapstruct.QuestionMapstructMapperImpl;
 import com.moa.moa.api.cs.question.domain.QuestionProcessor;
+import com.moa.moa.api.cs.question.domain.dto.AddQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.FindAllQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.FindQuestionDto;
 import com.moa.moa.api.cs.question.domain.entity.Question;
@@ -79,7 +80,7 @@ public class QuestionServiceTest {
 
     @Test
     @DisplayName("나의 문의 내역 조회")
-    void findAllQuestion() {
+    void findAllQuestionTest() {
         // given
         Slice<Question> questionSlice = getQuestionSlice();
         Slice<FindAllQuestionDto.Response> questionResponse = questionSlice.map(questionMapstructMapperImpl::of);
@@ -112,7 +113,7 @@ public class QuestionServiceTest {
 
     @Test
     @DisplayName("문의 상세 조회")
-    void findQuestion() {
+    void findQuestionTest() {
         // given
         FindQuestionDto.MemberResponse memberResponse = questionMapstructMapperImpl.of(getMember());
         FindQuestionDto.ImageResponse imageResponse = questionMapstructMapperImpl.of(getImage());
@@ -146,6 +147,30 @@ public class QuestionServiceTest {
         assertThat(answerList.get(0).id()).isEqualTo(1L);
         assertThat(answerList.get(0).content()).isEqualTo("답변");
         assertThat(answerList.get(0).createdAt()).isEqualTo(answerCreatedAt);
+    }
+
+    @Test
+    @DisplayName("문의 작성")
+    void addQuestionTest() {
+        // given
+        AddQuestionDto.Request request = AddQuestionDto.Request.builder()
+                .type(questionType)
+                .title(questionTitle)
+                .content(questionContent)
+                .build();
+
+        Question requestQuestion = questionMapstructMapperImpl.addOf(request);
+        AddQuestionDto.Response response = questionMapstructMapperImpl.addOf(getQuestion());
+
+        when(questionProcessor.addQuestion(requestQuestion, getMember(), QuestionStatus.INCOMPLETE)).thenReturn(getQuestion());
+        when(questionMapstructMapper.addOf(any(AddQuestionDto.Request.class))).thenReturn(requestQuestion);
+        when(questionMapstructMapper.addOf(any(Question.class))).thenReturn(response);
+
+        // when
+        AddQuestionDto.Response questionResponse = questionService.addQuestion(request, getMember());
+
+        // then
+        assertThat(questionResponse.id()).isEqualTo(questionId);
     }
 
     private Slice<Question> getQuestionSlice() {

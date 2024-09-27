@@ -18,7 +18,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
 
@@ -49,7 +51,18 @@ public class QuestionController {
     @PostMapping
     public ResponseEntity<AddQuestionDto.Response> addQuestion(@AuthenticationPrincipal UserPrincipal user,
                                                                @Valid @RequestBody final AddQuestionDto.Request request) {
-        return ResponseEntity.ok().body(null);
+        // TODO : 회원 관련 기능이 완성되면 삭제할 것
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+
+        AddQuestionDto.Response response = questionService.addQuestion(request, member);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.id())
+                .toUri();
+
+        return ResponseEntity.created(location).body(response);
     }
 
     @Operation(summary = "문의 내역 상세 조회", responses = {@ApiResponse(responseCode = GET)})
