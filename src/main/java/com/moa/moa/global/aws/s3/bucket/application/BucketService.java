@@ -41,6 +41,10 @@ public class BucketService {
     }
 
     private String uploadS3(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException(FailHttpMessage.Image.NOT_FOUND);
+        }
+
         String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd_HH:mm:ss"));
 
         String keyName = time + "_" + UUID.randomUUID() + "_" + file.getOriginalFilename();
