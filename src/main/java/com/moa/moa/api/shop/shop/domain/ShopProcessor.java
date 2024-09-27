@@ -20,6 +20,10 @@ public class ShopProcessor {
         return shopRepository.findAllShopWithinRange(leftTopX, leftTopY, rightBottomX, rightBottomY);
     }
 
+    public Optional<Shop> findShopById(Long id) {
+        return shopRepository.findShopById(id);
+    }
+
     public Optional<FindLowPriceShopDto> findShopWithCustomForSearch(Long shopId, List<FindLowPriceCustomDto> customs, Boolean pickUp) {
         return shopRepository.findShopWithCustomForSearch(shopId, customs, pickUp);
     }

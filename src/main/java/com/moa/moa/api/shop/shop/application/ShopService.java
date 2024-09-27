@@ -17,14 +17,15 @@ import com.moa.moa.api.shop.review.domain.entity.Review;
 import com.moa.moa.api.shop.shop.application.mapstruct.ShopMapstructMapper;
 import com.moa.moa.api.shop.shop.domain.ShopProcessor;
 import com.moa.moa.api.shop.shop.domain.dto.FindAllShopDto;
+import com.moa.moa.api.shop.shop.domain.dto.FindShopDto;
 import com.moa.moa.api.shop.shop.domain.dto.FindAllShopLowPriceDto;
 import com.moa.moa.api.shop.shop.domain.dto.FindLowPriceShopDto;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
+import com.moa.moa.global.common.message.FailHttpMessage;
+import com.moa.moa.global.exception.BusinessException;
 import com.moa.moa.api.shop.shop.util.ShopUtil;
 import com.moa.moa.api.time.businesstime.domain.BusinessTimeProcessor;
 import com.moa.moa.api.time.operatingtime.util.enumerated.DayType;
-import com.moa.moa.global.common.message.FailHttpMessage;
-import com.moa.moa.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -53,8 +54,7 @@ public class ShopService {
         List<FindAllShopDto.Response> findAllShopList = new ArrayList<>();
 
         for (Shop shop : shops) {
-            Optional<Wish> optionalWish = wishProcessor.findWishByShopAndMember(shop, member);
-            Wish wish = optionalWish.orElse(null);
+            Wish wish = wishProcessor.findWishByShopAndMember(shop, member).orElse(null);
 
             List<Review> reviews = shop.getReviews();
             Long moaTotalCount = (long) reviews.size();
@@ -88,6 +88,43 @@ public class ShopService {
         }
 
         return findAllShopList;
+    }
+
+    public FindShopDto.Response findShop(Long id, Member member) {
+        Shop shop = shopProcessor.findShopById(id)
+                .orElseThrow(() -> new BusinessException(FailHttpMessage.Shop.NOT_FOUND));
+
+        Wish wish = wishProcessor.findWishByShopAndMember(shop, member).orElse(null);
+
+        List<Review> reviews = shop.getReviews();
+        Long moaTotalCount = (long) reviews.size();
+        Double moaAvgScore = reviews.stream()
+                .mapToDouble(Review::getScore)
+                .average()
+                .orElse(0.0);
+
+        NaverReview naverReview = shop.getNaverReview();
+        if (naverReview == null) {
+            naverReview = NaverReview.builder()
+                    .avgScore(0.0)
+                    .totalReview(0L)
+                    .build();
+        }
+
+        List<Place> places = shop.getPlaceShops().stream()
+                .map(PlaceShop::getPlace)
+                .collect(Collectors.toList());
+
+        return shopMapstructMapper.ofFindShop(
+                shop,
+                wish,
+                places,
+                null,
+                shop.getAddress(),
+                moaAvgScore,
+                moaTotalCount,
+                naverReview
+        );
     }
 
     public FindAllShopLowPriceDto.Response findAllShopSearchForTheLowestPrice(FindAllShopLowPriceDto.Request request,

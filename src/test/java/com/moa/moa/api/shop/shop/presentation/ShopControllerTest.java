@@ -45,6 +45,7 @@ import com.moa.moa.api.time.specificday.domain.entity.SpecificDay;
 import com.moa.moa.api.time.specificday.domain.persistence.SpecificDayRepository;
 import com.moa.moa.api.time.specificday.util.enumerated.SpecificDayType;
 import com.moa.moa.global.common.util.JsonConvertor;
+import com.moa.moa.global.util.TestUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -230,6 +231,50 @@ class ShopControllerTest {
                 .andExpect(handler().handlerType(ShopController.class))
                 .andExpect(handler().methodName("findAllShopWithinRange"))
                 .andExpect(jsonPath("$.length()", is(0)));
+    }
+
+    @Test
+    @DisplayName("렌탈샵 상세 조회 성공")
+    void t3() throws Exception {
+        List<Shop> shops = this.shopRepository.findAll();
+
+        ResultActions actions = mvc
+                .perform(get("/v1/shops/" + shops.get(0).getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print());
+
+        actions
+                .andExpect(status().isOk())
+                .andExpect(handler().handlerType(ShopController.class))
+                .andExpect(handler().methodName("findShop"))
+                .andExpect(jsonPath("$.id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.categoryId", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.name").value("찐렌탈샵"))
+                .andExpect(jsonPath("$.pickUp").value(true))
+                .andExpect(jsonPath("$.storeUrl").value("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9"))
+                .andExpect(jsonPath("$.createdAt", matchesPattern(TestUtil.DATETIME_PATTERN)))
+                .andExpect(jsonPath("$.wishId", nullValue()))
+
+                .andExpect(jsonPath("$.places.length()", is(1)))
+                .andExpect(jsonPath("$.places[0].id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.places[0].name").value("비발디파크"))
+                .andExpect(jsonPath("$.places[0].open").value(LocalDate.of(2024, 10, 15).format(TestUtil.DATE_FORMATTER)))
+                .andExpect(jsonPath("$.places[0].close").value(LocalDate.of(2025, 3, 12).format(TestUtil.DATE_FORMATTER)))
+
+                .andExpect(jsonPath("$.images", notNullValue()))
+
+                .andExpect(jsonPath("$.address.id", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.address.address").value("강원 홍천군 서면 한치골길 39"))
+                .andExpect(jsonPath("$.address.addressDetail").value("1, 2층"))
+                .andExpect(jsonPath("$.address.locationX").value(127.666621133276))
+                .andExpect(jsonPath("$.address.locationY").value(37.625378749786))
+                .andExpect(jsonPath("$.address.mapUrl").value("https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%B0%90%EB%A0%8C%ED%83%88%EC%83%B5/place/1680503531?c=15.00,0,0,0,dh&isCorrectAnswer=true"))
+
+                .andExpect(jsonPath("$.moaReview.avgScore").value(2.5D))
+                .andExpect(jsonPath("$.moaReview.totalCount").value(4L))
+
+                .andExpect(jsonPath("$.naverReview.avgScore").value(4.5D))
+                .andExpect(jsonPath("$.naverReview.totalCount").value(186L));
     }
 
     // 최저가 렌탈샵 검색 요청 정보

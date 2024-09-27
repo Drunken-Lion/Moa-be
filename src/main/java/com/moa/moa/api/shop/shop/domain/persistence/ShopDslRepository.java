@@ -11,6 +11,8 @@ import java.util.Optional;
 public interface ShopDslRepository {
     List<Shop> findAllShopWithinRange(Double leftTopX, Double leftTopY, Double rightBottomX, Double rightBottomY);
 
+    Optional<Shop> findShopById(Long id);
+
     Optional<FindLowPriceShopDto> findShopWithCustomForSearch(Long shopId, List<FindLowPriceCustomDto> customs, Boolean pickUp);
 
     Optional<Map<Long, Long>> findBusinessTimeIdOfShops(List<Long> shopIds);

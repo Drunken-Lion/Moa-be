@@ -15,9 +15,9 @@ public record FindShopDto() {
             Boolean pickUp,
             String storeUrl,
             LocalDateTime createdAt,
-            Boolean isWish,
+            Long wishId,
             List<FindShopDto.PlaceResponse> places,
-            FindShopDto.ImageResponse image,
+            FindShopDto.ImageResponse images,
             FindShopDto.AddressResponse address,
             FindShopDto.MoaReviewResponse moaReview,
             FindShopDto.NaverReviewResponse naverReview
@@ -34,8 +34,7 @@ public record FindShopDto() {
     @Builder
     public record ImageResponse(
             Long id,
-            String originImageUrl,
-            String lowImageUrl,
+            String keyName,
             LocalDateTime createdAt
     ) {}
 

@@ -119,6 +119,71 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
     }
 
     @Override
+    public Optional<Shop> findShopById(Long id) {
+        Shop shopOne = queryFactory.selectFrom(shop)
+                .leftJoin(shop.member, member).fetchJoin()
+                .leftJoin(shop.category, category).fetchJoin()
+                .leftJoin(shop.address, address1).fetchJoin()
+                .leftJoin(shop.businessTime, businessTime).fetchJoin()
+                .where(shop.id.eq(id)
+                        .and(shop.deletedAt.isNull())
+                        .and(member.deletedAt.isNull())
+                        .and(category.deletedAt.isNull())
+                        .and(address1.deletedAt.isNull())
+                        .and(businessTime.deletedAt.isNull())
+                )
+                .orderBy(shop.id.asc())
+                .fetchOne();
+
+        if (shopOne != null) {
+            List<OperatingTime> operatingTimes = queryFactory.selectFrom(operatingTime)
+                    .where(operatingTime.businessTime.eq(shopOne.getBusinessTime())
+                            .and(operatingTime.deletedAt.isNull()))
+                    .fetch();
+            shopOne.getBusinessTime().addOperatingTimes(operatingTimes);
+
+            List<SpecificDay> specificDays = queryFactory.selectFrom(specificDay)
+                    .where(specificDay.businessTime.eq(shopOne.getBusinessTime())
+                            .and(specificDay.deletedAt.isNull()))
+                    .fetch();
+            shopOne.getBusinessTime().addSpecificDays(specificDays);
+
+            List<PlaceShop> placeShops = queryFactory.selectFrom(placeShop)
+                    .where(placeShop.shop.eq(shopOne)
+                            .and(placeShop.deletedAt.isNull())
+                            .and(placeShop.place.deletedAt.isNull()))
+                    .fetch();
+            shopOne.addPlaceShops(placeShops);
+
+            List<Review> reviews = queryFactory.selectFrom(review)
+                    .where(review.shop.eq(shopOne)
+                            .and(review.deletedAt.isNull()))
+                    .fetch();
+            shopOne.addReviews(reviews);
+
+            NaverReview naverReviewOne = queryFactory.selectFrom(naverReview)
+                    .where(naverReview.shop.eq(shopOne)
+                            .and(naverReview.deletedAt.isNull()))
+                    .fetchFirst();
+            shopOne.addNaverReview(naverReviewOne);
+
+            List<Item> items = queryFactory.selectFrom(item)
+                    .where(item.shop.eq(shopOne)
+                            .and(item.deletedAt.isNull()))
+                    .fetch();
+            shopOne.addItems(items);
+
+            List<ItemOption> itemOptions = queryFactory.selectFrom(itemOption)
+                    .where(itemOption.shop.eq(shopOne)
+                            .and(itemOption.deletedAt.isNull()))
+                    .fetch();
+            shopOne.addItemOptions(itemOptions);
+        }
+
+        return Optional.ofNullable(shopOne);
+    }
+
+    @Override
     public Optional<FindLowPriceShopDto> findShopWithCustomForSearch(Long shopId,
                                                            List<FindLowPriceCustomDto> customs,
                                                            Boolean pickUp) {
@@ -128,7 +193,7 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
 
         // select 동적으로 생성
         List<Expression<?>> selectFields = new ArrayList<>();
-        
+
         // 기본 필드 추가
         selectFields.add(shop.id.as("shopId"));
         selectFields.add(shop.name);
