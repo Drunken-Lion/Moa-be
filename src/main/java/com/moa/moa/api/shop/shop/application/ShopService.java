@@ -37,12 +37,12 @@ import java.util.stream.Collectors;
 public class ShopService {
     private final ShopProcessor shopProcessor;
     private final WishProcessor wishProcessor;
-    private final ShopMapstructMapper shopMapstructMapper;
     private final PlaceProcessor placeProcessor;
-    private final PlaceShopProcessor placeShopProcessor;
-    private final AddressProcessor addressProcessor;
-    private final BusinessTimeProcessor businessTimeProcessor;
     private final MemberProcessor memberProcessor;
+    private final AddressProcessor addressProcessor;
+    private final PlaceShopProcessor placeShopProcessor;
+    private final BusinessTimeProcessor businessTimeProcessor;
+    private final ShopMapstructMapper shopMapstructMapper;
 
     public List<FindAllShopDto.Response> findAllShopWithinRange(Double leftTopX,
                                                                 Double leftTopY,

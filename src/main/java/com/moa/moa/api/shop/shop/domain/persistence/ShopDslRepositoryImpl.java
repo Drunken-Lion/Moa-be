@@ -286,6 +286,7 @@ public class ShopDslRepositoryImpl implements ShopDslRepository {
     }
 
     // shopId로 memberId 조회
+    @Override
     public Optional<Long> findMemberIdOfShopById(Long shopId) {
         BooleanBuilder deletedAtIsNullBuilder = new BooleanBuilder();
         deletedAtIsNullBuilder.and(shop.deletedAt.isNull());
