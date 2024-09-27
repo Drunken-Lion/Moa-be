@@ -43,6 +43,8 @@ import com.moa.moa.api.time.operatingtime.util.enumerated.OperatingType;
 import com.moa.moa.api.time.specificday.domain.entity.SpecificDay;
 import com.moa.moa.api.time.specificday.util.enumerated.SpecificDayType;
 import com.moa.moa.global.aws.s3.images.domain.entity.Image;
+import com.moa.moa.global.common.message.FailHttpMessage;
+import com.moa.moa.global.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -61,6 +63,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -96,6 +100,8 @@ class ShopServiceTest {
     private List<FindAllShopDto.Response> mockAllShopResponses;
     private Member mockMember;
 
+    private final LocalDate visitDate = LocalDate.of(2024, 7, 30);
+    private final DayType dayType = ShopUtil.date.getDayType(visitDate);
     private Place mockPlace; // "비발디 파크"
     private Address mockAddress; // "비발디 파크" 주소
     private List<PlaceShop> mockPlaceShops;
@@ -227,9 +233,6 @@ class ShopServiceTest {
     @DisplayName("[성공] 최저가 렌탈샵 검색")
     public void findAllShopSearchForTheLowestPrice_success() {
         // given
-        LocalDate visitDate = LocalDate.of(2024, 7, 30);
-        DayType dayType = ShopUtil.date.getDayType(visitDate);
-
         // place 관련
         when(placeProcessor.findPlaceByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.ofNullable(mockPlace));
         when(addressProcessor.findAddressByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.ofNullable(mockAddress));
@@ -363,6 +366,114 @@ class ShopServiceTest {
         assertThat(customsResponse.get(1).clothesType()).isEqualTo(ClothesType.STANDARD.getDesc());
         assertThat(customsResponse.get(1).equipmentType()).isEqualTo(EquipmentType.SKI.getDesc());
         assertThat(customsResponse.get(1).price()).isEqualTo(BigDecimal.valueOf(76000.0));
+    }
+
+    @Test
+    @DisplayName("[실패] 최저가 렌탈샵 검색 - place가 없을 경우")
+    void findAllShopSearchForTheLowestPrice_placeNotFound() {
+        // given
+        when(placeProcessor.findPlaceByIdAndDeletedAtIsNull(anyLong())).thenReturn(Optional.empty());
+
+        // when
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            shopService.findAllShopSearchForTheLowestPrice(mockLowestPriceRequests(), mockMember);
+        });
+
+        // then
+        assertEquals(FailHttpMessage.Place.NOT_FOUND.getMessage(), exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("[실패] 최저가 렌탈샵 검색 - place를 찾았지만, 관련된 shop이 없을 경우")
+    void findAllShopSearchForTheLowestPrice_shopsNotFound() {
+        // given
+        when(placeProcessor.findPlaceByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.ofNullable(mockPlace));
+        when(placeShopProcessor.findAllShopRelatedToPlace(any(Place.class))).thenReturn(Collections.emptyList());
+
+        // when
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            shopService.findAllShopSearchForTheLowestPrice(mockLowestPriceRequests(), mockMember);
+        });
+
+        // then
+        assertEquals(FailHttpMessage.Shop.NOT_FOUND_SHOP_RELATED_TO_PLACE.getMessage(), exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("[실패] 최저가 렌탈샵 검색 - 운영 중인 shop이 없을 경우")
+    void findAllShopSearchForTheLowestPrice_shopsNotInOperation() {
+        // given
+        when(placeProcessor.findPlaceByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.ofNullable(mockPlace));
+        when(addressProcessor.findAddressByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.ofNullable(mockAddress));
+
+        List<PlaceShop> mockPlaceShopsByPlace = new ArrayList<>();
+        mockPlaceShopsByPlace.add(mockPlaceShops.get(0));
+        mockPlaceShopsByPlace.add(mockPlaceShops.get(1));
+        mockPlaceShopsByPlace.add(mockPlaceShops.get(2));
+        when(placeShopProcessor.findAllShopRelatedToPlace(mockPlace)).thenReturn(mockPlaceShopsByPlace);
+
+        List<Long> mockShopIds = new ArrayList<>(); // [1, 2, 3]
+        mockShopIds.add(mockPlaceShops.get(0).getId());
+        mockShopIds.add(mockPlaceShops.get(1).getId());
+        mockShopIds.add(mockPlaceShops.get(2).getId());
+
+        Map<Long, Long> shopBusinessTimeIds = new HashMap<>(); // {1=2, 2=3, 3=6}
+        shopBusinessTimeIds.put(mockShops.get(0).getId(), mockPlaceShops.get(1).getId());
+        shopBusinessTimeIds.put(mockShops.get(1).getId(), mockPlaceShops.get(2).getId());
+        shopBusinessTimeIds.put(mockShops.get(2).getId(), mockPlaceShops.get(5).getId());
+
+        when(shopProcessor.findBusinessTimeIdOfShops(mockShopIds)).thenReturn(Optional.of(shopBusinessTimeIds));
+
+        // shopBusinessTimeIds.keySet() for문
+        when(businessTimeProcessor.isShopInOperation(2L, visitDate, dayType)).thenReturn(false);
+        when(businessTimeProcessor.isShopInOperation(3L, visitDate, dayType)).thenReturn(false);
+        when(businessTimeProcessor.isShopInOperation(6L, visitDate, dayType)).thenReturn(false);
+
+        // when
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            shopService.findAllShopSearchForTheLowestPrice(mockLowestPriceRequests(), mockMember);
+        });
+
+        // then
+        assertEquals(FailHttpMessage.Shop.NOT_FOUND_SHOP_IN_OPERATION.getMessage(), exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("[실패] 최저가 렌탈샵 검색 - 매칭되는 커스텀이 없을 경우")
+    void findAllShopSearchForTheLowestPrice_noMatchingCustom() {
+        // given
+        when(placeProcessor.findPlaceByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.ofNullable(mockPlace));
+        when(addressProcessor.findAddressByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.ofNullable(mockAddress));
+
+        List<PlaceShop> mockPlaceShopsByPlace = new ArrayList<>();
+        mockPlaceShopsByPlace.add(mockPlaceShops.get(0));
+        mockPlaceShopsByPlace.add(mockPlaceShops.get(1));
+        mockPlaceShopsByPlace.add(mockPlaceShops.get(2));
+        when(placeShopProcessor.findAllShopRelatedToPlace(mockPlace)).thenReturn(mockPlaceShopsByPlace);
+
+        List<Long> mockShopIds = new ArrayList<>(); // [1, 2, 3]
+        mockShopIds.add(mockPlaceShops.get(0).getId());
+        mockShopIds.add(mockPlaceShops.get(1).getId());
+        mockShopIds.add(mockPlaceShops.get(2).getId());
+
+        Map<Long, Long> shopBusinessTimeIds = new HashMap<>(); // {1=2, 2=3, 3=6}
+        shopBusinessTimeIds.put(mockShops.get(0).getId(), mockPlaceShops.get(1).getId());
+        shopBusinessTimeIds.put(mockShops.get(1).getId(), mockPlaceShops.get(2).getId());
+        shopBusinessTimeIds.put(mockShops.get(2).getId(), mockPlaceShops.get(5).getId());
+
+        when(shopProcessor.findBusinessTimeIdOfShops(mockShopIds)).thenReturn(Optional.of(shopBusinessTimeIds));
+
+        when(businessTimeProcessor.isShopInOperation(2L, visitDate, dayType)).thenReturn(true);
+
+        when(shopProcessor.findShopWithCustomForSearch(eq(1L), anyList(), any(Boolean.class))).thenReturn(Optional.empty());
+
+        // when
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            shopService.findAllShopSearchForTheLowestPrice(mockLowestPriceRequests(), mockMember);
+        });
+
+        // then
+        assertEquals(FailHttpMessage.Shop.NOT_FOUND_MATCHING_SHOP.getMessage(), exception.getMessage());
     }
 
     private Category createCategory() {
