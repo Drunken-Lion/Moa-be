@@ -444,6 +444,141 @@ class ShopServiceTest {
     }
 
     @Test
+    @DisplayName("[성공] 비로그인 사용자 최저가 렌탈샵 검색 (member는 null 이 들어온다.)")
+    public void findAllShopSearchForTheLowestPrice_success_memberIsNull() {
+        // given
+        // place 관련
+        when(placeProcessor.findPlaceByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.ofNullable(mockPlace));
+        when(addressProcessor.findAddressByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.ofNullable(mockAddress));
+
+        List<PlaceShop> mockPlaceShopsByPlace = new ArrayList<>();
+        mockPlaceShopsByPlace.add(mockPlaceShops.get(0));
+        mockPlaceShopsByPlace.add(mockPlaceShops.get(1));
+        mockPlaceShopsByPlace.add(mockPlaceShops.get(2));
+        when(placeShopProcessor.findAllShopRelatedToPlace(mockPlace)).thenReturn(mockPlaceShopsByPlace);
+
+        List<Long> mockShopIds = new ArrayList<>(); // [1, 2, 3]
+        mockShopIds.add(mockPlaceShops.get(0).getId());
+        mockShopIds.add(mockPlaceShops.get(1).getId());
+        mockShopIds.add(mockPlaceShops.get(2).getId());
+
+        Map<Long, Long> shopBusinessTimeIds = new HashMap<>(); // {1=2, 2=3, 3=6}
+        shopBusinessTimeIds.put(mockShops.get(0).getId(), mockPlaceShops.get(1).getId());
+        shopBusinessTimeIds.put(mockShops.get(1).getId(), mockPlaceShops.get(2).getId());
+        shopBusinessTimeIds.put(mockShops.get(2).getId(), mockPlaceShops.get(5).getId());
+
+        when(shopProcessor.findBusinessTimeIdOfShops(mockShopIds)).thenReturn(Optional.of(shopBusinessTimeIds));
+
+        // shopBusinessTimeIds.keySet() for문
+        when(businessTimeProcessor.isShopInOperation(2L, visitDate, dayType)).thenReturn(true);
+        when(businessTimeProcessor.isShopInOperation(3L, visitDate, dayType)).thenReturn(true);
+        when(businessTimeProcessor.isShopInOperation(6L, visitDate, dayType)).thenReturn(true);
+
+        // shop 관련
+        // shopsInOperation for문
+        when(shopProcessor.findShopWithCustomForSearch(
+                eq(1L),
+                anyList(),
+                any(Boolean.class))).thenReturn(Optional.ofNullable(mockLowPriceShop1()));
+        when(shopProcessor.findShopWithCustomForSearch(
+                eq(2L),
+                anyList(),
+                any(Boolean.class))).thenReturn(Optional.ofNullable(mockLowPriceShop2()));
+        when(shopProcessor.findShopWithCustomForSearch(
+                eq(3L),
+                anyList(),
+                any(Boolean.class))).thenReturn(Optional.empty());
+
+        when(shopProcessor.findShopByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.ofNullable(mockShop1()));
+
+        when(addressProcessor.findAddressByIdAndDeletedAtIsNull(2L)).thenReturn(Optional.ofNullable(mockShop1Address()));
+
+        Long memberId = mockShop1().getMember() == null ? null : mockOwnerMember().getId();
+        when(shopProcessor.findMemberIdOfShopById(1L)).thenReturn(Optional.ofNullable(memberId));
+
+        when(memberProcessor.findMemberByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.ofNullable(mockOwnerMember()));
+
+        when(shopMapstructMapper.ofFindAllLowestShops(
+                visitDate,
+                mockPlace,
+                mockAddress,
+                null,
+                mockShopLowPriceDtos,
+                null,
+                mockLowestPriceRequests().customs(),
+                mockShopsAddress,
+                null,
+                mockShop1Owner)).thenReturn(createLowestPriceShopsResponse(visitDate));
+
+        // when
+        FindAllShopLowPriceDto.Response allShopSearchForTheLowestPrice = shopService.findAllShopSearchForTheLowestPrice(mockLowestPriceRequests(), null);
+
+        // then
+        assertThat(allShopSearchForTheLowestPrice.visitDate()).isEqualTo(LocalDate.of(2024, 7, 30));
+
+        FindAllShopLowPriceDto.PlaceResponse place = allShopSearchForTheLowestPrice.place();
+        assertThat(place.id()).isEqualTo(1L);
+        assertThat(place.name()).isEqualTo("비발디파크");
+        assertThat(place.open()).isEqualTo(LocalDate.of(2024, 10, 15));
+        assertThat(place.close()).isEqualTo(LocalDate.of(2025, 3, 12));
+        assertThat(place.recLevel()).isEqualTo(PlaceLevel.LEVEL_1);
+
+        FindAllShopLowPriceDto.AddressResponse placeAddress = place.address();
+        assertThat(placeAddress.id()).isEqualTo(1L);
+        assertThat(placeAddress.address()).isEqualTo("강원도 홍천군 서면 한치골길 262");
+        assertThat(placeAddress.addressDetail()).isNull();
+        assertThat(placeAddress.locationX()).isEqualTo(127.687106349987);
+        assertThat(placeAddress.locationY()).isEqualTo(37.6521031526954);
+        assertThat(placeAddress.mapUrl()).isEqualTo("https://map.naver.com/p/entry/place/13139708?c=15.00,0,0,0,dh");
+
+        // TODO: image 기능 완성 시 구현 추가
+        assertThat(place.images()).isNotNull();
+
+        List<FindAllShopLowPriceDto.ShopResponse> shops = allShopSearchForTheLowestPrice.shops();
+        assertThat(shops.size()).isEqualTo(1);
+
+        FindAllShopLowPriceDto.ShopResponse shop1Response = shops.get(0);
+        assertThat(shop1Response.id()).isEqualTo(1L);
+        assertThat(shop1Response.wishId()).isNull();
+        assertThat(shop1Response.totalPrice()).isEqualTo(BigDecimal.valueOf(163000.0));
+        assertThat(shop1Response.memberName()).isEqualTo("admin");
+        assertThat(shop1Response.name()).isEqualTo("찐렌탈샵");
+        assertThat(shop1Response.storeUrl()).isEqualTo("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9");
+
+        assertThat(shop1Response.moaReview().avgScore()).isEqualTo(2.5D);
+        assertThat(shop1Response.moaReview().totalCount()).isEqualTo(4L);
+
+        assertThat(shop1Response.naverReview().avgScore()).isEqualTo(4.5D);
+        assertThat(shop1Response.naverReview().totalCount()).isEqualTo(186L);
+
+        assertThat(shop1Response.address().id()).isEqualTo(2L);
+        assertThat(shop1Response.address().address()).isEqualTo("강원 홍천군 서면 한치골길 39");
+        assertThat(shop1Response.address().addressDetail()).isEqualTo("1, 2층");
+        assertThat(shop1Response.address().locationX()).isEqualTo(37.625378749786);
+        assertThat(shop1Response.address().locationY()).isEqualTo(127.666621133276);
+        assertThat(shop1Response.address().mapUrl()).isEqualTo("https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%B0%90%EB%A0%8C%ED%83%88%EC%83%B5/place/1680503531?c=15.00,0,0,0,dh&isCorrectAnswer=true");
+
+        // TODO: image 기능 완성 시 구현 추가
+        assertThat(shop1Response.images()).isNotNull();
+
+        List<FindAllShopLowPriceDto.CustomResponse> customsResponse = shop1Response.customs();
+        assertThat(customsResponse.size()).isEqualTo(2);
+        assertThat(customsResponse.get(0).gender()).isEqualTo(Gender.MALE.getDesc());
+        assertThat(customsResponse.get(0).nickname()).isEqualTo("커스텀1");
+        assertThat(customsResponse.get(0).packageType()).isEqualTo(PackageType.LIFT_EQUIPMENT_CLOTHES.getDesc());
+        assertThat(customsResponse.get(0).clothesType()).isEqualTo(ClothesType.LUXURY.getDesc());
+        assertThat(customsResponse.get(0).equipmentType()).isEqualTo(EquipmentType.SHORT_SKI.getDesc());
+        assertThat(customsResponse.get(0).price()).isEqualTo(BigDecimal.valueOf(87000.0));
+
+        assertThat(customsResponse.get(1).gender()).isEqualTo(Gender.FEMALE.getDesc());
+        assertThat(customsResponse.get(1).nickname()).isEqualTo("커스텀2");
+        assertThat(customsResponse.get(1).packageType()).isEqualTo(PackageType.LIFT_EQUIPMENT_CLOTHES.getDesc());
+        assertThat(customsResponse.get(1).clothesType()).isEqualTo(ClothesType.STANDARD.getDesc());
+        assertThat(customsResponse.get(1).equipmentType()).isEqualTo(EquipmentType.SKI.getDesc());
+        assertThat(customsResponse.get(1).price()).isEqualTo(BigDecimal.valueOf(76000.0));
+    }
+
+    @Test
     @DisplayName("[실패] 최저가 렌탈샵 검색 - place가 없을 경우")
     void findAllShopSearchForTheLowestPrice_placeNotFound() {
         // given

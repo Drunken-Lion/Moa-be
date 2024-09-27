@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
-import java.util.Optional;
 
 import static com.moa.moa.global.common.response.ApiResponseCode.GET;
 

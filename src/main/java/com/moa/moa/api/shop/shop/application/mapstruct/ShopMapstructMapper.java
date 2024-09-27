@@ -146,7 +146,7 @@ public interface ShopMapstructMapper {
                                                                  Address placeAddress,
                                                                  Image placeImage,
                                                                  List<FindLowPriceShopDto> shopsData,
-                                                                 List<Image> shopImage,
+                                                                 List<Image> shopImages,
                                                                  List<FindAllShopLowPriceDto.CustomRequest> customs,
                                                                  Map<Long, Address> shopsAddress,
                                                                  Map<Long, Wish> memberWish,
@@ -245,11 +245,23 @@ public interface ShopMapstructMapper {
                 customResponses.add(createCustom);
             }
 
+            // memberWish가 비어 있는 경우(null)
+            Long wishIdOfMember = null;
+            if (memberWish != null) {
+                wishIdOfMember = memberWish.get(shopId) == null ? null : memberWish.get(shopId).getId();
+            }
+
+            // shopOwner가 비어 있는 경우(null)
+            String shopOwnerName = null;
+            if (shopOwner != null) {
+                shopOwnerName = shopOwner.get(shopId) == null ? null : shopOwner.get(shopId).getNickname();
+            }
+
             FindAllShopLowPriceDto.ShopResponse shopResponse = FindAllShopLowPriceDto.ShopResponse.builder()
                     .id(shopId)
-                    .wishId(memberWish.get(shopId) == null ? null : memberWish.get(shopId).getId())
+                    .wishId(wishIdOfMember)
                     .totalPrice(shopDto.getTotalPrice())
-                    .memberName(shopOwner.get(shopId) == null ? null : shopOwner.get(shopId).getNickname())
+                    .memberName(shopOwnerName)
                     .name(shopDto.getName())
                     .pickUp(shopDto.getPickUp())
                     .storeUrl(shopDto.getStoreUrl())
