@@ -1,10 +1,7 @@
 package com.moa.moa.api.shop.shop.domain.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -14,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@EqualsAndHashCode
 @Schema(description = "최저가 검색 시 shop과 관련된 데이터 조회")
 public class FindLowPriceShopDto {
     @Schema(description = "렌탈샵 고유 번호", example = "1")

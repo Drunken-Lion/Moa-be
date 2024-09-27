@@ -1,9 +1,15 @@
 package com.moa.moa.api.shop.shop.application;
 
+import com.moa.moa.api.address.address.AddressProcessor;
 import com.moa.moa.api.address.address.domain.entity.Address;
 import com.moa.moa.api.category.category.domain.entity.Category;
 import com.moa.moa.api.category.category.util.enumerated.CategoryType;
+import com.moa.moa.api.member.custom.domain.dto.FindLowPriceCustomDto;
+import com.moa.moa.api.member.custom.util.enumerated.ClothesType;
+import com.moa.moa.api.member.custom.util.enumerated.EquipmentType;
+import com.moa.moa.api.member.custom.util.enumerated.Gender;
 import com.moa.moa.api.member.custom.util.enumerated.PackageType;
+import com.moa.moa.api.member.member.domain.MemberProcessor;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.member.member.util.enumerated.MemberRole;
 import com.moa.moa.api.member.wish.domain.WishProcessor;
@@ -11,19 +17,25 @@ import com.moa.moa.api.member.wish.domain.entity.Wish;
 import com.moa.moa.api.place.liftticket.domain.entity.LiftTicket;
 import com.moa.moa.api.place.liftticket.util.enumerated.LiftTicketStatus;
 import com.moa.moa.api.place.liftticket.util.enumerated.LiftTicketType;
+import com.moa.moa.api.place.place.domain.PlaceProcessor;
 import com.moa.moa.api.place.place.domain.entity.Place;
 import com.moa.moa.api.place.place.util.enumerated.PlaceLevel;
 import com.moa.moa.api.shop.item.domain.entity.Item;
 import com.moa.moa.api.shop.itemoption.domain.entity.ItemOption;
 import com.moa.moa.api.shop.itemoption.util.enumerated.ItemOptionName;
 import com.moa.moa.api.shop.naverreview.domain.entity.NaverReview;
+import com.moa.moa.api.shop.placeshop.domain.PlaceShopProcessor;
 import com.moa.moa.api.shop.placeshop.domain.entity.PlaceShop;
 import com.moa.moa.api.shop.review.domain.entity.Review;
 import com.moa.moa.api.shop.shop.application.mapstruct.ShopMapstructMapper;
 import com.moa.moa.api.shop.shop.application.mapstruct.ShopMapstructMapperImpl;
 import com.moa.moa.api.shop.shop.domain.ShopProcessor;
 import com.moa.moa.api.shop.shop.domain.dto.FindAllShopDto;
+import com.moa.moa.api.shop.shop.domain.dto.FindAllShopLowPriceDto;
+import com.moa.moa.api.shop.shop.domain.dto.FindLowPriceShopDto;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
+import com.moa.moa.api.shop.shop.util.ShopUtil;
+import com.moa.moa.api.time.businesstime.domain.BusinessTimeProcessor;
 import com.moa.moa.api.time.businesstime.domain.entity.BusinessTime;
 import com.moa.moa.api.time.operatingtime.domain.entity.OperatingTime;
 import com.moa.moa.api.time.operatingtime.util.enumerated.DayType;
@@ -45,9 +57,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -60,6 +70,16 @@ class ShopServiceTest {
     private ShopProcessor shopProcessor;
     @Mock
     private WishProcessor wishProcessor;
+    @Mock
+    private PlaceProcessor placeProcessor;
+    @Mock
+    private AddressProcessor addressProcessor;
+    @Mock
+    private PlaceShopProcessor placeShopProcessor;
+    @Mock
+    private BusinessTimeProcessor businessTimeProcessor;
+    @Mock
+    private MemberProcessor memberProcessor;
 
     @Mock
     private ShopMapstructMapper shopMapstructMapper;
@@ -75,6 +95,16 @@ class ShopServiceTest {
     private List<Wish> mockWishes;
     private List<FindAllShopDto.Response> mockAllShopResponses;
     private Member mockMember;
+
+    private Place mockPlace; // "비발디 파크"
+    private Address mockAddress; // "비발디 파크" 주소
+    private List<PlaceShop> mockPlaceShops;
+    private final List<FindLowPriceShopDto> mockShopLowPriceDtos = new ArrayList<>();
+    private final List<FindLowPriceCustomDto> mockCustoms = new ArrayList<>();
+    private final List<Image> mockShopImages = new ArrayList<>(); // TODO image 기능 완성 시 구현 추가
+    private final Map<Long, Address> mockShopsAddress = new HashMap<>();
+    private final Map<Long, Wish> mockShop1MemberWish = new HashMap<>();
+    private final Map<Long, Member> mockShop1Owner = new HashMap<>();
 
     @BeforeEach
     void beforeEach() {
@@ -108,7 +138,7 @@ class ShopServiceTest {
         createNaverReview(shops);
 
         // 스키장 렌탈샵 중간테이블 생성
-        createPlaceShop(places, shops);
+        List<PlaceShop> placeShops = createPlaceShop(places, shops);
 
         // 스키장 리프트권 생성
         List<LiftTicket> liftTickets = createLiftTicket(places);
@@ -126,6 +156,16 @@ class ShopServiceTest {
         mockWishes = createMockWishes();
         mockAllShopResponses = createAllShopResponse(shops, mockWishes, images);
         mockMember = members.get(3);
+
+        mockPlace = places.getFirst();
+        mockAddress = addresses.getFirst();
+        mockPlaceShops = placeShops;
+        mockShopLowPriceDtos.add(mockLowPriceShop1());
+        mockShopsAddress.put(mockShop1().getId(), mockShop1Address());
+        mockShop1MemberWish.put(mockShop1().getId(), mockShop1WishOfMemberThree());
+        mockShop1Owner.put(mockShop1().getId(), mockOwnerMember());
+        mockCustoms.add(mockCustom1ForSearch());
+        mockCustoms.add(mockCustom2ForSearch());
     }
 
     @Test
@@ -183,6 +223,148 @@ class ShopServiceTest {
         assertThat(shopResponse.places().get(0).name()).isEqualTo("비발디파크");
     }
 
+    @Test
+    @DisplayName("[성공] 최저가 렌탈샵 검색")
+    public void findAllShopSearchForTheLowestPrice_success() {
+        // given
+        LocalDate visitDate = LocalDate.of(2024, 7, 30);
+        DayType dayType = ShopUtil.date.getDayType(visitDate);
+
+        // place 관련
+        when(placeProcessor.findPlaceByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.ofNullable(mockPlace));
+        when(addressProcessor.findAddressByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.ofNullable(mockAddress));
+
+        List<PlaceShop> mockPlaceShopsByPlace = new ArrayList<>();
+        mockPlaceShopsByPlace.add(mockPlaceShops.get(0));
+        mockPlaceShopsByPlace.add(mockPlaceShops.get(1));
+        mockPlaceShopsByPlace.add(mockPlaceShops.get(2));
+        when(placeShopProcessor.findAllShopRelatedToPlace(mockPlace)).thenReturn(mockPlaceShopsByPlace);
+
+        List<Long> mockShopIds = new ArrayList<>(); // [1, 2, 3]
+        mockShopIds.add(mockPlaceShops.get(0).getId());
+        mockShopIds.add(mockPlaceShops.get(1).getId());
+        mockShopIds.add(mockPlaceShops.get(2).getId());
+
+        Map<Long, Long> shopBusinessTimeIds = new HashMap<>(); // {1=2, 2=3, 3=6}
+        shopBusinessTimeIds.put(mockShops.get(0).getId(), mockPlaceShops.get(1).getId());
+        shopBusinessTimeIds.put(mockShops.get(1).getId(), mockPlaceShops.get(2).getId());
+        shopBusinessTimeIds.put(mockShops.get(2).getId(), mockPlaceShops.get(5).getId());
+
+        when(shopProcessor.findBusinessTimeIdOfShops(mockShopIds)).thenReturn(Optional.of(shopBusinessTimeIds));
+
+        // shopBusinessTimeIds.keySet() for문
+        when(businessTimeProcessor.isShopInOperation(2L, visitDate, dayType)).thenReturn(true);
+        when(businessTimeProcessor.isShopInOperation(3L, visitDate, dayType)).thenReturn(true);
+        when(businessTimeProcessor.isShopInOperation(6L, visitDate, dayType)).thenReturn(true);
+
+        // shop 관련
+        // shopsInOperation for문
+        when(shopProcessor.findShopWithCustomForSearch(
+                eq(1L),
+                anyList(),
+                any(Boolean.class))).thenReturn(Optional.ofNullable(mockLowPriceShop1()));
+        when(shopProcessor.findShopWithCustomForSearch(
+                eq(2L),
+                anyList(),
+                any(Boolean.class))).thenReturn(Optional.ofNullable(mockLowPriceShop2()));
+        when(shopProcessor.findShopWithCustomForSearch(
+                eq(3L),
+                anyList(),
+                any(Boolean.class))).thenReturn(Optional.empty());
+
+        when(shopProcessor.findShopByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.ofNullable(mockShop1()));
+
+        when(addressProcessor.findAddressByIdAndDeletedAtIsNull(2L)).thenReturn(Optional.ofNullable(mockShop1Address()));
+
+        if (mockMember != null) {
+            when(wishProcessor.findWishByShopAndMember(any(Shop.class), any(Member.class))).thenReturn(Optional.ofNullable(mockShop1WishOfMemberThree()));
+        }
+
+        Long memberId = mockShop1().getMember() == null ? null : mockOwnerMember().getId();
+        when(shopProcessor.findMemberIdOfShopById(1L)).thenReturn(Optional.ofNullable(memberId));
+
+        when(memberProcessor.findMemberByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.ofNullable(mockOwnerMember()));
+
+        when(shopMapstructMapper.ofFindAllLowestShops(
+                visitDate,
+                mockPlace,
+                mockAddress,
+                null,
+                mockShopLowPriceDtos,
+                null,
+                mockLowestPriceRequests().customs(),
+                mockShopsAddress,
+                mockShop1MemberWish,
+                mockShop1Owner)).thenReturn(createLowestPriceShopsResponse(visitDate));
+
+        // when
+        FindAllShopLowPriceDto.Response allShopSearchForTheLowestPrice = shopService.findAllShopSearchForTheLowestPrice(mockLowestPriceRequests(), mockMember);
+
+        // then
+        assertThat(allShopSearchForTheLowestPrice.visitDate()).isEqualTo(LocalDate.of(2024, 7, 30));
+
+        FindAllShopLowPriceDto.PlaceResponse place = allShopSearchForTheLowestPrice.place();
+        assertThat(place.id()).isEqualTo(1L);
+        assertThat(place.name()).isEqualTo("비발디파크");
+        assertThat(place.open()).isEqualTo(LocalDate.of(2024, 10, 15));
+        assertThat(place.close()).isEqualTo(LocalDate.of(2025, 3, 12));
+        assertThat(place.recLevel()).isEqualTo(PlaceLevel.LEVEL_1);
+
+        FindAllShopLowPriceDto.AddressResponse placeAddress = place.address();
+        assertThat(placeAddress.id()).isEqualTo(1L);
+        assertThat(placeAddress.address()).isEqualTo("강원도 홍천군 서면 한치골길 262");
+        assertThat(placeAddress.addressDetail()).isNull();
+        assertThat(placeAddress.locationX()).isEqualTo(127.687106349987);
+        assertThat(placeAddress.locationY()).isEqualTo(37.6521031526954);
+        assertThat(placeAddress.mapUrl()).isEqualTo("https://map.naver.com/p/entry/place/13139708?c=15.00,0,0,0,dh");
+
+        // TODO: image 기능 완성 시 구현 추가
+        assertThat(place.images()).isNotNull();
+
+        List<FindAllShopLowPriceDto.ShopResponse> shops = allShopSearchForTheLowestPrice.shops();
+        assertThat(shops.size()).isEqualTo(1);
+
+        FindAllShopLowPriceDto.ShopResponse shop1Response = shops.get(0);
+        assertThat(shop1Response.id()).isEqualTo(1L);
+        assertThat(shop1Response.wishId()).isNull();
+        assertThat(shop1Response.totalPrice()).isEqualTo(BigDecimal.valueOf(163000.0));
+        assertThat(shop1Response.memberName()).isEqualTo("admin");
+        assertThat(shop1Response.name()).isEqualTo("찐렌탈샵");
+        assertThat(shop1Response.storeUrl()).isEqualTo("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9");
+
+        assertThat(shop1Response.moaReview().avgScore()).isEqualTo(2.5D);
+        assertThat(shop1Response.moaReview().totalCount()).isEqualTo(4L);
+
+        assertThat(shop1Response.naverReview().avgScore()).isEqualTo(4.5D);
+        assertThat(shop1Response.naverReview().totalCount()).isEqualTo(186L);
+
+        assertThat(shop1Response.address().id()).isEqualTo(2L);
+        assertThat(shop1Response.address().address()).isEqualTo("강원 홍천군 서면 한치골길 39");
+        assertThat(shop1Response.address().addressDetail()).isEqualTo("1, 2층");
+        assertThat(shop1Response.address().locationX()).isEqualTo(37.625378749786);
+        assertThat(shop1Response.address().locationY()).isEqualTo(127.666621133276);
+        assertThat(shop1Response.address().mapUrl()).isEqualTo("https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%B0%90%EB%A0%8C%ED%83%88%EC%83%B5/place/1680503531?c=15.00,0,0,0,dh&isCorrectAnswer=true");
+
+        // TODO: image 기능 완성 시 구현 추가
+        assertThat(shop1Response.images()).isNotNull();
+
+        List<FindAllShopLowPriceDto.CustomResponse> customsResponse = shop1Response.customs();
+        assertThat(customsResponse.size()).isEqualTo(2);
+        assertThat(customsResponse.get(0).gender()).isEqualTo(Gender.MALE.getDesc());
+        assertThat(customsResponse.get(0).nickname()).isEqualTo("커스텀1");
+        assertThat(customsResponse.get(0).packageType()).isEqualTo(PackageType.LIFT_EQUIPMENT_CLOTHES.getDesc());
+        assertThat(customsResponse.get(0).clothesType()).isEqualTo(ClothesType.LUXURY.getDesc());
+        assertThat(customsResponse.get(0).equipmentType()).isEqualTo(EquipmentType.SHORT_SKI.getDesc());
+        assertThat(customsResponse.get(0).price()).isEqualTo(BigDecimal.valueOf(87000.0));
+
+        assertThat(customsResponse.get(1).gender()).isEqualTo(Gender.FEMALE.getDesc());
+        assertThat(customsResponse.get(1).nickname()).isEqualTo("커스텀2");
+        assertThat(customsResponse.get(1).packageType()).isEqualTo(PackageType.LIFT_EQUIPMENT_CLOTHES.getDesc());
+        assertThat(customsResponse.get(1).clothesType()).isEqualTo(ClothesType.STANDARD.getDesc());
+        assertThat(customsResponse.get(1).equipmentType()).isEqualTo(EquipmentType.SKI.getDesc());
+        assertThat(customsResponse.get(1).price()).isEqualTo(BigDecimal.valueOf(76000.0));
+    }
+
     private Category createCategory() {
         Category category = Category.builder()
                 .categoryType(CategoryType.SKI_RESORT)
@@ -193,23 +375,23 @@ class ShopServiceTest {
 
     private List<Address> createAddress() {
         List<Address> list = new ArrayList<>();
-        Address address_1 = createAddress("강원도 홍천군 서면 한치골길 262", 37.6521031526954, 127.687106349987,
+        Address address_1 = createAddress(1L, "강원도 홍천군 서면 한치골길 262", 37.6521031526954, 127.687106349987,
                 "https://map.naver.com/p/entry/place/13139708?c=15.00,0,0,0,dh");
-        Address address_2 = createAddress("강원 홍천군 서면 한치골길 39", "1, 2층", 37.625378749786, 127.666621133276,
+        Address address_2 = createAddress(2L, "강원 홍천군 서면 한치골길 39", "1, 2층", 37.625378749786, 127.666621133276,
                 "https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%B0%90%EB%A0%8C%ED%83%88%EC%83%B5/place/1680503531?c=15.00,0,0,0,dh&isCorrectAnswer=true");
-        Address address_3 = createAddress("강원 홍천군 서면 한치골길 952", 37.6935333700434, 127.701873788335,
+        Address address_3 = createAddress(3L, "강원 홍천군 서면 한치골길 952", 37.6935333700434, 127.701873788335,
                 "https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%95%84%EC%A7%80%ED%8A%B8/place/11590090?c=18.01,0,0,0,dh&isCorrectAnswer=true");
-        Address address_4 = createAddress("강원 정선군 고한읍 하이원길 424", 37.2072213760495, 128.836835354268,
+        Address address_4 = createAddress(4L, "강원 정선군 고한읍 하이원길 424", 37.2072213760495, 128.836835354268,
                 "https://map.naver.com/p/entry/place/92136142?lng=128.8388599&lat=37.204042&placePath=%2Fhome&entry=plt&searchType=place&c=15.00,0,0,0,dh");
-        Address address_5 = createAddress("강원 춘천시 남산면 북한강변길 688", 37.8300557977982, 127.57878172946,
+        Address address_5 = createAddress(5L, "강원 춘천시 남산면 북한강변길 688", 37.8300557977982, 127.57878172946,
                 "https://map.naver.com/p/search/%EC%8A%A4%ED%82%A4%EC%9E%A5/place/15648643?placePath=?entry=pll&from=nx&fromNxList=true&searchType=place&c=15.00,0,0,0,dh");
-        Address address_6 = createAddress("강원 홍천군 서면 한서로 2137", "비발디파크인생렌탈샵", 37.6167793731889, 127.671714070978,
+        Address address_6 = createAddress(6L, "강원 홍천군 서면 한서로 2137", "비발디파크인생렌탈샵", 37.6167793731889, 127.671714070978,
                 "https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%20%ED%8C%8C%ED%81%AC%20%EB%A0%8C%ED%83%88/place/1034233118?c=12.00,0,0,0,dh&placePath=%3Fentry%253Dpll");
-        Address address_7 = createAddress("강원 정선군 고한읍 고한로 40", "하이원 스키샵 월남스키 렌탈샵", 37.2076563451798, 128.843415629048,
+        Address address_7 = createAddress(7L, "강원 정선군 고한읍 고한로 40", "하이원 스키샵 월남스키 렌탈샵", 37.2076563451798, 128.843415629048,
                 "https://map.naver.com/p/search/%ED%95%98%EC%9D%B4%EC%9B%90%EB%A6%AC%EC%A1%B0%ED%8A%B8%20%EB%A0%8C%ED%83%88%EC%83%B5/place/12447242?c=15.00,0,0,0,dh&placePath=%3Fentry%253Dpll");
-        Address address_8 = createAddress("강원 정선군 사북읍 하이원길 36", "눈의나라", 37.2234130104246, 128.814883350542,
+        Address address_8 = createAddress(8L, "강원 정선군 사북읍 하이원길 36", "눈의나라", 37.2234130104246, 128.814883350542,
                 "https://map.naver.com/p/search/%ED%95%98%EC%9D%B4%EC%9B%90%EB%A6%AC%EC%A1%B0%ED%8A%B8%20%EB%A0%8C%ED%83%88%EC%83%B5/place/12995662?c=17.00,0,0,0,dh&placePath=%3Fentry%253Dpll");
-        Address address_9 = createAddress("강원 정선군 고한읍 고한로 12", "스노우블루 스키샵", 37.2095420989986, 128.841584050646,
+        Address address_9 = createAddress(9L, "강원 정선군 고한읍 고한로 12", "스노우블루 스키샵", 37.2095420989986, 128.841584050646,
                 "https://map.naver.com/p/search/%ED%95%98%EC%9D%B4%EC%9B%90%EB%A6%AC%EC%A1%B0%ED%8A%B8%20%EB%A0%8C%ED%83%88%EC%83%B5/place/1053516546?c=17.00,0,0,0,dh&placePath=%3Fentry%253Dpll");
 
         list.add(address_1);
@@ -311,10 +493,10 @@ class ShopServiceTest {
         Place place_2 = createPlace(2L, category, addresses.get(3), businessTimes.get(3), "하이원리조트", LocalDate.of(2024, 10, 16),
                 LocalDate.of(2025, 3, 12), PlaceLevel.LEVEL_2);
 
-        Place place_3 = createPlace(2L, category, addresses.get(4), businessTimes.get(4), "엘리시안", LocalDate.of(2024, 10, 17),
+        Place place_3 = createPlace(3L, category, addresses.get(4), businessTimes.get(4), "엘리시안", LocalDate.of(2024, 10, 17),
                 LocalDate.of(2025, 3, 12), PlaceLevel.LEVEL_4);
 
-        Place place_4 = createPlace(3L, category, addresses.get(8), businessTimes.get(8), "지산리조트", LocalDate.of(2024, 10, 18),
+        Place place_4 = createPlace(4L, category, addresses.get(8), businessTimes.get(8), "지산리조트", LocalDate.of(2024, 10, 18),
                 LocalDate.of(2025, 3, 15), PlaceLevel.LEVEL_4);
 
         list.add(place_1);
@@ -342,10 +524,11 @@ class ShopServiceTest {
                 .build();
     }
 
-    private Address createAddress(String address, double y, double x, String url, boolean... isDeleted) {
+    private Address createAddress(Long addressId, String address, double y, double x, String url, boolean... isDeleted) {
         boolean deleted = isDeleted.length > 0 && isDeleted[0];
 
         return Address.builder()
+                .id(addressId)
                 .address(address)
                 .location(geometryFactory.createPoint(new Coordinate(x, y)))
                 .url(url)
@@ -353,10 +536,11 @@ class ShopServiceTest {
                 .build();
     }
 
-    private Address createAddress(String address, String detail, double y, double x, String url, boolean... isDeleted) {
+    private Address createAddress(Long addressId, String address, String detail, double y, double x, String url, boolean... isDeleted) {
         boolean deleted = isDeleted.length > 0 && isDeleted[0];
 
         return Address.builder()
+                .id(addressId)
                 .address(address)
                 .addressDetail(detail)
                 .location(geometryFactory.createPoint(new Coordinate(x, y)))
@@ -648,38 +832,38 @@ class ShopServiceTest {
 
     private List<Member> createMember() {
         List<Member> list = new ArrayList<>();
-        list.add(Member.builder().email("admin@moa.com").nickname("admin").role(MemberRole.ADMIN).build());
-        list.add(Member.builder().email("one@moa.com").nickname("one").role(MemberRole.MEMBER).build());
-        list.add(Member.builder().email("two@moa.com").nickname("two").role(MemberRole.MEMBER).build());
-        list.add(Member.builder().email("three@moa.com").nickname("three").role(MemberRole.MEMBER).build());
-        list.add(Member.builder().email("four@moa.com").nickname("four").role(MemberRole.MEMBER).build());
-        list.add(Member.builder().email("five@moa.com").nickname("five").role(MemberRole.MEMBER).build());
+        list.add(Member.builder().id(1L).email("admin@moa.com").nickname("admin").role(MemberRole.ADMIN).build());
+        list.add(Member.builder().id(2L).email("one@moa.com").nickname("one").role(MemberRole.MEMBER).build());
+        list.add(Member.builder().id(3L).email("two@moa.com").nickname("two").role(MemberRole.MEMBER).build());
+        list.add(Member.builder().id(4L).email("three@moa.com").nickname("three").role(MemberRole.MEMBER).build());
+        list.add(Member.builder().id(5L).email("four@moa.com").nickname("four").role(MemberRole.MEMBER).build());
+        list.add(Member.builder().id(6L).email("five@moa.com").nickname("five").role(MemberRole.MEMBER).build());
         return list;
     }
 
     private List<PlaceShop> createPlaceShop(List<Place> places, List<Shop> shops) {
         List<PlaceShop> list_0 = new ArrayList<>();
-        list_0.add(PlaceShop.builder().place(places.get(0)).shop(shops.get(0)).build());
+        list_0.add(PlaceShop.builder().id(1L).place(places.get(0)).shop(shops.get(0)).build());
         shops.get(0).addPlaceShops(list_0);
 
         List<PlaceShop> list_1 = new ArrayList<>();
-        list_1.add(PlaceShop.builder().place(places.get(0)).shop(shops.get(1)).build());
+        list_1.add(PlaceShop.builder().id(2L).place(places.get(0)).shop(shops.get(1)).build());
         shops.get(1).addPlaceShops(list_1);
 
         List<PlaceShop> list_2 = new ArrayList<>();
-        list_2.add(PlaceShop.builder().place(places.get(0)).shop(shops.get(2)).build());
+        list_2.add(PlaceShop.builder().id(3L).place(places.get(0)).shop(shops.get(2)).build());
         shops.get(2).addPlaceShops(list_2);
 
         List<PlaceShop> list_3 = new ArrayList<>();
-        list_3.add(PlaceShop.builder().place(places.get(1)).shop(shops.get(3)).build());
+        list_3.add(PlaceShop.builder().id(4L).place(places.get(1)).shop(shops.get(3)).build());
         shops.get(3).addPlaceShops(list_3);
 
         List<PlaceShop> list_4 = new ArrayList<>();
-        list_4.add(PlaceShop.builder().place(places.get(1)).shop(shops.get(4)).build());
+        list_4.add(PlaceShop.builder().id(5L).place(places.get(1)).shop(shops.get(4)).build());
         shops.get(4).addPlaceShops(list_4);
 
         List<PlaceShop> list_5 = new ArrayList<>();
-        list_5.add(PlaceShop.builder().place(places.get(1)).shop(shops.get(5)).build());
+        list_5.add(PlaceShop.builder().id(6L).place(places.get(1)).shop(shops.get(5)).build());
         shops.get(5).addPlaceShops(list_5);
 
         List<PlaceShop> list = new ArrayList<>();
@@ -694,12 +878,12 @@ class ShopServiceTest {
 
     private List<Shop> createShop(List<Member> members, Category category, List<Address> addresses, List<BusinessTime> times) {
         List<Shop> list = new ArrayList<>();
-        list.add(Shop.builder().id(1L).member(members.get(0)).category(category).address(addresses.get(1)).businessTime(times.get(1)).name("찐렌탈샵").pickUp(true).url("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9").build());
-        list.add(Shop.builder().id(2L).member(members.get(0)).category(category).address(addresses.get(5)).businessTime(times.get(5)).name("인생렌탈샵").pickUp(false).url("https://smartstore.naver.com/dgshop/products/9614236927").build());
-        list.add(Shop.builder().id(3L).member(members.get(0)).category(category).address(addresses.get(6)).businessTime(times.get(6)).name("월남스키").pickUp(true).url("https://smartstore.naver.com/wnskishop/products/5314182831").build());
-        list.add(Shop.builder().id(4L).member(members.get(0)).category(category).address(addresses.get(7)).businessTime(times.get(7)).name("눈의나라").pickUp(false).url("https://smartstore.naver.com/noonnara/products/5323804307").build());
-        list.add(Shop.builder().id(5L).member(members.get(0)).category(category).address(addresses.get(8)).businessTime(times.get(8)).name("스노우블루").pickUp(true).url("https://smartstore.naver.com/snowblue1/products/9727997372").build());
-        list.add(Shop.builder().id(6L).member(members.get(0)).category(category).address(addresses.get(2)).businessTime(times.get(2)).name("아지트").pickUp(true).url("https://smartstore.naver.com/rentalshop1/products/6117544378?nl-au=9e070d7e195341e699c36096c861ab13&NaPm=ct%3Dlziltmg8%7Cci%3D0d4c31cf63842f0accf616231028952db4b1b241%7Ctr%3Dslsl%7Csn%3D5126374%7Chk%3D73c670109b1457dee566270729957b85127e0128").build());
+        list.add(Shop.builder().id(1L).category(category).address(addresses.get(1)).businessTime(times.get(1)).name("찐렌탈샵").pickUp(true).url("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9").build());
+        list.add(Shop.builder().id(2L).category(category).address(addresses.get(2)).businessTime(times.get(2)).name("아지트").pickUp(true).url("https://smartstore.naver.com/rentalshop1/products/6117544378?nl-au=9e070d7e195341e699c36096c861ab13&NaPm=ct%3Dlziltmg8%7Cci%3D0d4c31cf63842f0accf616231028952db4b1b241%7Ctr%3Dslsl%7Csn%3D5126374%7Chk%3D73c670109b1457dee566270729957b85127e0128").build());
+        list.add(Shop.builder().id(3L).category(category).address(addresses.get(5)).businessTime(times.get(5)).name("인생렌탈샵").pickUp(false).url("https://smartstore.naver.com/dgshop/products/9614236927").build());
+        list.add(Shop.builder().id(4L).category(category).address(addresses.get(6)).businessTime(times.get(6)).name("월남스키").pickUp(true).url("https://smartstore.naver.com/wnskishop/products/5314182831").build());
+        list.add(Shop.builder().id(5L).category(category).address(addresses.get(7)).businessTime(times.get(7)).name("눈의나라").pickUp(false).url("https://smartstore.naver.com/noonnara/products/5323804307").build());
+        list.add(Shop.builder().id(6L).category(category).address(addresses.get(8)).businessTime(times.get(8)).name("스노우블루").pickUp(true).url("https://smartstore.naver.com/snowblue1/products/9727997372").build());
         return list;
     }
 
@@ -1220,5 +1404,168 @@ class ShopServiceTest {
                 naverReview,
                 places
         );
+    }
+
+    // id 1인 "찐렌탈샵"
+    private Shop mockShop1() {
+        Shop shop = Shop.builder()
+                .id(1L)
+                .category(null)
+                .address(null)
+                .businessTime(null)
+                .name("찐렌탈샵")
+                .pickUp(true)
+                .url("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9")
+                .build();
+        shop.addMember(mockOwnerMember());
+        shop.addAddress(mockShop1Address());
+
+        return shop;
+    }
+
+    // id 1인 "찐렌탈샵"의 주소
+    private Address mockShop1Address() {
+        return Address.builder()
+                .id(2L)
+                .address("강원 홍천군 서면 한치골길 39")
+                .addressDetail("1, 2층")
+                .location(geometryFactory.createPoint(new Coordinate(37.625378749786, 127.666621133276)))
+                .url("https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%B0%90%EB%A0%8C%ED%83%88%EC%83%B5/place/1680503531?c=15.00,0,0,0,dh&isCorrectAnswer=true")
+                .build();
+    }
+
+    // id 2인 "아지트"의 주소
+    private Address mockShop2Address() {
+        return Address.builder()
+                .id(3L)
+                .address("강원 홍천군 서면 한치골길 952")
+                .addressDetail(null)
+                .location(geometryFactory.createPoint(new Coordinate(37.6935333700434, 127.701873788335)))
+                .url("https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%95%84%EC%A7%80%ED%8A%B8/place/11590090?c=18.01,0,0,0,dh&isCorrectAnswer=true")
+                .build();
+    }
+
+    // mockMember("three@moa.com")은 id 1인 "찐렌탈샵"을 좋아하지 않는다.
+    private Wish mockShop1WishOfMemberThree() {
+        return Wish.builder()
+                .shop(mockShop1())
+                .member(null)
+                .build();
+    }
+
+    // 최저가 렌탈샵 검색을 위해 커스텀 가공
+    private FindLowPriceCustomDto mockCustom1ForSearch() {
+        return FindLowPriceCustomDto.builder()
+                .gender(Gender.MALE)
+                .nickname("커스텀1")
+                .liftType("스마트권")
+                .liftTime("4")
+                .itemName("주중 스마트4시간권+장비+의류")
+                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
+                .clothesType(ClothesType.LUXURY)
+                .equipmentType(EquipmentType.SHORT_SKI)
+                .itemOptionNames(ShopUtil.match.getItemOptionNames(ClothesType.LUXURY, EquipmentType.SHORT_SKI))
+                .build();
+    }
+
+    private FindLowPriceCustomDto mockCustom2ForSearch() {
+        return FindLowPriceCustomDto.builder()
+                .gender(Gender.MALE)
+                .nickname("커스텀2")
+                .liftType("시간지정권-오후권")
+                .liftTime("4")
+                .itemName("주중 오후권+장비+의류")
+                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
+                .clothesType(ClothesType.STANDARD)
+                .equipmentType(EquipmentType.SKI)
+                .itemOptionNames(null)
+                .build();
+    }
+
+    // id 1인 "찐렌탈샵"에 대한 2명의 커스텀 가격 결과
+    private FindLowPriceShopDto mockLowPriceShop1() {
+        return FindLowPriceShopDto.builder()
+                .shopId(1L)
+                .name("찐렌탈샵")
+                .pickUp(true)
+                .storeUrl("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9")
+                .customPrices(List.of(BigDecimal.valueOf(87000.0), BigDecimal.valueOf(76000.0)))
+                .totalPrice(BigDecimal.valueOf(163000.0))
+                .avgScore(2.5)
+                .totalCount(4L)
+                .nrAvgScore(4.5)
+                .nrTotalCount(186L)
+                .build();
+    }
+
+    // id 2인 "아지트"에 대한 2명의 커스텀 가격 결과
+    private FindLowPriceShopDto mockLowPriceShop2() {
+        return FindLowPriceShopDto.builder()
+                .shopId(2L)
+                .name("아지트")
+                .pickUp(true)
+                .storeUrl("https://smartstore.naver.com/rentalshop1/products/6117544378?nl-au=9e070d7e195341e699c36096c861ab13&NaPm=ct%3Dlziltmg8%7Cci%3D0d4c31cf63842f0accf616231028952db4b1b241%7Ctr%3Dslsl%7Csn%3D5126374%7Chk%3D73c670109b1457dee566270729957b85127e0128")
+                .customPrices(List.of(BigDecimal.valueOf(92000.0), BigDecimal.valueOf(0.0)))
+                .totalPrice(BigDecimal.valueOf(92000.0))
+                .avgScore(3.0)
+                .totalCount(5L)
+                .nrAvgScore(4.0)
+                .nrTotalCount(299L)
+                .build();
+    }
+
+    // id 1인 "찐렌탈샵" 사장
+    private Member mockOwnerMember() {
+        // 임시로 테스트를 위해서 추가한 id 1인 "찐렌탈샵"의 owner
+        return Member.builder()
+                .id(1L)
+                .email("admin@moa.com")
+                .nickname("admin")
+                .role(MemberRole.ADMIN)
+                .build();
+    }
+
+    // 최저가 렌탈샵 검색 요청
+    private FindAllShopLowPriceDto.Request mockLowestPriceRequests() {
+        FindAllShopLowPriceDto.CustomRequest customRequest1 = FindAllShopLowPriceDto.CustomRequest.builder()
+                .gender(Gender.MALE)
+                .nickname("커스텀1")
+                .liftType("스마트권")
+                .liftTime("4")
+                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
+                .clothesType(ClothesType.LUXURY)
+                .equipmentType(EquipmentType.SHORT_SKI)
+                .build();
+
+        FindAllShopLowPriceDto.CustomRequest customRequest2 = FindAllShopLowPriceDto.CustomRequest.builder()
+                .gender(Gender.FEMALE)
+                .nickname("커스텀2")
+                .liftType("시간지정권-오후권")
+                .liftTime("4")
+                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
+                .clothesType(ClothesType.STANDARD)
+                .equipmentType(EquipmentType.SKI)
+                .build();
+
+        return FindAllShopLowPriceDto.Request.builder()
+                .place(FindAllShopLowPriceDto.PlaceRequest.builder().id(1L).visitDate(LocalDate.of(2024,7,30)).build())
+                .shop(FindAllShopLowPriceDto.ShopRequest.builder().pickUp(true).build())
+                .customs(List.of(customRequest1, customRequest2))
+                .build();
+    }
+
+    // 최저가 렌탈샵 검색 응답
+    private FindAllShopLowPriceDto.Response createLowestPriceShopsResponse(LocalDate visitDate) {
+        return shopMapstructMapperImpl.ofFindAllLowestShops(
+                visitDate,
+                mockPlace,
+                mockAddress,
+                null, // placeImage
+                mockShopLowPriceDtos,
+                mockShopImages,
+                mockLowestPriceRequests().customs(), // customs
+                mockShopsAddress,
+                mockShop1MemberWish,
+                mockShop1Owner);
     }
 }

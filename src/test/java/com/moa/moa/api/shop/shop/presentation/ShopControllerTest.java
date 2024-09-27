@@ -321,10 +321,10 @@ class ShopControllerTest {
                 .andExpect(jsonPath("$.shops[0].pickUp").value(true))
                 .andExpect(jsonPath("$.shops[0].storeUrl").value("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9"))
 
-                .andExpect(jsonPath("$.shops[0].moaReview.avgScore").value(2.5))
-                .andExpect(jsonPath("$.shops[0].moaReview.totalCount").value(4))
-                .andExpect(jsonPath("$.shops[0].naverReview.avgScore").value(4.5))
-                .andExpect(jsonPath("$.shops[0].naverReview.totalCount").value(186))
+                .andExpect(jsonPath("$.shops[0].moaReview.avgScore").value(2.5D))
+                .andExpect(jsonPath("$.shops[0].moaReview.totalCount").value(4L))
+                .andExpect(jsonPath("$.shops[0].naverReview.avgScore").value(4.5D))
+                .andExpect(jsonPath("$.shops[0].naverReview.totalCount").value(186L))
 
                 .andExpect(jsonPath("$.shops[0].address.id", instanceOf(Number.class)))
                 .andExpect(jsonPath("$.shops[0].address.address").value("강원 홍천군 서면 한치골길 39"))
