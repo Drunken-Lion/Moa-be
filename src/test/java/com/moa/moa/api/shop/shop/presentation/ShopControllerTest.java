@@ -277,50 +277,6 @@ class ShopControllerTest {
                 .andExpect(jsonPath("$.naverReview.totalCount").value(186L));
     }
 
-    // 최저가 렌탈샵 검색 요청 정보
-    private FindAllShopLowPriceDto.Request getLowPriceRequest(int year, int month, int dayOfMonth) {
-        Place place1 = placeRepository.findPlaceByNameAndDeletedAtIsNull("비발디파크").get();
-
-        FindAllShopLowPriceDto.PlaceRequest placeRequest = FindAllShopLowPriceDto.PlaceRequest.builder()
-                .id(place1.getId())
-                .visitDate(LocalDate.of(year, month, dayOfMonth))
-                .build();
-
-        FindAllShopLowPriceDto.ShopRequest shopRequest = FindAllShopLowPriceDto.ShopRequest.builder()
-                .pickUp(true)
-                .build();
-
-        List<FindAllShopLowPriceDto.CustomRequest> customRequests = new ArrayList<>();
-        FindAllShopLowPriceDto.CustomRequest custom1 = FindAllShopLowPriceDto.CustomRequest.builder()
-                .gender(Gender.MALE)
-                .nickname("커스텀1")
-                .liftType("스마트권")
-                .liftTime("4")
-                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
-                .clothesType(ClothesType.LUXURY)
-                .equipmentType(EquipmentType.SHORT_SKI)
-                .build();
-
-        FindAllShopLowPriceDto.CustomRequest custom2 = FindAllShopLowPriceDto.CustomRequest.builder()
-                .gender(Gender.FEMALE)
-                .nickname("커스텀2")
-                .liftType("시간지정권-오후권")
-                .liftTime("4")
-                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
-                .clothesType(ClothesType.STANDARD)
-                .equipmentType(EquipmentType.SKI)
-                .build();
-
-        customRequests.add(custom1);
-        customRequests.add(custom2);
-
-        return FindAllShopLowPriceDto.Request.builder()
-                .place(placeRequest)
-                .shop(shopRequest)
-                .customs(customRequests)
-                .build();
-    }
-
     @Test
     @DisplayName("[성공] 최저가 렌탈샵 검색")
     void findAllShopSearchForTheLowestPrice_success() throws Exception {
@@ -1350,5 +1306,49 @@ class ShopControllerTest {
         list.add(ItemOption.builder().shop(shops.get(5)).name(ItemOptionName.INLINE_SKI).used(true).startTime(6L).endTime(13L).addPrice(BigDecimal.valueOf(12000L)).build());
         itemOptionRepository.saveAll(list);
         return list;
+    }
+
+    // 최저가 렌탈샵 검색 요청 정보
+    private FindAllShopLowPriceDto.Request getLowPriceRequest(int year, int month, int dayOfMonth) {
+        Place place1 = placeRepository.findPlaceByNameAndDeletedAtIsNull("비발디파크").get();
+
+        FindAllShopLowPriceDto.PlaceRequest placeRequest = FindAllShopLowPriceDto.PlaceRequest.builder()
+                .id(place1.getId())
+                .visitDate(LocalDate.of(year, month, dayOfMonth))
+                .build();
+
+        FindAllShopLowPriceDto.ShopRequest shopRequest = FindAllShopLowPriceDto.ShopRequest.builder()
+                .pickUp(true)
+                .build();
+
+        List<FindAllShopLowPriceDto.CustomRequest> customRequests = new ArrayList<>();
+        FindAllShopLowPriceDto.CustomRequest custom1 = FindAllShopLowPriceDto.CustomRequest.builder()
+                .gender(Gender.MALE)
+                .nickname("커스텀1")
+                .liftType("스마트권")
+                .liftTime("4")
+                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
+                .clothesType(ClothesType.LUXURY)
+                .equipmentType(EquipmentType.SHORT_SKI)
+                .build();
+
+        FindAllShopLowPriceDto.CustomRequest custom2 = FindAllShopLowPriceDto.CustomRequest.builder()
+                .gender(Gender.FEMALE)
+                .nickname("커스텀2")
+                .liftType("시간지정권-오후권")
+                .liftTime("4")
+                .packageType(PackageType.LIFT_EQUIPMENT_CLOTHES)
+                .clothesType(ClothesType.STANDARD)
+                .equipmentType(EquipmentType.SKI)
+                .build();
+
+        customRequests.add(custom1);
+        customRequests.add(custom2);
+
+        return FindAllShopLowPriceDto.Request.builder()
+                .place(placeRequest)
+                .shop(shopRequest)
+                .customs(customRequests)
+                .build();
     }
 }

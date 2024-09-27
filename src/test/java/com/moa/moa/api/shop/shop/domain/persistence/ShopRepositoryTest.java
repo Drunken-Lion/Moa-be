@@ -109,6 +109,32 @@ class ShopRepositoryTest {
 
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
+    // 최저가 렌탈샵 검색 고정값
+    private final LocalDate visitDate = LocalDate.of(2024, 7, 30);
+    private final LocalDate visitDateNotInOperation = LocalDate.of(2025, 1, 28);
+
+    // 커스텀 1의 정보
+    private final Gender custom1Gender = Gender.MALE;
+    private final String custom1Nickname = "커스텀1";
+    private final String custom1LiftType= "스마트권";
+    private final String custom1LiftTime= "4";
+    private final PackageType custom1PackageType = PackageType.LIFT_EQUIPMENT_CLOTHES;
+    private final ClothesType custom1ClothesType = ClothesType.LUXURY;
+    private final EquipmentType custom1equipmentType = EquipmentType.SHORT_SKI;
+    private final String custom1ItemName = ShopUtil.mix.getItemName(visitDate, custom1LiftType, custom1LiftTime, custom1PackageType);
+    private final List<ItemOptionName> custom1ItemOptionNames = ShopUtil.match.getItemOptionNames(custom1ClothesType, custom1equipmentType);
+
+    // 커스텀 2의 정보
+    private final Gender custom2Gender = Gender.FEMALE;
+    private final String custom2Nickname = "커스텀2";
+    private final String custom2LiftType= "시간지정권-오후권";
+    private final String custom2LiftTime= "4";
+    private final PackageType custom2PackageType = PackageType.LIFT_EQUIPMENT_CLOTHES;
+    private final ClothesType custom2ClothesType = ClothesType.STANDARD;
+    private final EquipmentType custom2equipmentType = EquipmentType.SKI;
+    private final String custom2ItemName = ShopUtil.mix.getItemName(visitDate, custom2LiftType, custom2LiftTime, custom2PackageType);
+    private final List<ItemOptionName> custom2ItemOptionNames = ShopUtil.match.getItemOptionNames(custom2ClothesType, custom2equipmentType);
+
     @BeforeEach
     void beforeEach() {
         // 카테고리 생성
@@ -319,32 +345,6 @@ class ShopRepositoryTest {
         assertThat(shop.getItemOptions().get(0).getEndTime()).isEqualTo(24L);
         assertThat(shop.getItemOptions().get(0).getAddPrice()).isEqualTo(BigDecimal.valueOf(10000L));
     }
-
-    // 최저가 렌탈샵 검색 고정값
-    private final LocalDate visitDate = LocalDate.of(2024, 7, 30);
-    private final LocalDate visitDateNotInOperation = LocalDate.of(2025, 1, 28);
-
-    // 커스텀 1의 정보
-    private final Gender custom1Gender = Gender.MALE;
-    private final String custom1Nickname = "커스텀1";
-    private final String custom1LiftType= "스마트권";
-    private final String custom1LiftTime= "4";
-    private final PackageType custom1PackageType = PackageType.LIFT_EQUIPMENT_CLOTHES;
-    private final ClothesType custom1ClothesType = ClothesType.LUXURY;
-    private final EquipmentType custom1equipmentType = EquipmentType.SHORT_SKI;
-    private final String custom1ItemName = ShopUtil.mix.getItemName(visitDate, custom1LiftType, custom1LiftTime, custom1PackageType);
-    private final List<ItemOptionName> custom1ItemOptionNames = ShopUtil.match.getItemOptionNames(custom1ClothesType, custom1equipmentType);
-
-    // 커스텀 1의 정보
-    private final Gender custom2Gender = Gender.FEMALE;
-    private final String custom2Nickname = "커스텀2";
-    private final String custom2LiftType= "시간지정권-오후권";
-    private final String custom2LiftTime= "4";
-    private final PackageType custom2PackageType = PackageType.LIFT_EQUIPMENT_CLOTHES;
-    private final ClothesType custom2ClothesType = ClothesType.STANDARD;
-    private final EquipmentType custom2equipmentType = EquipmentType.SKI;
-    private final String custom2ItemName = ShopUtil.mix.getItemName(visitDate, custom2LiftType, custom2LiftTime, custom2PackageType);
-    private final List<ItemOptionName> custom2ItemOptionNames = ShopUtil.match.getItemOptionNames(custom2ClothesType, custom2equipmentType);
 
     @Test
     @DisplayName("[성공] 샵 정보에 일치하는 커스텀 가격 조회 (최저가 렌탈샵 검색)")
