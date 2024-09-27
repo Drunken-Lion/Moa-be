@@ -170,7 +170,6 @@ class BusinessTimeRepositoryTest {
     public void isShopInOperation_success() {
         // when
         Boolean shopInOperation = businessTimeRepository.isShopInOperation(businessTimeId, visitDate, day);
-        System.out.println("shopInOperation = " + shopInOperation);
 
         // then
         assertThat(shopInOperation).isEqualTo(true);
