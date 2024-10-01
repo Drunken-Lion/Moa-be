@@ -280,6 +280,27 @@ class WishRepositoryTest {
         assertThat(wishes.get(0).getShop().getItemOptions().get(0).getAddPrice()).isEqualTo(BigDecimal.valueOf(25000L));
     }
 
+    @Test
+    @DisplayName("ID 별 찜 항목 조회 성공")
+    void t4() {
+        //given
+        Pageable pageable = PageRequest.of(0, 20);
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+        Slice<Wish> wishes = wishRepository.findAllWishByMember(member, pageable);
+
+        //when
+        Wish wish = wishRepository.findWishById(wishes.getContent().get(0).getId()).get();
+
+        //then
+        assertThat(wish.getMember().getEmail()).isEqualTo("three@moa.com");
+        assertThat(wish.getMember().getNickname()).isEqualTo("three");
+        assertThat(wish.getMember().getRole()).isEqualTo(MemberRole.MEMBER);
+
+        assertThat(wish.getShop().getName()).isEqualTo("인생렌탈샵");
+        assertThat(wish.getShop().getPickUp()).isEqualTo(false);
+        assertThat(wish.getShop().getUrl()).isEqualTo("https://smartstore.naver.com/dgshop/products/9614236927");
+    }
+
     private Category createCategory() {
         Category category = Category.builder()
                 .categoryType(CategoryType.SKI_RESORT)

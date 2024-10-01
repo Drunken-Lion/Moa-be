@@ -12,4 +12,6 @@ public interface WishDslRepository {
     Optional<Wish> findWishByShopAndMember(Shop shop, Member member);
 
     Slice<Wish> findAllWishByMember(Member member, Pageable pageable);
+
+    Optional<Wish> findWishById(Long id);
 }
