@@ -42,7 +42,8 @@ public class QuestionService {
         Question question = questionProcessor.findQuestionById(id)
                 .orElseThrow(() -> new BusinessException(FailHttpMessage.Question.QUESTION_NOT_FOUND));
 
-        QuestionValidator.validatePermission(question, member);
+        QuestionValidator.validatePermission(
+                question, member, FailHttpMessage.Question.QUESTION_FORBIDDEN);
 
         FindQuestionDto.MemberResponse memberResponse = questionMapstructMapper.of(question.getMember());
         FindQuestionDto.ImageResponse imageResponse = questionMapstructMapper.of(Image.builder().build());
@@ -68,7 +69,8 @@ public class QuestionService {
         Question originalQuestion = questionProcessor.findQuestionById(id)
                 .orElseThrow(() -> new BusinessException(FailHttpMessage.Question.QUESTION_NOT_FOUND));
 
-        QuestionValidator.validatePermission(originalQuestion, member);
+        QuestionValidator.validatePermission(
+                originalQuestion, member, FailHttpMessage.Question.QUESTION_MODIFY_FORBIDDEN);
         QuestionValidator.validateStatus(originalQuestion);
 
         // TODO : 이미지 기능이 완료되면 수정
@@ -83,8 +85,8 @@ public class QuestionService {
         Question question = questionProcessor.findQuestionById(id)
                 .orElseThrow(() -> new BusinessException(FailHttpMessage.Question.QUESTION_NOT_FOUND));
 
-        if (!Objects.equals(question.getMember(), member))
-            throw new BusinessException(FailHttpMessage.Question.QUESTION_DELETE_FORBIDDEN);
+        QuestionValidator.validatePermission(
+                question, member, FailHttpMessage.Question.QUESTION_DELETE_FORBIDDEN);
 
         question.modDeletedAt();
     }

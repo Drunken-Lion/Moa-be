@@ -271,6 +271,7 @@ public enum FailHttpMessage implements HttpMessage {
 
         // 403
         QUESTION_FORBIDDEN(HttpStatus.FORBIDDEN, "문의글은 작성자 및 운영자만 열람할 수 있습니다."),
+        QUESTION_MODIFY_FORBIDDEN(HttpStatus.FORBIDDEN, "문의글 수정은 작성자만 가능합니다."),
         QUESTION_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "문의글 삭제는 작성자만 가능합니다."),
 
         // 404
