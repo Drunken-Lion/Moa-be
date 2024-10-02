@@ -81,7 +81,11 @@ public class QuestionController {
     public ResponseEntity<ModQuestionDto.Response> modQuestion(@PathVariable("id") Long id,
                                                                @AuthenticationPrincipal UserPrincipal user,
                                                                @Valid @RequestBody final ModQuestionDto.Request request) {
-        return ResponseEntity.ok().body(null);
+
+        // TODO : 회원 관련 기능이 완성되면 삭제할 것
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+
+        return ResponseEntity.ok().body(questionService.modQuestion(id, request, member));
     }
 
     @Operation(summary = "내 문의 내역 삭제", responses = {@ApiResponse(responseCode = DELETE)})

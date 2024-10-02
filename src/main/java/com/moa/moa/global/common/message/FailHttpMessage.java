@@ -258,13 +258,8 @@ public enum FailHttpMessage implements HttpMessage {
     @Getter
     @RequiredArgsConstructor
     public enum Question implements HttpMessage {
-        // 200
         // 400
-        BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청 입니다."),
-        INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값 입니다."),
-        MISSING_PARAMETER(HttpStatus.BAD_REQUEST, "필수 파라미터가 누락되었습니다."),
-        NOT_NULL(HttpStatus.BAD_REQUEST, "null 값은 입력할 수 없습니다."),
-        NOT_BLANK(HttpStatus.BAD_REQUEST, "빈 값은 입력할 수 없습니다."),
+        QUESTION_COMPLETE_BAD_REQUEST(HttpStatus.BAD_REQUEST, "완료된 문의는 수정할 수 없습니다."),
 
         // 401
         UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 접근입니다."),
