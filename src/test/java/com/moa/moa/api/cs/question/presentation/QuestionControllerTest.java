@@ -17,6 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -29,8 +31,7 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -168,6 +169,30 @@ public class QuestionControllerTest {
                 .andExpect(jsonPath("$.id", instanceOf(Number.class)));
 
         assertThat(addQuestion.getId()).isEqualTo(addQuestion.getId());
+    }
+
+    @Test
+    @DisplayName("문의 삭제")
+    void delQuestionTest() throws Exception {
+        Pageable pageable = PageRequest.of(0, 20);
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+        Question question = questionRepository.findAllMyQuestion(
+                member, pageable).getContent().getFirst();
+
+        ResultActions actions = mvc
+                .perform(delete("/v1/questions/" + question.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print());
+
+        List<Question> questions = questionRepository.findAllMyQuestion(member, pageable).getContent();
+
+        actions
+                .andExpect(status().isNoContent())
+                .andExpect(handler().handlerType(QuestionController.class))
+                .andExpect(handler().methodName("delQuestion"));
+
+        assertThat(questions.size()).isEqualTo(9);
     }
 
     private Member createMember(String email, MemberRole role) {
