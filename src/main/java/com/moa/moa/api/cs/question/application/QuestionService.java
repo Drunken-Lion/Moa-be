@@ -16,11 +16,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class QuestionService {
     private final QuestionProcessor questionProcessor;
     private final QuestionMapstructMapper questionMapstructMapper;
@@ -56,7 +59,18 @@ public class QuestionService {
 
 
         // TODO : 이미지 기능이 완료되면 수정
-        
+
         return questionMapstructMapper.addOf(question);
+    }
+
+    @Transactional
+    public void delQuestion(Long id, Member member) {
+        Question question = questionProcessor.findQuestionById(id)
+                .orElseThrow(() -> new BusinessException(FailHttpMessage.Question.QUESTION_NOT_FOUND));
+
+        if (!Objects.equals(question.getMember(), member))
+            throw new BusinessException(FailHttpMessage.Question.QUESTION_DELETE_FORBIDDEN);
+
+        question.modDeletedAt();
     }
 }

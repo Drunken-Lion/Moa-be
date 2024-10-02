@@ -89,6 +89,11 @@ public class QuestionController {
     @DeleteMapping("{id}")
     public ResponseEntity<Void> delQuestion(@PathVariable("id") Long id,
                                             @AuthenticationPrincipal UserPrincipal user) {
+        // TODO : 회원 관련 기능이 완성되면 삭제할 것
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+
+        questionService.delQuestion(id, member);
+
         return ResponseEntity.noContent().build();
     }
 
