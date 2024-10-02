@@ -59,7 +59,7 @@ public class WishDslRepositoryImpl implements WishDslRepository {
                 .leftJoin(wish.shop.address, address1).fetchJoin()
                 .leftJoin(wish.shop.businessTime, businessTime).fetchJoin()
                 .where(wish.member.eq(userMember)
-                        .and(cursorPaginationUtil.ltCursorId(wish.id, pageable.getPageNumber()))
+                        .and(cursorPaginationUtil.gtCursorId(wish.id, pageable.getPageNumber()))
                         .and(wish.deletedAt.isNull())
                         .and(shop.deletedAt.isNull())
                         .and(shop.member.deletedAt.isNull())
@@ -117,5 +117,15 @@ public class WishDslRepositoryImpl implements WishDslRepository {
         }
 
         return cursorPaginationUtil.checkLastPage(wishes, pageable);
+    }
+
+    @Override
+    public Optional<Wish> findWishById(Long id) {
+        Wish wishOne = queryFactory.selectFrom(wish)
+                .where(wish.id.eq(id)
+                        .and(wish.deletedAt.isNull()))
+                .fetchOne();
+
+        return Optional.ofNullable(wishOne);
     }
 }

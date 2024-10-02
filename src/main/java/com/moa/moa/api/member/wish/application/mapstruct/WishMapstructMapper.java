@@ -75,9 +75,10 @@ public interface WishMapstructMapper {
     }
 
     @Mapping(target = "data", source = "responses")
-    @Mapping(target = "pageInfo", expression = "java(new PageExternalDto.PageInfo(pageable.getPageNumber(), pageable.getPageSize(), responses.size() == pageable.getPageSize(), totalSize))")
+    @Mapping(target = "pageInfo", expression = "java(new PageExternalDto.PageInfo(pageable.getPageNumber(), pageable.getPageSize(), hasNext, totalSize))")
     PageExternalDto.Response<List<FindAllWishDto.Response>> of(List<FindAllWishDto.Response> responses,
                                                                Pageable pageable,
+                                                               Boolean hasNext,
                                                                Integer totalSize);
 
     AddWishDto.Response addOf(Wish wish);
