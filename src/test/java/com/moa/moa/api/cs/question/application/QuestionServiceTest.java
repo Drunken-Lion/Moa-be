@@ -7,6 +7,7 @@ import com.moa.moa.api.cs.question.domain.QuestionProcessor;
 import com.moa.moa.api.cs.question.domain.dto.AddQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.FindAllQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.FindQuestionDto;
+import com.moa.moa.api.cs.question.domain.dto.ModQuestionDto;
 import com.moa.moa.api.cs.question.domain.entity.Question;
 import com.moa.moa.api.cs.question.util.enumerated.QuestionStatus;
 import com.moa.moa.api.cs.question.util.enumerated.QuestionType;
@@ -152,24 +153,49 @@ public class QuestionServiceTest {
     @DisplayName("문의 작성")
     void addQuestionTest() {
         // given
-        AddQuestionDto.Request request = AddQuestionDto.Request.builder()
+        AddQuestionDto.Request addRequest = AddQuestionDto.Request.builder()
                 .type(questionType)
                 .title(questionTitle)
                 .content(questionContent)
                 .build();
 
-        Question requestQuestion = questionMapstructMapperImpl.addOf(request);
-        AddQuestionDto.Response response = questionMapstructMapperImpl.addOf(getQuestion());
+        Question requestQuestion = questionMapstructMapperImpl.addOf(addRequest, getMember(), QuestionStatus.INCOMPLETE);
+        AddQuestionDto.Response addResponse = questionMapstructMapperImpl.addOf(getQuestion());
 
-        when(questionProcessor.addQuestion(requestQuestion, getMember(), QuestionStatus.INCOMPLETE)).thenReturn(getQuestion());
-        when(questionMapstructMapper.addOf(any(AddQuestionDto.Request.class))).thenReturn(requestQuestion);
-        when(questionMapstructMapper.addOf(any(Question.class))).thenReturn(response);
+        when(questionProcessor.addQuestion(requestQuestion)).thenReturn(getQuestion());
+        when(questionMapstructMapper.addOf(any(AddQuestionDto.Request.class), any(Member.class), any())).thenReturn(requestQuestion);
+        when(questionMapstructMapper.addOf(any(Question.class))).thenReturn(addResponse);
 
         // when
-        AddQuestionDto.Response questionResponse = questionService.addQuestion(request, getMember());
+        AddQuestionDto.Response response = questionService.addQuestion(addRequest, getMember());
 
         // then
-        assertThat(questionResponse.id()).isEqualTo(questionId);
+        assertThat(response.id()).isEqualTo(questionId);
+    }
+
+    @Test
+    @DisplayName("문의 수정")
+    void modQuestionTest() {
+        // given
+        ModQuestionDto.Request modRequest = ModQuestionDto.Request.builder()
+                .type(QuestionType.BUSINESS)
+                .title("문의 수정 테스트 제목")
+                .content("문의 수정 테스트 내용")
+                .build();
+
+        Question requestQuestion = questionMapstructMapperImpl.modOf(getQuestion(), modRequest);
+        ModQuestionDto.Response modResponse = questionMapstructMapperImpl.modOf(requestQuestion);
+
+        when(questionProcessor.findQuestionById(any())).thenReturn(Optional.of(getQuestion()));
+        when(questionProcessor.modQuestion(requestQuestion)).thenReturn(requestQuestion);
+        when(questionMapstructMapper.modOf(any(Question.class), any(ModQuestionDto.Request.class))).thenReturn(requestQuestion);
+        when(questionMapstructMapper.modOf(any(Question.class))).thenReturn(modResponse);
+
+        // when
+        ModQuestionDto.Response response = questionService.modQuestion(getQuestion().getId(), modRequest, getMember());
+
+        // then
+        assertThat(response.id()).isEqualTo(questionId);
     }
 
     @Test
@@ -233,28 +259,5 @@ public class QuestionServiceTest {
                 .content("답변")
                 .createdAt(answerCreatedAt)
                 .build();
-    }
-
-    private FindAllQuestionDto.Response mapper(Question question) {
-        return FindAllQuestionDto.Response.builder()
-                .id(question.getId())
-                .type(question.getType())
-                .title(question.getTitle())
-                .status(question.getStatus())
-                .createdAt(question.getCreatedAt())
-                .build();
-    }
-
-    private PageExternalDto.Response<List<FindAllQuestionDto.Response>> pageMapper(Slice<FindAllQuestionDto.Response> responses, Pageable pageable, Integer totalSize) {
-        if (responses == null && pageable == null && totalSize == null) {
-            return null;
-        }
-
-        List<FindAllQuestionDto.Response> data = responses.getContent();
-        PageExternalDto.PageInfo pageInfo = new PageExternalDto.PageInfo(pageable.getPageNumber(), pageable.getPageSize(), responses.hasNext(), totalSize);
-
-        PageExternalDto.Response<List<FindAllQuestionDto.Response>> response = new PageExternalDto.Response<>(data, pageInfo);
-
-        return response;
     }
 }

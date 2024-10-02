@@ -1,6 +1,7 @@
 package com.moa.moa.api.cs.question.presentation;
 
 import com.moa.moa.api.cs.question.domain.dto.AddQuestionDto;
+import com.moa.moa.api.cs.question.domain.dto.ModQuestionDto;
 import com.moa.moa.api.cs.question.domain.entity.Question;
 import com.moa.moa.api.cs.question.domain.persistence.QuestionRepository;
 import com.moa.moa.api.cs.question.util.enumerated.QuestionStatus;
@@ -169,6 +170,39 @@ public class QuestionControllerTest {
                 .andExpect(jsonPath("$.id", instanceOf(Number.class)));
 
         assertThat(addQuestion.getId()).isEqualTo(addQuestion.getId());
+    }
+
+    @Test
+    @DisplayName("문의 수정")
+    void modQuestionTest() throws Exception {
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+        Question question = questionRepository.findAllMyQuestion(
+                member, PageRequest.of(0, 20)).getContent().getFirst();
+
+        ModQuestionDto.Request request = ModQuestionDto.Request.builder()
+                .type(QuestionType.BUSINESS)
+                .title("문의 수정 테스트 제목")
+                .content("문의 수정 테스트 내용")
+                .build();
+
+        ResultActions actions = mvc
+                .perform(put("/v1/questions/" + question.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonConvertor.build(request))
+                )
+                .andDo(print());
+
+        Question modQuestion = questionRepository.findQuestionById(question.getId()).get();
+
+        actions.andExpect(status().isOk())
+                .andExpect(handler().handlerType(QuestionController.class))
+                .andExpect(handler().methodName("modQuestion"))
+                .andExpect(jsonPath("$.id", instanceOf(Number.class)));
+
+        assertThat(modQuestion.getId()).isEqualTo(question.getId());
+        assertThat(modQuestion.getType()).isEqualTo(request.type());
+        assertThat(modQuestion.getTitle()).isEqualTo(request.title());
+        assertThat(modQuestion.getContent()).isEqualTo(request.content());
     }
 
     @Test

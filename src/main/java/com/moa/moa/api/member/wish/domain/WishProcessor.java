@@ -24,11 +24,19 @@ public class WishProcessor {
         return wishRepository.findAllWishByMember(member, pageable);
     }
 
+    public Optional<Wish> findWishById(Long id) {
+        return wishRepository.findWishById(id);
+    }
+
     public Integer countMyWish(Member member) {
         return wishRepository.countByMember(member);
     }
 
     public Wish addWish(Wish wish) {
         return wishRepository.save(wish);
+    }
+
+    public void delWish(Wish wish) {
+        wishRepository.save(wish);
     }
 }
