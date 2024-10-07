@@ -110,9 +110,10 @@ public enum FailHttpMessage implements HttpMessage {
         DEACTIVATE_USER(HttpStatus.FORBIDDEN, "비활성화 상태 계정입니다."),
 
         // 404
-        NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 리소스입니다."),
+        NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 커스텀 정보입니다."),
         NOT_FOUND_DESC(HttpStatus.NOT_FOUND, "존재하지 않는 타입입니다."),
         NOT_FOUND_CODE(HttpStatus.NOT_FOUND, "존재하지 않는 타입 코드입니다."),
+
         // 405
         METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "허용되지 않은 HTTP METHOD 입니다."),
 
@@ -236,7 +237,7 @@ public enum FailHttpMessage implements HttpMessage {
         DEACTIVATE_USER(HttpStatus.FORBIDDEN, "비활성화 상태 계정입니다."),
 
         // 404
-        NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 리소스입니다."),
+        NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 스키장입니다."),
         NOT_FOUND_DESC(HttpStatus.NOT_FOUND, "존재하지 않는 타입입니다."),
         NOT_FOUND_CODE(HttpStatus.NOT_FOUND, "존재하지 않는 타입 코드입니다."),
         // 405
@@ -356,9 +357,13 @@ public enum FailHttpMessage implements HttpMessage {
         DEACTIVATE_USER(HttpStatus.FORBIDDEN, "비활성화 상태 계정입니다."),
 
         // 404
-        NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 리소스입니다."),
+        NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 렌탈샵입니다."),
         NOT_FOUND_DESC(HttpStatus.NOT_FOUND, "존재하지 않는 타입입니다."),
         NOT_FOUND_CODE(HttpStatus.NOT_FOUND, "존재하지 않는 타입 코드입니다."),
+        NOT_FOUND_SHOP_RELATED_TO_PLACE(HttpStatus.NOT_FOUND, "스키장과 관련된 샵(들)이 없습니다."),
+        NOT_FOUND_SHOP_IN_OPERATION(HttpStatus.NOT_FOUND, "희망하는 날짜에 운영하는 샵(들)이 없습니다."),
+        NOT_FOUND_MATCHING_SHOP(HttpStatus.NOT_FOUND, "커스텀(들)과 일치하는 샵(들)이 없습니다."),
+
         // 405
         METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "허용되지 않은 HTTP METHOD 입니다."),
 

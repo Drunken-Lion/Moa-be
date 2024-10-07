@@ -100,4 +100,12 @@ public class Shop extends BaseEntity {
     public void addItemOptions(List<ItemOption> itemOptions) {
         this.itemOptions = itemOptions;
     }
+
+    public void addMember(Member member) {
+        this.member = member;
+    }
+
+    public void addAddress(Address address) {
+        this.address = address;
+    }
 }

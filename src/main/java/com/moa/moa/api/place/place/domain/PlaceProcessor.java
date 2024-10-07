@@ -20,4 +20,8 @@ public class PlaceProcessor {
     public Optional<Place> findPlaceById(Long id) {
         return placeRepository.findPlaceById(id);
     }
+
+    public Optional<Place> findPlaceByIdAndDeletedAtIsNull(Long id) {
+        return placeRepository.findPlaceByIdAndDeletedAtIsNull(id);
+    }
 }

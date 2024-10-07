@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
-import java.util.Optional;
 
 import static com.moa.moa.global.common.response.ApiResponseCode.GET;
 
@@ -64,11 +63,15 @@ public class ShopController {
 
     @Operation(summary = "최저가 렌탈샵 검색", responses = {@ApiResponse(responseCode = GET)})
     @PutMapping("search")
-    public ResponseEntity<PageExternalDto.Response<FindAllShopLowPriceDto.Response>> findAllShopSearchForTheLowestPrice(@RequestParam(name = "page", defaultValue = "0") int page,
-                                                                                                                        @RequestParam(name = "size", defaultValue = "10") int size,
-                                                                                                                        @Valid @RequestBody final FindAllShopLowPriceDto.Request request) {
+    public ResponseEntity<FindAllShopLowPriceDto.Response> findAllShopSearchForTheLowestPrice(@Valid @RequestBody final FindAllShopLowPriceDto.Request request,
+                                                                                              @AuthenticationPrincipal UserPrincipal user) {
+        // TODO : 회원 관련 기능이 완성되면 삭제
+        Member member = memberRepository.findByEmail("three@moa.com").get();
 
-        return ResponseEntity.ok().body(null);
+        // TODO : 비회원 로그인 시 member에 null 이 들어온다.
+        FindAllShopLowPriceDto.Response response = shopService.findAllShopSearchForTheLowestPrice(request, member);
+
+        return ResponseEntity.ok().body(response);
     }
 
     @Operation(summary = "렌탈샵 리뷰 조회", responses = {@ApiResponse(responseCode = GET)})
