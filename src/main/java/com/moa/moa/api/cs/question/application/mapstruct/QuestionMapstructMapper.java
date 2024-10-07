@@ -4,7 +4,9 @@ import com.moa.moa.api.cs.answer.domain.entity.Answer;
 import com.moa.moa.api.cs.question.domain.dto.AddQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.FindAllQuestionDto;
 import com.moa.moa.api.cs.question.domain.dto.FindQuestionDto;
+import com.moa.moa.api.cs.question.domain.dto.ModQuestionDto;
 import com.moa.moa.api.cs.question.domain.entity.Question;
+import com.moa.moa.api.cs.question.util.enumerated.QuestionStatus;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.global.aws.s3.images.domain.entity.Image;
 import com.moa.moa.global.common.response.PageExternalDto;
@@ -47,10 +49,17 @@ public interface QuestionMapstructMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "deletedAt", ignore = true)
-    @Mapping(target = "member", ignore = true)
-    @Mapping(target = "status", ignore = true)
     @Mapping(target = "answers", ignore = true)
-    Question addOf(AddQuestionDto.Request request);
+    @Mapping(target = "member", source = "member")
+    @Mapping(target = "status", source = "status")
+    Question addOf(AddQuestionDto.Request request, Member member, QuestionStatus status);
 
     AddQuestionDto.Response addOf(Question question);
+
+    @Mapping(target = "type", source = "request.type")
+    @Mapping(target = "title", source = "request.title")
+    @Mapping(target = "content", source = "request.content")
+    Question modOf(Question question, ModQuestionDto.Request request);
+
+    ModQuestionDto.Response modOf(Question question);
 }

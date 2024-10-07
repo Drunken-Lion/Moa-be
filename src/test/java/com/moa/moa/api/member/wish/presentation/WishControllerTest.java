@@ -52,6 +52,9 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -68,8 +71,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -245,6 +247,29 @@ class WishControllerTest {
 
         assertThat(addWish.getMember()).isEqualTo(member);
         assertThat(addWish.getShop()).isEqualTo(shop);
+    }
+
+    @Test
+    @DisplayName("내 찜 항목 삭제 성공")
+    void t3() throws Exception {
+        Pageable pageable =  PageRequest.of(0, 10);
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+        Wish wish = wishRepository.findAllWishByMember(member, pageable).getContent().get(0);
+
+        ResultActions actions = mvc
+                .perform(delete("/v1/wishes/" + wish.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print());
+
+        Slice<Wish> wishes = wishRepository.findAllWishByMember(member, pageable);
+
+        actions
+                .andExpect(status().isNoContent())
+                .andExpect(handler().handlerType(WishController.class))
+                .andExpect(handler().methodName("delWish"));
+
+        assertThat(wishes.getContent().size()).isEqualTo(0);
     }
 
     private Category createCategory() {

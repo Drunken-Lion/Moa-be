@@ -1,6 +1,7 @@
 package com.moa.moa.api.cs.question.presentation;
 
 import com.moa.moa.api.cs.question.domain.dto.AddQuestionDto;
+import com.moa.moa.api.cs.question.domain.dto.ModQuestionDto;
 import com.moa.moa.api.cs.question.domain.entity.Question;
 import com.moa.moa.api.cs.question.domain.persistence.QuestionRepository;
 import com.moa.moa.api.cs.question.util.enumerated.QuestionStatus;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -29,8 +31,7 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -168,6 +169,39 @@ public class QuestionControllerTest {
                 .andExpect(jsonPath("$.id", instanceOf(Number.class)));
 
         assertThat(addQuestion.getId()).isEqualTo(addQuestion.getId());
+    }
+
+    @Test
+    @DisplayName("문의 수정")
+    void modQuestionTest() throws Exception {
+        Member member = memberRepository.findByEmail("three@moa.com").get();
+        Question question = questionRepository.findAllMyQuestion(
+                member, PageRequest.of(0, 20)).getContent().getFirst();
+
+        ModQuestionDto.Request request = ModQuestionDto.Request.builder()
+                .type(QuestionType.BUSINESS)
+                .title("문의 수정 테스트 제목")
+                .content("문의 수정 테스트 내용")
+                .build();
+
+        ResultActions actions = mvc
+                .perform(put("/v1/questions/" + question.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonConvertor.build(request))
+                )
+                .andDo(print());
+
+        Question modQuestion = questionRepository.findQuestionById(question.getId()).get();
+
+        actions.andExpect(status().isOk())
+                .andExpect(handler().handlerType(QuestionController.class))
+                .andExpect(handler().methodName("modQuestion"))
+                .andExpect(jsonPath("$.id", instanceOf(Number.class)));
+
+        assertThat(modQuestion.getId()).isEqualTo(question.getId());
+        assertThat(modQuestion.getType()).isEqualTo(request.type());
+        assertThat(modQuestion.getTitle()).isEqualTo(request.title());
+        assertThat(modQuestion.getContent()).isEqualTo(request.content());
     }
 
     private Member createMember(String email, MemberRole role) {

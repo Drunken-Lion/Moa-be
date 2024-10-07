@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -58,7 +59,7 @@ public class WishService {
             ));
         }
 
-        return wishMapstructMapper.of(findAllWishList, pageable, wishProcessor.countMyWish(member));
+        return wishMapstructMapper.of(findAllWishList, pageable, wishes.hasNext(), wishProcessor.countMyWish(member));
     }
 
     public AddWishDto.Response addWish(AddWishDto.Request request, Member member) {
@@ -73,5 +74,18 @@ public class WishService {
         Wish wish = wishProcessor.addWish(wishMapstructMapper.addOf(shop.getId(), member.getId()));
 
         return wishMapstructMapper.addOf(wish);
+    }
+
+    public void delWish(Long id, Member member) {
+        Wish wish = wishProcessor.findWishById(id)
+                .orElseThrow(() -> new BusinessException(FailHttpMessage.Wish.NOT_FOUND));
+
+        if (!Objects.equals(wish.getMember().getId(), member.getId())) {
+            throw new BusinessException(FailHttpMessage.Wish.FORBIDDEN);
+        }
+
+        wish.modDeletedAt();
+
+        wishProcessor.delWish(wish);
     }
 }
