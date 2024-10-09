@@ -1,14 +1,10 @@
-package com.moa.moa.api.shop.shop.domain.persistence;
+package com.moa.moa.api.time.businesstime.domain.persistence;
 
 import com.moa.moa.api.address.address.domain.entity.Address;
 import com.moa.moa.api.address.address.domain.persistence.AddressRepository;
 import com.moa.moa.api.category.category.domain.entity.Category;
 import com.moa.moa.api.category.category.domain.persistence.CategoryRepository;
 import com.moa.moa.api.category.category.util.enumerated.CategoryType;
-import com.moa.moa.api.member.custom.domain.dto.FindLowPriceCustomDto;
-import com.moa.moa.api.member.custom.util.enumerated.ClothesType;
-import com.moa.moa.api.member.custom.util.enumerated.EquipmentType;
-import com.moa.moa.api.member.custom.util.enumerated.Gender;
 import com.moa.moa.api.member.custom.util.enumerated.PackageType;
 import com.moa.moa.api.member.member.domain.entity.Member;
 import com.moa.moa.api.member.member.domain.persistence.MemberRepository;
@@ -33,11 +29,10 @@ import com.moa.moa.api.shop.placeshop.domain.entity.PlaceShop;
 import com.moa.moa.api.shop.placeshop.domain.persistence.PlaceShopRepository;
 import com.moa.moa.api.shop.review.domain.entity.Review;
 import com.moa.moa.api.shop.review.domain.persistence.ReviewRepository;
-import com.moa.moa.api.shop.shop.domain.dto.FindLowPriceShopDto;
 import com.moa.moa.api.shop.shop.domain.entity.Shop;
+import com.moa.moa.api.shop.shop.domain.persistence.ShopRepository;
 import com.moa.moa.api.shop.shop.util.ShopUtil;
 import com.moa.moa.api.time.businesstime.domain.entity.BusinessTime;
-import com.moa.moa.api.time.businesstime.domain.persistence.BusinessTimeRepository;
 import com.moa.moa.api.time.operatingtime.domain.entity.OperatingTime;
 import com.moa.moa.api.time.operatingtime.domain.persistence.OperatingTimeRepository;
 import com.moa.moa.api.time.operatingtime.util.enumerated.DayType;
@@ -45,10 +40,7 @@ import com.moa.moa.api.time.operatingtime.util.enumerated.OperatingType;
 import com.moa.moa.api.time.specificday.domain.entity.SpecificDay;
 import com.moa.moa.api.time.specificday.domain.persistence.SpecificDayRepository;
 import com.moa.moa.api.time.specificday.util.enumerated.SpecificDayType;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,18 +56,15 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 @Transactional
-class ShopRepositoryTest {
+class BusinessTimeRepositoryTest {
     @Autowired
     private MemberRepository memberRepository;
     @Autowired
@@ -109,31 +98,9 @@ class ShopRepositoryTest {
 
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
-    // 최저가 렌탈샵 검색 고정값
+    private Long businessTimeId;
     private final LocalDate visitDate = LocalDate.of(2024, 7, 30);
-    private final LocalDate visitDateNotInOperation = LocalDate.of(2025, 1, 28);
-
-    // 커스텀 1의 정보
-    private final Gender custom1Gender = Gender.MALE;
-    private final String custom1Nickname = "커스텀1";
-    private final String custom1LiftType= "스마트권";
-    private final String custom1LiftTime= "4";
-    private final PackageType custom1PackageType = PackageType.LIFT_EQUIPMENT_CLOTHES;
-    private final ClothesType custom1ClothesType = ClothesType.LUXURY;
-    private final EquipmentType custom1equipmentType = EquipmentType.SHORT_SKI;
-    private final String custom1ItemName = ShopUtil.mix.getItemName(visitDate, custom1LiftType, custom1LiftTime, custom1PackageType);
-    private final List<ItemOptionName> custom1ItemOptionNames = ShopUtil.match.getItemOptionNames(custom1ClothesType, custom1equipmentType);
-
-    // 커스텀 2의 정보
-    private final Gender custom2Gender = Gender.FEMALE;
-    private final String custom2Nickname = "커스텀2";
-    private final String custom2LiftType= "시간지정권-오후권";
-    private final String custom2LiftTime= "4";
-    private final PackageType custom2PackageType = PackageType.LIFT_EQUIPMENT_CLOTHES;
-    private final ClothesType custom2ClothesType = ClothesType.STANDARD;
-    private final EquipmentType custom2equipmentType = EquipmentType.SKI;
-    private final String custom2ItemName = ShopUtil.mix.getItemName(visitDate, custom2LiftType, custom2LiftTime, custom2PackageType);
-    private final List<ItemOptionName> custom2ItemOptionNames = ShopUtil.match.getItemOptionNames(custom2ClothesType, custom2equipmentType);
+    private final DayType day = ShopUtil.date.getDayType(visitDate);
 
     @BeforeEach
     void beforeEach() {
@@ -175,6 +142,8 @@ class ShopRepositoryTest {
 
         // 렌탈샵 상세 옵션 생성
         createItemOption(shops);
+
+        businessTimeId = businessTimes.get(1).getId(); // "찐렌탈샵"
     }
 
     @AfterEach
@@ -197,307 +166,51 @@ class ShopRepositoryTest {
     }
 
     @Test
-    @DisplayName("렌탈샵 목록 조회 성공")
-    void t1() {
-        //when
-        List<Shop> shops = shopRepository.findAllShopWithinRange(0D, 40D, 130D, 0D);
+    @DisplayName("[성공] 회원이 가고 싶은 날짜에 렌탈샵이 운영하는 지 여부 - true 반환 (최저가 렌탈샵 검색)")
+    public void isShopInOperation_success() {
+        // when
+        Boolean shopInOperation = businessTimeRepository.isShopInOperation(businessTimeId, visitDate, day);
 
-        //then
-        assertThat(shops.size()).isEqualTo(6);
-        assertThat(shops.get(0).getName()).isEqualTo("찐렌탈샵");
-        assertThat(shops.get(0).getPickUp()).isEqualTo(true);
-        assertThat(shops.get(0).getUrl()).isEqualTo("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9");
-
-        assertThat(shops.get(0).getMember().getEmail()).isEqualTo("admin@moa.com");
-        assertThat(shops.get(0).getMember().getNickname()).isEqualTo("admin");
-        assertThat(shops.get(0).getMember().getRole()).isEqualTo(MemberRole.ADMIN);
-
-        assertThat(shops.get(0).getCategory().getCategoryType()).isEqualTo(CategoryType.SKI_RESORT);
-
-        assertThat(shops.get(0).getAddress().getAddress()).isEqualTo("강원 홍천군 서면 한치골길 39");
-        assertThat(shops.get(0).getAddress().getAddressDetail()).isEqualTo("1, 2층");
-        assertThat(shops.get(0).getAddress().getLocation()).isEqualTo(geometryFactory.createPoint(new Coordinate(127.666621133276, 37.625378749786)));
-        assertThat(shops.get(0).getAddress().getUrl()).isEqualTo("https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%B0%90%EB%A0%8C%ED%83%88%EC%83%B5/place/1680503531?c=15.00,0,0,0,dh&isCorrectAnswer=true");
-
-        assertThat(shops.get(0).getBusinessTime().getOperatingTimes().size()).isEqualTo(13);
-        assertThat(shops.get(0).getBusinessTime().getOperatingTimes().get(0).getStatus()).isEqualTo(OperatingType.CLOSED);
-        assertThat(shops.get(0).getBusinessTime().getOperatingTimes().get(0).getDay()).isEqualTo(DayType.MON);
-        assertThat(shops.get(0).getBusinessTime().getOperatingTimes().get(0).getOpenTime()).isEqualTo(LocalTime.of(8, 0));
-        assertThat(shops.get(0).getBusinessTime().getOperatingTimes().get(0).getCloseTime()).isEqualTo(LocalTime.of(2, 0));
-
-        assertThat(shops.get(0).getBusinessTime().getSpecificDays().size()).isEqualTo(4);
-        assertThat(shops.get(0).getBusinessTime().getSpecificDays().get(0).getStatus()).isEqualTo(SpecificDayType.CLOSED);
-        assertThat(shops.get(0).getBusinessTime().getSpecificDays().get(0).getReason()).isEqualTo("신정");
-        assertThat(shops.get(0).getBusinessTime().getSpecificDays().get(0).getDate()).isEqualTo(LocalDate.of(2025, 1, 1));
-        assertThat(shops.get(0).getBusinessTime().getSpecificDays().get(0).getOpenTime()).isNull();
-        assertThat(shops.get(0).getBusinessTime().getSpecificDays().get(0).getCloseTime()).isNull();
-
-        assertThat(shops.get(0).getPlaceShops().size()).isEqualTo(1);
-        assertThat(shops.get(0).getPlaceShops().get(0).getPlace().getName()).isEqualTo("비발디파크");
-        assertThat(shops.get(0).getPlaceShops().get(0).getPlace().getOpenDate()).isEqualTo(LocalDate.of(2024, 10, 15));
-        assertThat(shops.get(0).getPlaceShops().get(0).getPlace().getCloseDate()).isEqualTo(LocalDate.of(2025, 3, 12));
-        assertThat(shops.get(0).getPlaceShops().get(0).getPlace().getRecLevel()).isEqualTo(PlaceLevel.LEVEL_1);
-
-        assertThat(shops.get(0).getNaverReview().getAvgScore()).isEqualTo(4.5D);
-        assertThat(shops.get(0).getNaverReview().getTotalReview()).isEqualTo(186L);
-
-        assertThat(shops.get(0).getReviews().size()).isEqualTo(4);
-        assertThat(shops.get(0).getReviews().get(0).getScore()).isEqualTo(4D);
-        assertThat(shops.get(0).getReviews().get(0).getContent()).isEqualTo("좋아요");
-
-        assertThat(shops.get(0).getItems().size()).isEqualTo(30);
-        assertThat(shops.get(0).getItems().get(0).getLiftTicket().getStatus()).isEqualTo(LiftTicketStatus.WEEK_DAY);
-        assertThat(shops.get(0).getItems().get(0).getLiftTicket().getName()).isEqualTo("스마트4시간권");
-        assertThat(shops.get(0).getItems().get(0).getLiftTicket().getTicketType()).isEqualTo(LiftTicketType.SMART);
-        assertThat(shops.get(0).getItems().get(0).getLiftTicket().getHours()).isEqualTo(4L);
-        assertThat(shops.get(0).getItems().get(0).getLiftTicket().getStartTime()).isNull();
-        assertThat(shops.get(0).getItems().get(0).getLiftTicket().getEndTime()).isNull();
-        assertThat(shops.get(0).getItems().get(0).getType()).isEqualTo(PackageType.LIFT_EQUIPMENT_CLOTHES);
-        assertThat(shops.get(0).getItems().get(0).getName()).isEqualTo("주중 스마트4시간권+장비+의류");
-        assertThat(shops.get(0).getItems().get(0).getPrice()).isEqualTo(BigDecimal.valueOf(67000L));
-        assertThat(shops.get(0).getItems().get(0).getUsed()).isEqualTo(true);
-
-        assertThat(shops.get(0).getItemOptions().size()).isEqualTo(6);
-        assertThat(shops.get(0).getItemOptions().get(0).getName()).isEqualTo(ItemOptionName.LUXURY);
-        assertThat(shops.get(0).getItemOptions().get(0).getUsed()).isEqualTo(true);
-        assertThat(shops.get(0).getItemOptions().get(0).getStartTime()).isEqualTo(0L);
-        assertThat(shops.get(0).getItemOptions().get(0).getEndTime()).isEqualTo(24L);
-        assertThat(shops.get(0).getItemOptions().get(0).getAddPrice()).isEqualTo(BigDecimal.valueOf(10000L));
+        // then
+        assertThat(shopInOperation).isEqualTo(true);
     }
 
     @Test
-    @DisplayName("렌탈샵 목록 조회 성공 - 범위 내 스키장 없음")
-    public void t2() {
-        //when
-        List<Shop> shops = shopRepository.findAllShopWithinRange(0D, 30D, 130D, 0D);
-
-        //then
-        assertThat(shops.size()).isEqualTo(0);
-    }
-
-    @Test
-    @DisplayName("렌탈샵 상세 조회 성공")
-    void t3() {
+    @DisplayName("[성공] 회원이 가고 싶은 날짜에 렌탈샵이 운영하는 지 여부 - false 반환 (최저가 렌탈샵 검색)")
+    public void isShopInOperation_notInOperation() {
         // given
-        List<Shop> shops = this.shopRepository.findAll();
-
-        //when
-        Shop shop = shopRepository.findShopById(shops.get(0).getId()).get();
-
-        //then
-        assertThat(shop.getName()).isEqualTo("찐렌탈샵");
-        assertThat(shop.getPickUp()).isEqualTo(true);
-        assertThat(shop.getUrl()).isEqualTo("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9");
-
-        assertThat(shop.getMember().getEmail()).isEqualTo("admin@moa.com");
-        assertThat(shop.getMember().getNickname()).isEqualTo("admin");
-        assertThat(shop.getMember().getRole()).isEqualTo(MemberRole.ADMIN);
-
-        assertThat(shop.getCategory().getCategoryType()).isEqualTo(CategoryType.SKI_RESORT);
-
-        assertThat(shop.getAddress().getAddress()).isEqualTo("강원 홍천군 서면 한치골길 39");
-        assertThat(shop.getAddress().getAddressDetail()).isEqualTo("1, 2층");
-        assertThat(shop.getAddress().getLocation()).isEqualTo(geometryFactory.createPoint(new Coordinate(127.666621133276, 37.625378749786)));
-        assertThat(shop.getAddress().getUrl()).isEqualTo("https://map.naver.com/p/search/%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC%20%EC%B0%90%EB%A0%8C%ED%83%88%EC%83%B5/place/1680503531?c=15.00,0,0,0,dh&isCorrectAnswer=true");
-
-        assertThat(shop.getBusinessTime().getOperatingTimes().size()).isEqualTo(13);
-        assertThat(shop.getBusinessTime().getOperatingTimes().get(0).getStatus()).isEqualTo(OperatingType.CLOSED);
-        assertThat(shop.getBusinessTime().getOperatingTimes().get(0).getDay()).isEqualTo(DayType.MON);
-        assertThat(shop.getBusinessTime().getOperatingTimes().get(0).getOpenTime()).isEqualTo(LocalTime.of(8, 0));
-        assertThat(shop.getBusinessTime().getOperatingTimes().get(0).getCloseTime()).isEqualTo(LocalTime.of(2, 0));
-
-        assertThat(shop.getBusinessTime().getSpecificDays().size()).isEqualTo(4);
-        assertThat(shop.getBusinessTime().getSpecificDays().get(0).getStatus()).isEqualTo(SpecificDayType.CLOSED);
-        assertThat(shop.getBusinessTime().getSpecificDays().get(0).getReason()).isEqualTo("신정");
-        assertThat(shop.getBusinessTime().getSpecificDays().get(0).getDate()).isEqualTo(LocalDate.of(2025, 1, 1));
-        assertThat(shop.getBusinessTime().getSpecificDays().get(0).getOpenTime()).isNull();
-        assertThat(shop.getBusinessTime().getSpecificDays().get(0).getCloseTime()).isNull();
-
-        assertThat(shop.getPlaceShops().size()).isEqualTo(1);
-        assertThat(shop.getPlaceShops().get(0).getPlace().getName()).isEqualTo("비발디파크");
-        assertThat(shop.getPlaceShops().get(0).getPlace().getOpenDate()).isEqualTo(LocalDate.of(2024, 10, 15));
-        assertThat(shop.getPlaceShops().get(0).getPlace().getCloseDate()).isEqualTo(LocalDate.of(2025, 3, 12));
-        assertThat(shop.getPlaceShops().get(0).getPlace().getRecLevel()).isEqualTo(PlaceLevel.LEVEL_1);
-
-        assertThat(shop.getNaverReview().getAvgScore()).isEqualTo(4.5D);
-        assertThat(shop.getNaverReview().getTotalReview()).isEqualTo(186L);
-
-        assertThat(shop.getReviews().size()).isEqualTo(4);
-        assertThat(shop.getReviews().get(0).getScore()).isEqualTo(4D);
-        assertThat(shop.getReviews().get(0).getContent()).isEqualTo("좋아요");
-
-        assertThat(shop.getItems().size()).isEqualTo(30);
-        assertThat(shop.getItems().get(0).getLiftTicket().getStatus()).isEqualTo(LiftTicketStatus.WEEK_DAY);
-        assertThat(shop.getItems().get(0).getLiftTicket().getName()).isEqualTo("스마트4시간권");
-        assertThat(shop.getItems().get(0).getLiftTicket().getTicketType()).isEqualTo(LiftTicketType.SMART);
-        assertThat(shop.getItems().get(0).getLiftTicket().getHours()).isEqualTo(4L);
-        assertThat(shop.getItems().get(0).getLiftTicket().getStartTime()).isNull();
-        assertThat(shop.getItems().get(0).getLiftTicket().getEndTime()).isNull();
-        assertThat(shop.getItems().get(0).getType()).isEqualTo(PackageType.LIFT_EQUIPMENT_CLOTHES);
-        assertThat(shop.getItems().get(0).getName()).isEqualTo("주중 스마트4시간권+장비+의류");
-        assertThat(shop.getItems().get(0).getPrice()).isEqualTo(BigDecimal.valueOf(67000L));
-        assertThat(shop.getItems().get(0).getUsed()).isEqualTo(true);
-
-        assertThat(shop.getItemOptions().size()).isEqualTo(6);
-        assertThat(shop.getItemOptions().get(0).getName()).isEqualTo(ItemOptionName.LUXURY);
-        assertThat(shop.getItemOptions().get(0).getUsed()).isEqualTo(true);
-        assertThat(shop.getItemOptions().get(0).getStartTime()).isEqualTo(0L);
-        assertThat(shop.getItemOptions().get(0).getEndTime()).isEqualTo(24L);
-        assertThat(shop.getItemOptions().get(0).getAddPrice()).isEqualTo(BigDecimal.valueOf(10000L));
-    }
-
-    @Test
-    @DisplayName("[성공] 샵 정보에 일치하는 커스텀 가격 조회 (최저가 렌탈샵 검색)")
-    public void findShopWithCustomForSearch_success() {
-        // given
-        List<FindLowPriceCustomDto> customs = new ArrayList<>();
-        FindLowPriceCustomDto custom1 = FindLowPriceCustomDto.builder()
-                .gender(custom1Gender)
-                .nickname(custom1Nickname)
-                .liftType(custom1LiftType)
-                .liftTime(custom1LiftTime)
-                .itemName(custom1ItemName)
-                .packageType(custom1PackageType)
-                .clothesType(custom1ClothesType)
-                .equipmentType(custom1equipmentType)
-                .itemOptionNames(custom1ItemOptionNames)
-                .build();
-
-        FindLowPriceCustomDto custom2 = FindLowPriceCustomDto.builder()
-                .gender(custom2Gender)
-                .nickname(custom2Nickname)
-                .liftType(custom2LiftType)
-                .liftTime(custom2LiftTime)
-                .itemName(custom2ItemName)
-                .packageType(custom2PackageType)
-                .clothesType(custom2ClothesType)
-                .equipmentType(custom2equipmentType)
-                .itemOptionNames(custom2ItemOptionNames)
-                .build();
-
-        customs.add(custom1);
-        customs.add(custom2);
+        LocalDate notInOperationVisitDate = LocalDate.of(2025, 1, 1); // 새해 첫날
 
         // when
-        FindLowPriceShopDto shopWithCustom = shopRepository.findShopWithCustomForSearch(1L, customs, true).get();
+        Boolean shopInOperation = businessTimeRepository.isShopInOperation(businessTimeId, notInOperationVisitDate, day);
 
-        //then
-        assertThat(shopWithCustom.getShopId()).isEqualTo(1L);
-        assertThat(shopWithCustom.getName()).isEqualTo("찐렌탈샵");
-        assertThat(shopWithCustom.getStoreUrl()).isEqualTo("https://smartstore.naver.com/jjinrental/products/6052896905?nl-au=675e2f12d95a4dc9a11c0aafb7bc6cba&NaPm=ct%3Dlzikkp60%7Cci%3D67a24e6eb4e2ddb3b7a4acb882fa1ffd44935b00%7Ctr%3Dslsl%7Csn%3D4902315%7Chk%3Deae6b25f20daa67df1450ce45b9134cf59eb2bb9");
-        assertThat(shopWithCustom.getCustomPrices().size()).isEqualTo(2);
-        assertThat(shopWithCustom.getCustomPrices().get(0)).isEqualTo(BigDecimal.valueOf(87000.0));
-        assertThat(shopWithCustom.getCustomPrices().get(1)).isEqualTo(BigDecimal.valueOf(76000.0));
-        assertThat(shopWithCustom.getTotalPrice()).isEqualTo(BigDecimal.valueOf(163000.0));
-        assertThat(shopWithCustom.getAvgScore()).isEqualTo(2.5);
-        assertThat(shopWithCustom.getTotalCount()).isEqualTo(4);
-        assertThat(shopWithCustom.getNrAvgScore()).isEqualTo(4.5);
-        assertThat(shopWithCustom.getNrTotalCount()).isEqualTo(186);
+        // then
+        assertThat(shopInOperation).isEqualTo(false);
     }
 
     @Test
-    @DisplayName("[실패] 샵 정보에 일치하는 커스텀 가격 조회 (최저가 렌탈샵 검색) - 쿼리 조건 itemName에 null이 들어갈 경우")
-    public void findShopWithCustomForSearch_fail() {
+    @DisplayName("[성공] 삭제된 businessTimeId 인 경우 - false 반환")
+    public void isShopInOperation_fail_deletedBusinessTime() {
         // given
-        List<FindLowPriceCustomDto> customs = new ArrayList<>();
-        FindLowPriceCustomDto custom1 = FindLowPriceCustomDto.builder()
-                .gender(custom1Gender)
-                .nickname(custom1Nickname)
-                .liftType(custom1LiftType)
-                .liftTime(custom1LiftTime)
-                .itemName(null)
-                .packageType(custom1PackageType)
-                .clothesType(custom1ClothesType)
-                .equipmentType(custom1equipmentType)
-                .itemOptionNames(custom1ItemOptionNames)
-                .build();
+        businessTimeRepository.deleteById(businessTimeId);
 
-        FindLowPriceCustomDto custom2 = FindLowPriceCustomDto.builder()
-                .gender(custom2Gender)
-                .nickname(custom2Nickname)
-                .liftType(custom2LiftType)
-                .liftTime(custom2LiftTime)
-                .itemName(null)
-                .packageType(custom2PackageType)
-                .clothesType(custom2ClothesType)
-                .equipmentType(custom2equipmentType)
-                .itemOptionNames(custom2ItemOptionNames)
-                .build();
+        // when
+        Boolean shopInOperation = businessTimeRepository.isShopInOperation(businessTimeId, visitDate, day);
 
-        customs.add(custom1);
-        customs.add(custom2);
+        // then
+        assertThat(shopInOperation).isEqualTo(false);
+    }
 
+    @Test
+    @DisplayName("[실패] businessTimeId 이 null 인 경우")
+    public void isShopInOperation_fail_businessTimeIdIsNull() {
         // when
         InvalidDataAccessApiUsageException exception = assertThrows(InvalidDataAccessApiUsageException.class, () -> {
-            shopRepository.findShopWithCustomForSearch(1L, customs, true).get();
+            businessTimeRepository.isShopInOperation(null, visitDate, day);
         });
 
         // then
         assertTrue(exception.getMessage().contains("eq(null) is not allowed. Use isNull() instead"));
-    }
-
-    @Test
-    @DisplayName("[성공] 샵 정보에 일치하는 businessTimeId 조회 (최저가 렌탈샵 검색)")
-    public void findBusinessTimeIdOfShops_success() {
-        // given
-        // shopId가 db에서 추가되고 삭제 됨에 따라 동적으로 변할 수 있다.
-        Shop shop1 = shopRepository.findShopByNameAndDeletedAtIsNull("찐렌탈샵").get();
-        Shop shop2 = shopRepository.findShopByNameAndDeletedAtIsNull("아지트").get();
-        Shop shop3 = shopRepository.findShopByNameAndDeletedAtIsNull("인생렌탈샵").get();
-
-        List<Long> shopIds = new ArrayList<>();
-        shopIds.add(shop1.getId());
-        shopIds.add(shop2.getId());
-        shopIds.add(shop3.getId());
-
-        // when
-        Map<Long, Long> businessTimeIdOfShops = shopRepository.findBusinessTimeIdOfShops(shopIds).get();
-
-        // then
-        assertThat(businessTimeIdOfShops.size()).isEqualTo(3);
-        assertThat(businessTimeIdOfShops.get(shopIds.get(0))).isEqualTo(shop1.getBusinessTime().getId());
-        assertThat(businessTimeIdOfShops.get(shopIds.get(1))).isEqualTo(shop2.getBusinessTime().getId());
-        assertThat(businessTimeIdOfShops.get(shopIds.get(2))).isEqualTo(shop3.getBusinessTime().getId());
-    }
-
-    @Test
-    @DisplayName("[성공-Optional.empty() 반환] 존재하지 않는 샵 businessTimeId 조회 (최저가 렌탈샵 검색)")
-    public void findBusinessTimeIdOfShops_success_noExistShop() {
-        // given
-        List<Long> shopIds = new ArrayList<>();
-        shopIds.add(1000L); // 존재하지 않는 샵
-
-        // when
-        Optional<Map<Long, Long>> businessTimeIdOfShops = shopRepository.findBusinessTimeIdOfShops(shopIds);
-
-        // then
-        assertThat(businessTimeIdOfShops.isEmpty()).isEqualTo(true);
-        assertThat(businessTimeIdOfShops).isEqualTo(Optional.empty());
-    }
-
-    @Test
-    @DisplayName("[성공] 샵 정보에 일치하는 ownerMemberId 조회 (최저가 렌탈샵 검색)")
-    public void findMemberIdOfShopById_success() {
-        // given
-        // shopId가 db에서 추가되고 삭제 됨에 따라 동적으로 변할 수 있다.
-        Shop shop = shopRepository.findShopByNameAndDeletedAtIsNull("아지트").get();
-
-        // when
-        Long ownerMemberIdOfShop = shopRepository.findMemberIdOfShopById(shop.getId()).get();
-
-        // then
-        assertThat(ownerMemberIdOfShop).isEqualTo(shop.getMember().getId());
-    }
-
-    @Test
-    @DisplayName("[성공-Optional.empty() 반환] 존재하지 않는 샵 ownerMemberId 조회 (최저가 렌탈샵 검색)")
-    public void findMemberIdOfShopById_success_noExistShop() {
-        // when
-        Optional<Long> ownerMemberIdOfShop = shopRepository.findMemberIdOfShopById(1000L);
-
-        // then
-        assertThat(ownerMemberIdOfShop.isEmpty()).isEqualTo(true);
-        assertThat(ownerMemberIdOfShop).isEqualTo(Optional.empty());
     }
 
     private Category createCategory() {
