@@ -34,9 +34,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class QuestionServiceTest {
@@ -197,6 +196,29 @@ public class QuestionServiceTest {
 
         // then
         assertThat(response.id()).isEqualTo(questionId);
+    }
+
+    @Test
+    @DisplayName("문의 삭제")
+    void delQuestionTest() {
+        // given
+        Question mockQuestion = mock(Question.class);
+        when(questionProcessor.findQuestionById(anyLong())).thenReturn(Optional.of(mockQuestion));
+        when(mockQuestion.getMember()).thenReturn(getMember());
+
+        doAnswer(invocation -> {
+            when(mockQuestion.getDeletedAt()).thenReturn(LocalDateTime.now()); // 삭제 시간 설정
+            return null;
+        }).when(mockQuestion).modDeletedAt();
+
+        // when
+        questionService.delQuestion(questionId, getMember());
+
+        // then
+        verify(questionProcessor).findQuestionById(questionId);
+        verify(mockQuestion, times(1)).modDeletedAt();
+
+        assertThat(mockQuestion.getDeletedAt()).isNotNull();
     }
 
     private Slice<Question> getQuestionSlice() {
